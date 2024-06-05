@@ -246,7 +246,7 @@ async def update_project_data(request_data: dict, db=Depends(get_mongo_db), _: d
                     if hour != old_hour:
                         job = scheduler.get_job(pro_id)
                         if job is not None:
-                            scheduler.remove_job(job)
+                            scheduler.remove_job(pro_id)
                         scheduler.add_job(scheduler_project, 'interval', hours=hour, args=[pro_id],
                                           id=str(pro_id), jobstore='mongo')
         else:
