@@ -166,7 +166,7 @@ async def delete_task(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         for task_id in task_ids:
             obj_ids.append(ObjectId(task_id))
             redis_key.append("TaskInfo:" + task_id)
-        redis_con.delete(*redis_key)
+        await redis_con.delete(*redis_key)
         # Delete the SensitiveRule documents based on the provided IDs
         result = await db.task.delete_many({"_id": {"$in": obj_ids}})
 
@@ -239,7 +239,7 @@ async def create_scan_task(request_data, id, targetList, redis_con):
     try:
         request_data["id"] = str(id)
         if request_data['allNode']:
-            request_data["node"] = get_redis_online_data(redis_con)
+            request_data["node"] = await get_redis_online_data(redis_con)
 
         keys_to_delete = [
             f"TaskInfo:tmp:{id}",
