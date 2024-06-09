@@ -16,6 +16,11 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 COPY --from=git_installer /usr/bin/git /usr/bin/git
 COPY --from=git_installer /usr/bin/curl /usr/bin/curl
 
+RUN apt-get update && \
+    apt-get install -y gcc  && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /opt/ScopeSentry/
 
 COPY ./ScopeSentry /opt/ScopeSentry/
