@@ -2,7 +2,7 @@ version: "3.4"
 
 services:
   mongodb:
-    image: mongo:latest
+    image: mongo:7.0.4
     container_name: scopesentry-mongodb
     restart: always
     ports:
@@ -12,11 +12,6 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: "mongodb_password"
     volumes:
       - ./data/mongodb:/data/db
-    healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   redis:
     image: redis:7.0.11
@@ -56,9 +51,9 @@ services:
       test: ["CMD-SHELL", "curl -f http://127.0.0.1:8082 || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 5
+      retries: 10
 
-  scan:
+  scopesentry-scan:
     image: autumn27/scopesentry-scan:latest
     container_name: scopesentry-scan
     restart: always
@@ -73,8 +68,6 @@ services:
       Redis_PORT: 6379
       Redis_Password: "redis_password"
     depends_on:
-      mongodb:
-        condition: service_healthy
       redis:
         condition: service_healthy
       scope-sentry:
