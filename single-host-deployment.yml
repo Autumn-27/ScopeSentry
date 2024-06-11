@@ -1,0 +1,81 @@
+version: "3.4"
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: scopesentry-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongodb_username
+      MONGO_INITDB_ROOT_PASSWORD: mongodb_password
+    volumes:
+      - ./data/mongodb:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.0.11
+    container_name: scopesentry-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass redis_password
+    volumes:
+      - ./data/redis/data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  scope-sentry:
+    image: autumn27/scopesentry:latest
+    container_name: scope-sentry
+    depends_on:
+      - mongodb
+      - redis
+    restart: always
+    ports:
+      - "8082:8082"
+    environment:
+      TIMEZONE: Asia/Shanghai
+      MONGODB_IP: scopesentry-mongodb
+      MONGODB_PORT: 27017
+      DATABASE_NAME: ScopeSentry
+      DATABASE_USER: mongodb_username
+      DATABASE_PASSWORD: mongodb_password
+      REDIS_IP: scopesentry-redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redis_password
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:8082 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  scan:
+    image: autumn27/scopesentry-scan:latest
+    container_name: scopesentry-scan
+    restart: always
+    environment:
+      NodeName: node-test
+      TimeZoneName: Asia/Shanghai
+      Mongodb_IP: scopesentry-mongodb
+      MONGODB_PORT: 27017
+      Mongodb_Username: mongodb_username
+      Mongodb_Password: mongodb_password
+      Redis_IP: scopesentry-redis
+      Redis_PORT: 6379
+      Redis_Password: redis_password
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      scope-sentry:
+        condition: service_healthy
