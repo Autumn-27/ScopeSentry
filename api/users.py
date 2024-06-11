@@ -84,11 +84,11 @@ async def login(login_request: LoginRequest = Body(...), db=Depends(get_mongo_db
 async def change_password(change_password: ChangePassword = Body(...), _: dict = Depends(verify_token),  db=Depends(get_mongo_db)):
     try:
         newPassword = hash_password(change_password.newPassword)
-        await db.user.update_one({"username": 'admin'},
+        await db.user.update_one({"username": 'ScopeSentry'},
                                   {"$set": {"password": newPassword}})
         return {
             'code': 200,
-            'message': ''
+            'message': 'success change password'
         }
     except:
         return {

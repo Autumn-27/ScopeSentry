@@ -52,23 +52,15 @@ async def page_monitoring_result(request_data: dict, db=Depends(get_mongo_db), _
     cursor: AsyncIOMotorCursor = db.PageMonitoring.find(query, {"_id": 0,
                                                                 "id": {"$toString": "$_id"},
                                                                 "url": 1,
-                                                                "content": 1,
-                                                                "hash": 1,
-                                                                "diff": 1}).sort(
+                                                                "diff": {"$arrayElemAt": ["$diff", -1]}}).sort(
         [("time", DESCENDING)]).skip((page_index - 1) * page_size).limit(page_size)
     result = await cursor.to_list(length=None)
     result_list = []
     for r in result:
-        if len(r['content']) < 2:
-            continue
         result_list.append({
+            "id": r["id"],
             "url": r['url'],
-            "response1": r['content'][-2],
-            "response2": r['content'][-1],
-            "hash1": r['hash'][-2],
-            "hash2": r['hash'][-1],
-            "diff": r['diff'][-1],
-            "history_diff": r['diff'][::1]
+            "diff": r['diff'],
         })
     return {
         "code": 200,
@@ -77,3 +69,62 @@ async def page_monitoring_result(request_data: dict, db=Depends(get_mongo_db), _
             'total': total_count
         }
     }
+
+
+@router.post("/page/monitoring/response")
+async def monitoring_response(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    try:
+        # Get the ID from the request data
+        monitoring_id = request_data.get("id")
+        flag = request_data.get("flag")  # 1代表获取上一次的响应 2代表获取当前响应
+        # Check if ID is provided
+        if not monitoring_id:
+            return {"message": "ID is missing in the request data", "code": 400}
+
+        # Query the database for content based on ID
+        query = {"_id": ObjectId(monitoring_id)}
+        doc = await db.PageMonitoring.find_one(query)
+
+        if not doc:
+            return {"message": "Content not found for the provided ID", "code": 404}
+
+        # Extract the content
+        contents = doc.get("content", [])
+        hashes = doc.get("hash", [])
+        if flag == "1":
+            content = contents[-2]
+            c_hash = hashes[-2]
+        else:
+            content = contents[-1]
+            c_hash = hashes[-1]
+        return {"code": 200, "data": {"content": content, "hash": c_hash}}
+
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
+        return {"message": "error", "code": 500}
+
+
+@router.post("/page/monitoring/history/diff")
+async def monitoring_history_diff(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    try:
+        # Get the ID from the request data
+        monitoring_id = request_data.get("id")
+        # Check if ID is provided
+        if not monitoring_id:
+            return {"message": "ID is missing in the request data", "code": 400}
+
+        # Query the database for content based on ID
+        query = {"_id": ObjectId(monitoring_id)}
+        doc = await db.PageMonitoring.find_one(query)
+
+        if not doc:
+            return {"message": "Content not found for the provided ID", "code": 404}
+
+        diff = doc.get("diff", [])
+        return {"code": 200, "data": {"diff": diff[::-1]}}
+
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
+        return {"message": "error", "code": 500}

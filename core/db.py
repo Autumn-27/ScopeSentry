@@ -2,6 +2,8 @@
 # @name: db
 # @auth: rainy-autumn@outlook.com
 # @version:
+from urllib.parse import quote_plus
+
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCursor
 from core.default import *
 from core.config import *
@@ -23,7 +25,7 @@ async def create_database():
     client = None
     try:
         # 创建新的 MongoDB 客户端
-        client = AsyncIOMotorClient(f"mongodb://{DATABASE_USER}:{DATABASE_PASSWORD}@{MONGODB_IP}:{str(MONGODB_PORT)}",
+        client = AsyncIOMotorClient(f"mongodb://{quote_plus(DATABASE_USER)}:{quote_plus(DATABASE_PASSWORD)}@{MONGODB_IP}:{str(MONGODB_PORT)}",
                                     serverSelectionTimeoutMS=2000)
 
         # 获取数据库列表

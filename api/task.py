@@ -75,7 +75,7 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         targetTmp = ""
         for t in target.split("\n"):
             t.replace("http://","").replace("https://","")
-            t = t.strip("\n").strip("\r")
+            t = t.strip("\n").strip("\r").strip()
             if t != "" and t not in targetList:
                 targetList.append(t)
                 targetTmp += t + "\n"

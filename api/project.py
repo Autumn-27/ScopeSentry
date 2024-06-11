@@ -140,7 +140,7 @@ async def add_project_rule(request_data: dict, db=Depends(get_mongo_db), _: dict
         root_domains = []
         for t in target.split('\n'):
             if t not in t_list:
-                targetTmp = t.replace('http://', "").replace('https://', "") + '\n'
+                targetTmp = t.replace('http://', "").replace('https://', "").strip() + '\n'
                 if targetTmp != "":
                     root_domain = get_root_domain(targetTmp)
                     if root_domain not in root_domains:

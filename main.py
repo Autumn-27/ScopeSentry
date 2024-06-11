@@ -3,6 +3,7 @@ import time
 from loguru import logger
 import uvicorn
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.staticfiles import StaticFiles
 
 from core.config import *
 
@@ -72,29 +73,38 @@ app.include_router(dirscan.router, prefix='/api')
 app.include_router(notification.router, prefix='/api')
 app.include_router(system.router, prefix='/api')
 
+app.mount("/assets", StaticFiles(directory="static/assets"), name="assets")
 
-@app.middleware("http")
-async def process_http_requests(request, call_next):
-    url = str(request.url)
-    parsed_url = urlparse(url)
-    # 从路径中获取文件名
-    file_name = os.path.basename(parsed_url.path).replace('..', '')
-    # 获取文件后缀名
-    file_extension = os.path.splitext(file_name)[1]
-    if '.html' == file_extension or '.css' == file_extension or '.svg' == file_extension or '.png' == file_extension or '.ico' == file_extension:
-        file_name = file_name.replace('..', '')
-        file_path = os.path.join("static", "assets", file_name)
-        return FileResponse(f"{file_path}")
-    elif '.js' == file_extension:
-        headers = {
-            "Content-Type": "application/javascript; charset=UTF-8"
-        }
-        file_name = file_name.replace('..', '')
-        file_path = os.path.join("static", "assets", file_name)
-        return FileResponse(f"{file_path}", headers=headers)
-    else:
-        response = await call_next(request)
-    return response
+@app.get("/logo.png", response_class=FileResponse)
+async def get_logo(request: Request):
+    return FileResponse("static/logo.png")
+
+
+@app.get("/favicon.ico", response_class=FileResponse)
+async def get_favicon(request: Request):
+    return FileResponse("static/favicon.ico")
+# @app.middleware("http")
+# async def process_http_requests(request, call_next):
+#     url = str(request.url)
+#     parsed_url = urlparse(url)
+#     # 从路径中获取文件名
+#     file_name = os.path.basename(parsed_url.path).replace('..', '')
+#     # 获取文件后缀名
+#     file_extension = os.path.splitext(file_name)[1]
+#     if '.html' == file_extension or '.css' == file_extension or '.svg' == file_extension or '.png' == file_extension or '.ico' == file_extension:
+#         file_name = file_name.replace('..', '')
+#         file_path = os.path.join("static", "assets", file_name)
+#         return FileResponse(f"{file_path}")
+#     elif '.js' == file_extension:
+#         headers = {
+#             "Content-Type": "application/javascript; charset=UTF-8"
+#         }
+#         file_name = file_name.replace('..', '')
+#         file_path = os.path.join("static", "assets", file_name)
+#         return FileResponse(f"{file_path}", headers=headers)
+#     else:
+#         response = await call_next(request)
+#     return response
 
 
 @app.get("/")

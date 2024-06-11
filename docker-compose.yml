@@ -12,8 +12,8 @@ services:
       MONGODB_IP: 127.0.0.1
       MONGODB_PORT: 27017
       DATABASE_NAME: ScopeSentry
-      DATABASE_USER: root
-      DATABASE_PASSWORD: QckSdkg5CKvtxfec
+      DATABASE_USER: "root"
+      DATABASE_PASSWORD: "QckSdkg5CKvtxfec"
       REDIS_IP: 127.0.0.1
       REDIS_PORT: 6379
-      REDIS_PASSWORD: ScopeSentry
+      REDIS_PASSWORD: "ScopeSentry"

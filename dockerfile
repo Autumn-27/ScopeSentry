@@ -4,7 +4,7 @@ RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list && \
     sed -i 's/security.debian.org/mirrors.aliyun.com\/debian-security/g' /etc/apt/sources.list
 
 RUN apt-get update && \
-    apt-get install -y git curl && \
+    apt-get install -y git curl ca-certificates libcurl4-openssl-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -15,6 +15,8 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 COPY --from=git_installer /usr/bin/git /usr/bin/git
 COPY --from=git_installer /usr/bin/curl /usr/bin/curl
+COPY --from=git_installer /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=git_installer /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu
 
 WORKDIR /opt/ScopeSentry/
 
