@@ -8,7 +8,7 @@ import string
 
 import yaml
 
-VERSION = "1.0"
+VERSION = "1.2"
 UPDATEURL = "http://update.scope-sentry.top"
 REMOTE_REPO_URL = "https://github.com/Autumn-27/ScopeSentry.git"
 SECRET_KEY = "ScopeSentry-15847412364125411"
