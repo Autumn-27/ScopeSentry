@@ -8,8 +8,8 @@ services:
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: mongodb_username
-      MONGO_INITDB_ROOT_PASSWORD: mongodb_password
+      MONGO_INITDB_ROOT_USERNAME: "mongodb_username"
+      MONGO_INITDB_ROOT_PASSWORD: "mongodb_password"
     volumes:
       - ./data/mongodb:/data/db
     healthcheck:
@@ -47,11 +47,11 @@ services:
       MONGODB_IP: scopesentry-mongodb
       MONGODB_PORT: 27017
       DATABASE_NAME: ScopeSentry
-      DATABASE_USER: mongodb_username
-      DATABASE_PASSWORD: mongodb_password
+      DATABASE_USER: "mongodb_username"
+      DATABASE_PASSWORD: "mongodb_password"
       REDIS_IP: scopesentry-redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: redis_password
+      REDIS_PASSWORD: "redis_password"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://127.0.0.1:8082 || exit 1"]
       interval: 30s
@@ -67,11 +67,11 @@ services:
       TimeZoneName: Asia/Shanghai
       Mongodb_IP: scopesentry-mongodb
       MONGODB_PORT: 27017
-      Mongodb_Username: mongodb_username
-      Mongodb_Password: mongodb_password
+      Mongodb_Username: "mongodb_username"
+      Mongodb_Password: "mongodb_password"
       Redis_IP: scopesentry-redis
       Redis_PORT: 6379
-      Redis_Password: redis_password
+      Redis_Password: "redis_password"
     depends_on:
       mongodb:
         condition: service_healthy
