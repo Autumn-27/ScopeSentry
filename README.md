@@ -6,7 +6,7 @@
 
 ## 网址
 
-- 官网：[https://www.scope-sentry.top](https://www.scope-sentry.top)
+- 官网&安装教程：[https://www.scope-sentry.top](https://www.scope-sentry.top)
 - Github: [https://github.com/Autumn-27/ScopeSentry](https://github.com/Autumn-27/ScopeSentry)
 - 扫描端源码：[https://github.com/Autumn-27/ScopeSentry-Scan](https://github.com/Autumn-27/ScopeSentry-Scan)
 
