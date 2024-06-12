@@ -63,6 +63,9 @@ services:
       retries: 10
     networks:
       - scopesentry-network
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
 
   scopesentry-scan:
     image: autumn27/scopesentry-scan:latest
@@ -85,3 +88,6 @@ services:
         condition: service_healthy
     networks:
       - scopesentry-network
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
