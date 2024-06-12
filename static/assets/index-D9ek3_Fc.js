@@ -1,1 +1,0 @@
-import{r as a}from"./index-XBrIPdP2.js";const e=()=>a.get({url:"/api/node/data"}),t=()=>a.get({url:"/api/node/data/online"}),d=(e,t,d)=>a.post({url:"/api/node/config/update",data:{name:e,maxTaskNum:t,state:d}}),o=e=>a.post({url:"/api/node/delete",data:{names:e}}),s=e=>a.post({url:"/api/node/log/data",data:{name:e}});export{t as a,s as b,o as d,e as g,d as u};
