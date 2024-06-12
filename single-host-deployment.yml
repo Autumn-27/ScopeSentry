@@ -1,5 +1,10 @@
 version: "3.4"
 
+networks:
+  scopesentry-network:
+    name: scopesentry-network
+    driver: bridge
+    
 services:
   mongodb:
     image: mongo:7.0.4
@@ -12,6 +17,8 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: "mongodb_password"
     volumes:
       - ./data/mongodb:/data/db
+    networks:
+      - scopesentry-network
 
   redis:
     image: redis:7.0.11
@@ -27,6 +34,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - scopesentry-network
 
   scope-sentry:
     image: autumn27/scopesentry:latest
@@ -49,9 +58,11 @@ services:
       REDIS_PASSWORD: "redis_password"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://127.0.0.1:8082 || exit 1"]
-      interval: 30s
+      interval: 10s
       timeout: 10s
       retries: 10
+    networks:
+      - scopesentry-network
 
   scopesentry-scan:
     image: autumn27/scopesentry-scan:latest
@@ -72,3 +83,5 @@ services:
         condition: service_healthy
       scope-sentry:
         condition: service_healthy
+    networks:
+      - scopesentry-network
