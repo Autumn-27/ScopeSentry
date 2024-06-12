@@ -20,10 +20,10 @@ router = APIRouter()
 @router.get("/system/version")
 async def get_system_version(redis_con=Depends(get_redis_pool), _: dict = Depends(verify_token)):
     try:
-        r = requests.get(f"{UPDATEURL}/get/version?name=server").json()
+        r = requests.get(f"{UPDATEURL}/get/version?name=server", timeout=5).json()
         server_lversion = r["value"]
         server_msg = r['msg']
-        r = requests.get(f"{UPDATEURL}/get/version?name=scan").json()
+        r = requests.get(f"{UPDATEURL}/get/version?name=scan", timeout=5).json()
         scan_lversion = r["value"]
         scan_msg = r['msg']
     except:
