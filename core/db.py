@@ -2,6 +2,7 @@
 # @name: db
 # @auth: rainy-autumn@outlook.com
 # @version:
+import time
 from urllib.parse import quote_plus
 
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCursor
@@ -23,11 +24,20 @@ async def get_mongo_db():
 
 async def create_database():
     client = None
+    check_flag = 0
     try:
-        # 创建新的 MongoDB 客户端
-        client = AsyncIOMotorClient(f"mongodb://{quote_plus(DATABASE_USER)}:{quote_plus(DATABASE_PASSWORD)}@{MONGODB_IP}:{str(MONGODB_PORT)}",
-                                    serverSelectionTimeoutMS=2000)
-
+        while True:
+            try:
+                # 创建新的 MongoDB 客户端
+                client = AsyncIOMotorClient(f"mongodb://{quote_plus(DATABASE_USER)}:{quote_plus(DATABASE_PASSWORD)}@{MONGODB_IP}:{str(MONGODB_PORT)}",
+                                            serverSelectionTimeoutMS=2000)
+                break
+            except Exception as e:
+                time.sleep(5)
+                check_flag += 1
+                if check_flag == 5:
+                    logger.error(f"Error re creating database: {e}")
+                    exit(0)
         # 获取数据库列表
         database_names = await client.list_database_names()
 
