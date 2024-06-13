@@ -31,12 +31,9 @@ async def get_system_version(redis_con=Depends(get_redis_pool), _: dict = Depend
             r = await client.get(f"https://raw.githubusercontent.com/Autumn-27/ScopeSentry/main/version.json", timeout=5)
             r_json = r.json()
             server_lversion = r_json["server"]
-            server_msg = r_json['msg']
-
-            r = await client.get(f"https://raw.githubusercontent.com/Autumn-27/ScopeSentry/main/version.json", timeout=5)
-            r_json = r.json()
-            scan_lversion = r_json["value"]
-            scan_msg = r_json['msg']
+            server_msg = r_json['server_msg']
+            scan_lversion = r_json["scan"]
+            scan_msg = r_json['scan_msg']
         except Exception as e:
             # 这里可以添加一些日志记录错误信息
             logger.error(str(e))
