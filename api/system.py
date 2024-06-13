@@ -39,13 +39,15 @@ async def get_system_version(redis_con=Depends(get_redis_pool), _: dict = Depend
             logger.error(str(e))
 
     result_list = [{"name": "ScopeSentry-Server", "cversion": VERSION, "lversion": server_lversion, "msg": server_msg}]
-
-    async with redis_con as redis:
-        keys = await redis.keys("node:*")
-        for key in keys:
-            name = key.split(":")[1]
-            hash_data = await redis.hgetall(key)
-            result_list.append({"name": name, "cversion": hash_data["version"], "lversion": scan_lversion, "msg": scan_msg})
+    try:
+        async with redis_con as redis:
+            keys = await redis.keys("node:*")
+            for key in keys:
+                name = key.split(":")[1]
+                hash_data = await redis.hgetall(key)
+                result_list.append({"name": name, "cversion": hash_data["version"], "lversion": scan_lversion, "msg": scan_msg})
+    except:
+        pass
     return {
             "code": 200,
             "data": {
