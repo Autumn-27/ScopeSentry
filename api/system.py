@@ -28,12 +28,12 @@ async def get_system_version(redis_con=Depends(get_redis_pool), _: dict = Depend
 
     async with httpx.AsyncClient() as client:
         try:
-            r = await client.get(f"{UPDATEURL}/get/version?name=server", timeout=5)
+            r = await client.get(f"https://raw.githubusercontent.com/Autumn-27/ScopeSentry/main/version.json", timeout=5)
             r_json = r.json()
-            server_lversion = r_json["value"]
+            server_lversion = r_json["server"]
             server_msg = r_json['msg']
 
-            r = await client.get(f"{UPDATEURL}/get/version?name=scan", timeout=5)
+            r = await client.get(f"https://raw.githubusercontent.com/Autumn-27/ScopeSentry/main/version.json", timeout=5)
             r_json = r.json()
             scan_lversion = r_json["value"]
             scan_msg = r_json['msg']
