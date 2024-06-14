@@ -7,6 +7,8 @@
 
 from fastapi import APIRouter, Depends
 import git
+import httpx
+from loguru import logger
 from api.users import verify_token
 from core.db import get_mongo_db
 from core.config import *
@@ -18,27 +20,33 @@ router = APIRouter()
 
 @router.get("/system/version")
 async def get_system_version(redis_con=Depends(get_redis_pool), _: dict = Depends(verify_token)):
-    try:
-        r = requests.get(f"{UPDATEURL}/get/version?name=server", timeout=5).json()
-        server_lversion = r["value"]
-        server_msg = r['msg']
-        r = requests.get(f"{UPDATEURL}/get/version?name=scan", timeout=5).json()
-        scan_lversion = r["value"]
-        scan_msg = r['msg']
-    except:
-        server_lversion = ""
-        server_msg = ""
-        scan_lversion = ""
-        scan_msg = ""
+    server_lversion = ""
+    server_msg = ""
+    scan_lversion = ""
+    scan_msg = ""
+
+    async with httpx.AsyncClient() as client:
+        try:
+            r = await client.get(f"https://raw.githubusercontent.com/Autumn-27/ScopeSentry/main/version.json", timeout=5)
+            r_json = r.json()
+            server_lversion = r_json["server"]
+            server_msg = r_json['server_msg']
+            scan_lversion = r_json["scan"]
+            scan_msg = r_json['scan_msg']
+        except Exception as e:
+            # 这里可以添加一些日志记录错误信息
+            logger.error(str(e))
 
     result_list = [{"name": "ScopeSentry-Server", "cversion": VERSION, "lversion": server_lversion, "msg": server_msg}]
-
-    async with redis_con as redis:
-        keys = await redis.keys("node:*")
-        for key in keys:
-            name = key.split(":")[1]
-            hash_data = await redis.hgetall(key)
-            result_list.append({"name": name, "cversion": hash_data["version"], "lversion": scan_lversion, "msg": scan_msg})
+    try:
+        async with redis_con as redis:
+            keys = await redis.keys("node:*")
+            for key in keys:
+                name = key.split(":")[1]
+                hash_data = await redis.hgetall(key)
+                result_list.append({"name": name, "cversion": hash_data["version"], "lversion": scan_lversion, "msg": scan_msg})
+    except:
+        pass
     return {
             "code": 200,
             "data": {
