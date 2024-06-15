@@ -52,20 +52,15 @@ async def page_monitoring_result(request_data: dict, db=Depends(get_mongo_db), _
     cursor: AsyncIOMotorCursor = db.PageMonitoring.find(query, {"_id": 0,
                                                                 "id": {"$toString": "$_id"},
                                                                 "url": 1,
-                                                                "diff": {"$arrayElemAt": ["$diff", -1]}}).sort(
+                                                                "diff": {"$arrayElemAt": ["$diff", -1]},
+                                                                "time": 1
+                                                                }).sort(
         [("time", DESCENDING)]).skip((page_index - 1) * page_size).limit(page_size)
     result = await cursor.to_list(length=None)
-    result_list = []
-    for r in result:
-        result_list.append({
-            "id": r["id"],
-            "url": r['url'],
-            "diff": r['diff'],
-        })
     return {
         "code": 200,
         "data": {
-            'list': result_list,
+            'list': result,
             'total': total_count
         }
     }

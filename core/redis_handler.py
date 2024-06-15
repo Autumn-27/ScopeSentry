@@ -6,6 +6,7 @@ import asyncio
 import json
 from loguru import logger
 import redis.asyncio as redis
+
 from core.db import *
 from core.util import *
 import socket
@@ -21,7 +22,8 @@ async def get_redis_pool():
             socket.TCP_KEEPINTVL: 10,
         }
     }
-    redis_con = await redis.from_url(f"redis://:{REDIS_PASSWORD}@{REDIS_IP}:{REDIS_PORT}", encoding="utf-8", decode_responses=True, **keep_alive_config)
+    redis_con = await redis.from_url(f"redis://:{REDIS_PASSWORD}@{REDIS_IP}:{REDIS_PORT}", encoding="utf-8",
+                                     decode_responses=True, **keep_alive_config)
     try:
         yield redis_con
     finally:
@@ -97,8 +99,57 @@ async def check_node_task(node_name, redis_conn):
         response_data = []
         for doc in result:
             doc["id"] = str(doc["_id"])
+            await check_redis_task_target_is_null(doc["id"], doc["target"], redis_conn)
             response_data.append(doc)
         for r in response_data:
             add_redis_task_data = transform_db_redis(r)
             await redis_conn.rpush(f"NodeTask:{node_name}", json.dumps(add_redis_task_data))
         return
+
+
+async def check_redis_task_target_is_null(id, target, redis_conn):
+    flag = await redis_conn.exists("TaskInfo:{}".format(id))
+    if flag:
+        return
+    else:
+        from_check = False
+        r = {}
+        if target == "":
+            from_check = True
+            async for mongo_client in get_mongo_db():
+                r = await mongo_client.task.find_one({"_id": ObjectId(id)})
+                target = r.get("target", "")
+        task_target = []
+        for t in target.split("\n"):
+            key = f"TaskInfo:progress:{id}:{t}"
+            res = await redis_conn.hgetall(key)
+            if "scan_end" in res:
+                continue
+            else:
+                task_target.append(t)
+        await redis_conn.lpush(f"TaskInfo:{id}", *task_target)
+        if from_check:
+            try:
+                if len(r) != 0:
+                    if r['allNode']:
+                        r["node"] = await get_redis_online_data(redis_conn)
+                    add_redis_task_data = transform_db_redis(r)
+                    for name in r["node"]:
+                        await redis_conn.rpush(f"NodeTask:{name}", json.dumps(add_redis_task_data))
+            except Exception as e:
+                logger.error(str(e))
+        return
+
+
+async def get_redis_online_data(redis_con):
+    async with redis_con as redis:
+        # 获取所有以 node: 开头的键
+        keys = await redis.keys("node:*")
+        # 构建结果字典
+        result = []
+        for key in keys:
+            name = key.split(":")[1]
+            hash_data = await redis.hgetall(key)
+            if hash_data.get('state') == '1':
+                result.append(name)
+        return result

@@ -14,7 +14,7 @@ from motor.motor_asyncio import AsyncIOMotorCursor
 
 from core.apscheduler_handler import scheduler
 from core.db import get_mongo_db
-from core.redis_handler import get_redis_pool
+from core.redis_handler import get_redis_pool, check_redis_task_target_is_null
 from core.util import *
 from api.node import get_redis_online_data
 from api.page_monitoring import get_page_monitoring_data
@@ -22,7 +22,7 @@ router = APIRouter()
 
 
 @router.post("/task/data")
-async def get_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token), background_tasks: BackgroundTasks = BackgroundTasks()):
+async def get_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token), background_tasks: BackgroundTasks = BackgroundTasks(), redis_con=Depends(get_redis_pool)):
     try:
         background_tasks.add_task(task_progress)
         search_query = request_data.get("search", "")
@@ -37,16 +37,21 @@ async def get_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict = 
         # Perform pagination query
         cursor: AsyncIOMotorCursor = db.task.find(query).skip((page_index - 1) * page_size).limit(page_size).sort([("creatTime", DESCENDING)])
         result = await cursor.to_list(length=None)
-        if len(result) == 0:
-            return {
-            "code": 200,
-            "data": {
-                'list': [],
-                'total': 0
-            }
-        }
         # Process the result as needed
         response_data = [{"id": str(doc["_id"]), "name": doc["name"], "taskNum": doc["taskNum"], "progress": doc["progress"], "creatTime": doc["creatTime"], "endTime": doc["endTime"]} for doc in result]
+        # response_data = []
+        # for doc in result:
+        #     transformed_doc = {
+        #         "id": str(doc["_id"]),
+        #         "name": doc["name"],
+        #         "taskNum": doc["taskNum"],
+        #         "progress": doc["progress"],
+        #         "creatTime": doc["creatTime"],
+        #         "endTime": doc["endTime"]
+        #     }
+        #     # if doc["progress"] != 100:
+        #     #     background_tasks.add_task(check_redis_task_target_is_null, str(doc["_id"]), "", redis_con)
+        #     response_data.append(transformed_doc)
         return {
             "code": 200,
             "data": {
@@ -232,7 +237,6 @@ async def retest_task(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
-
 
 
 async def create_scan_task(request_data, id, targetList, redis_con):

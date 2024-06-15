@@ -173,6 +173,7 @@ async def create_page_monitoring_task():
             targetList = await get_page_monitoring_data(db, False)
             if len(targetList) == 0:
                 return
+            await redis.delete(f"TaskInfo:page_monitoring")
             await redis.lpush(f"TaskInfo:page_monitoring", *targetList)
             add_redis_task_data = {
                 "type": 'page_monitoring',
