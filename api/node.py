@@ -39,6 +39,7 @@ async def node_data(_: dict = Depends(verify_token), redis_con=Depends(get_redis
                 if update_time_str:
                     update_time = datetime.strptime(update_time_str, '%Y-%m-%d %H:%M:%S')
                     time_difference = (datetime.strptime(get_now_time(), "%Y-%m-%d %H:%M:%S") - update_time).seconds
+                    print(time_difference, get_now_time(), update_time)
                     if time_difference > NODE_TIMEOUT:
                         await asyncio.create_task(update_redis_data(redis, key))
                         hash_data['state'] = '3'

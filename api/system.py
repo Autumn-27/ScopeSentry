@@ -13,7 +13,6 @@ from api.users import verify_token
 from core.db import get_mongo_db
 from core.config import *
 import requests
-
 from core.redis_handler import get_redis_pool, refresh_config
 
 router = APIRouter()
