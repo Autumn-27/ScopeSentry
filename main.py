@@ -30,6 +30,9 @@ from core.apscheduler_handler import scheduler
 
 @app.on_event("startup")
 async def startup_db_client():
+    file_path = os.path.join(os.getcwd(), 'file')
+    if not os.path.exists(file_path):
+        os.makedirs(file_path)
     await db.create_database()
     scheduler.start()
     jobs = scheduler.get_jobs()
