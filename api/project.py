@@ -140,12 +140,12 @@ async def add_project_rule(request_data: dict, db=Depends(get_mongo_db), _: dict
         root_domains = []
         for t in target.split('\n'):
             if t not in t_list:
-                targetTmp = t.replace('http://', "").replace('https://', "").strip() + '\n'
+                targetTmp = t.replace('http://', "").replace('https://', "").strip()
                 if targetTmp != "":
                     root_domain = get_root_domain(targetTmp)
                     if root_domain not in root_domains:
                         root_domains.append(root_domain)
-                    tmsg += targetTmp
+                    tmsg += targetTmp + '\n'
                 # Create a new SensitiveRule document
         tmsg = tmsg.strip().strip("\n")
         request_data["root_domains"] = root_domains

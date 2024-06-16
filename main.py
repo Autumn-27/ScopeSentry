@@ -54,7 +54,7 @@ async def http_exception_handler(request, exc):
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 from api import users, sensitive, dictionary, poc, configuration, fingerprint, node, project, task, asset_info, \
-    page_monitoring, vulnerability, SubdoaminTaker, scheduled_tasks, notification, system
+    page_monitoring, vulnerability, SubdoaminTaker, scheduled_tasks, notification, system, export
 
 app.include_router(users.router, prefix='/api')
 app.include_router(sensitive.router, prefix='/api')
@@ -73,7 +73,7 @@ app.include_router(scheduled_tasks.router, prefix='/api')
 app.include_router(dirscan.router, prefix='/api')
 app.include_router(notification.router, prefix='/api')
 app.include_router(system.router, prefix='/api')
-
+app.include_router(export.router, prefix='/api')
 app.mount("/assets", StaticFiles(directory="static/assets"), name="assets")
 
 @app.get("/logo.png", response_class=FileResponse)
