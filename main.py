@@ -7,6 +7,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.staticfiles import StaticFiles
 
 from core.config import *
+from core.db import get_mongo_db
 
 set_config()
 from starlette.requests import Request
@@ -27,9 +28,27 @@ app = FastAPI()
 
 from core.apscheduler_handler import scheduler
 
+# async def update():
+#     if float(VERSION) <= 1.2:
+#         async for db in get_mongo_db():
+#             cursor = db.project.find({"root_domains": ""},{"_id":1, "root_domains": 1})
+#             async for document in cursor:
+#                 logger.info("Update found empty root_domains")
+#                 root_domain = []
+#                 for root in document["root_domains"]:
+#                     if root != "":
+#                         root_domain.append(root)
+#                 update_document = {
+#                     "$set": {
+#                         "root_domains": root_domain,
+#                     }
+#                 }
+#                 await db.project.update_one({"_id": document['_id']}, update_document)
+
 
 @app.on_event("startup")
 async def startup_db_client():
+    # await update()
     file_path = os.path.join(os.getcwd(), 'file')
     if not os.path.exists(file_path):
         os.makedirs(file_path)
