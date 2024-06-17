@@ -66,16 +66,17 @@ services:
 
   scopesentry-scan:
     image: autumn27/scopesentry-scan:latest
+    network_mode: host
     container_name: scopesentry-scan
     restart: always
     environment:
       NodeName: node-test
       TimeZoneName: Asia/Shanghai
-      Mongodb_IP: scopesentry-mongodb
+      Mongodb_IP: 127.0.0.1
       MONGODB_PORT: 27017
       Mongodb_Username: "mongodb_username"
       Mongodb_Password: "mongodb_password"
-      Redis_IP: scopesentry-redis
+      Redis_IP: 127.0.0.1
       Redis_PORT: 6379
       Redis_Password: "redis_password"
     depends_on:
@@ -83,5 +84,3 @@ services:
         condition: service_healthy
       scope-sentry:
         condition: service_healthy
-    networks:
-      - scopesentry-network
