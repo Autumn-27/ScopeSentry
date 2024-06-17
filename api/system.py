@@ -4,6 +4,7 @@
 # @contact   : rainy-autumn@outlook.com
 # @time      : 2024/5/14 21:59
 # -------------------------------------------
+import subprocess
 
 from fastapi import APIRouter, Depends
 import git
@@ -57,12 +58,30 @@ async def get_system_version(redis_con=Depends(get_redis_pool), _: dict = Depend
 
 @router.get("/system/update")
 async def system_update():
-    update_server()
+    await update_server()
     await refresh_config("all", 'UpdateSystem')
 
 
-
-def update_server():
+async def update_server():
+    relative_path = f'requirements.txt'
+    file_path = os.path.join(os.getcwd(), relative_path)
+    async with httpx.AsyncClient() as client:
+        try:
+            r = await client.get(f"https://raw.githubusercontent.com/Autumn-27/ScopeSentry/main/requirements.txt", timeout=5)
+            content = r.text
+            with open(file_path, "w") as f:
+                f.write(content)
+            logger.info("requirements.txt write successfully")
+            result = subprocess.run(
+                ['pip', 'install', '-r', file_path, '-i', 'https://pypi.tuna.tsinghua.edu.cn/simple', '--no-cache-dir'],
+                capture_output=True, text=True
+            )
+            if result.returncode == 0:
+                logger.info("Packages installed successfully")
+            else:
+                logger.error(f"Error installing packages: {result.stderr}")
+        except Exception as e:
+            logger.error(str(e))
     repo_path = os.getcwd()
     if not os.path.isdir('.git'):
         repo = git.Repo.init(repo_path)
