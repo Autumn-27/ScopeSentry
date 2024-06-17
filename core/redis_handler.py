@@ -14,14 +14,25 @@ from motor.motor_asyncio import AsyncIOMotorCursor
 
 
 async def get_redis_pool():
-    keep_alive_config = {
-        'socket_keepalive': True,
-        'socket_keepalive_options': {
-            socket.TCP_KEEPIDLE: 60,
-            socket.TCP_KEEPCNT: 10,
-            socket.TCP_KEEPINTVL: 10,
+    keep_alive_config = {}
+    if sys.platform == 'darwin':  # macOS 平台
+        keep_alive_config = {
+            'socket_keepalive': True,
+            'socket_keepalive_options': {
+                socket.TCP_KEEPALIVE: 60,
+                socket.TCP_KEEPCNT: 10,
+                socket.TCP_KEEPINTVL: 10,
+            }
         }
-    }
+    else:
+        keep_alive_config = {
+            'socket_keepalive': True,
+            'socket_keepalive_options': {
+                socket.TCP_KEEPIDLE: 60,
+                socket.TCP_KEEPCNT: 10,
+                socket.TCP_KEEPINTVL: 10,
+            }
+        }
     redis_con = await redis.from_url(f"redis://:{REDIS_PASSWORD}@{REDIS_IP}:{REDIS_PORT}", encoding="utf-8",
                                      decode_responses=True, **keep_alive_config)
     try:
