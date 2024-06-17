@@ -18,16 +18,13 @@ COPY ./ScopeSentry /opt/ScopeSentry/
 # 安装 Python 依赖包
 RUN pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir
 
-# 移动 static 目录下的所有文件到 nginx 的默认根目录
-RUN cp -r /opt/ScopeSentry/static/* /var/www/html/
-
 # 修改 Nginx 配置文件，添加反向代理规则
 RUN echo 'server {\n\
     listen 80;\n\
     server_name localhost;\n\
 \n\
     location / {\n\
-        root /var/www/html;\n\
+        root /opt/ScopeSentry/static;\n\
         try_files $uri $uri/ =404;\n\
     }\n\
 \n\
