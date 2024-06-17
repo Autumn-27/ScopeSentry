@@ -9,6 +9,7 @@ import os
 from bson import ObjectId
 from fastapi import APIRouter, Depends, BackgroundTasks
 from openpyxl.utils.exceptions import IllegalCharacterError
+from starlette.responses import FileResponse
 
 from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor
@@ -268,10 +269,10 @@ async def export_data_from_mongodb(quantity, query, file_name, index, db):
             "$set": {
                 "state": 1,
                 "end_time": get_now_time(),
-                "file_size": file_size
+                "file_size": str(round(file_size, 2))
             }
         }
-        await db.PocList.update_one({"file_name": file_name}, update_document)
+        await db.export.update_one({"file_name": file_name}, update_document)
     except Exception as e:
         logger.error(str(e))
         update_document = {
@@ -279,9 +280,59 @@ async def export_data_from_mongodb(quantity, query, file_name, index, db):
                 "state": 2,
             }
         }
-        await db.PocList.update_one({"file_name": file_name}, update_document)
+        await db.export.update_one({"file_name": file_name}, update_document)
 
 
-# @router.get("/export/record")
-# async def get_export_record(db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-#
+@router.get("/export/record")
+async def get_export_record(db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    cursor: AsyncIOMotorCursor = db.export.find({},
+                                                {"_id": 0, "id": {"$toString": "$_id"}, "file_name": 1, "end_time": 1,
+                                                 "create_time": 1, "data_type": 1, "state": 1, 'file_size': 1}).sort([("create_time", DESCENDING)])
+    result = await cursor.to_list(length=None)
+    return {
+        "code": 200,
+        "data": {
+            'list': result
+        }
+    }
+
+
+@router.post("/export/delete")
+async def delete_export(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    try:
+        export_ids = request_data.get("ids", [])
+        delete_filename = []
+        for id in export_ids:
+            flag = is_valid_string(id)
+            if flag and len(id) == 16:
+                relative_path = f'file/{id}.xlsx'
+                file_path = os.path.join(os.getcwd(), relative_path)
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                delete_filename.append(id)
+        if len(delete_filename) == 0:
+            return {"code": 404, "message": "Export file not found"}
+        result = await db.export.delete_many({"file_name": {"$in": delete_filename}})
+
+        if result.deleted_count > 0:
+            return {"code": 200, "message": "Export file deleted successfully"}
+        else:
+            return {"code": 404, "message": "Export file not found"}
+
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
+        return {"message": "error", "code": 500}
+
+
+@router.get("/export/download")
+async def download_export(file_name: str):
+    if len(file_name) == 16 and is_valid_string(file_name):
+        relative_path = f'file/{file_name}.xlsx'
+        file_path = os.path.join(os.getcwd(), relative_path)
+        if os.path.exists(file_path):
+            return FileResponse(path=file_path, filename=file_name + '.xlsx')
+        else:
+            return {"message": "file not found", "code": 500}
+    else:
+        return {"message": "file not found", "code": 500}

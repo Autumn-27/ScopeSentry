@@ -32,6 +32,13 @@ def generate_random_string(length):
     return random_string
 
 
+def is_valid_string(s):
+    # 定义合法字符集
+    valid_chars = string.ascii_letters + string.digits
+    # 使用正则表达式判断字符串是否仅包含合法字符
+    pattern = f"^[{re.escape(valid_chars)}]+$"
+    return bool(re.match(pattern, s))
+
 def parse_expression(express, eval_expression):
     parts = []
     part = ""
