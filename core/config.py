@@ -63,6 +63,15 @@ def set_config():
             REDIS_PASSWORD = data['redis']['password']
             TOTAL_LOGS = data['logs']['total_logs']
             TIMEZONE = data['system']['timezone']
+        env_db_user = os.environ.get("DATABASE_USER", default='')
+        if env_db_user != '' and env_db_user != DATABASE_USER:
+            DATABASE_USER = env_db_user
+        env_db_password = os.environ.get("DATABASE_PASSWORD", default='')
+        if env_db_password != '' and env_db_password != DATABASE_PASSWORD:
+            DATABASE_PASSWORD = env_db_password
+        env_redis_password = os.environ.get("REDIS_PASSWORD", default='')
+        if env_redis_password != '' and env_redis_password != REDIS_PASSWORD:
+            REDIS_PASSWORD = env_redis_password
     else:
         TIMEZONE = os.environ.get("TIMEZONE", default='Asia/Shanghai')
         MONGODB_IP = os.environ.get("MONGODB_IP", default='127.0.0.1')

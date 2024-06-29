@@ -25,27 +25,26 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.websockets import WebSocketDisconnect
 from core.redis_handler import subscribe_log_channel
 
-app = FastAPI()
+app = FastAPI(timeout=None)
 
 from core.apscheduler_handler import scheduler
 
 
 async def update():
-    if float(VERSION) <= 1.2:
-        async for db in get_mongo_db():
-            cursor = db.project.find({"root_domains": ""},{"_id":1, "root_domains": 1})
-            async for document in cursor:
-                logger.info("Update found empty root_domains")
-                root_domain = []
-                for root in document["root_domains"]:
-                    if root != "":
-                        root_domain.append(root)
-                update_document = {
-                    "$set": {
-                        "root_domains": root_domain,
-                    }
+    async for db in get_mongo_db():
+        cursor = db.project.find({"root_domains": ""}, {"_id": 1, "root_domains": 1})
+        async for document in cursor:
+            logger.info("Update found empty root_domains")
+            root_domain = []
+            for root in document["root_domains"]:
+                if root != "":
+                    root_domain.append(root)
+            update_document = {
+                "$set": {
+                    "root_domains": root_domain,
                 }
-                await db.project.update_one({"_id": document['_id']}, update_document)
+            }
+            await db.project.update_one({"_id": document['_id']}, update_document)
 
 
 @app.on_event("startup")
@@ -151,7 +150,7 @@ class MongoDBQueryTimeMiddleware(BaseHTTPMiddleware):
         return response
 
 
-SQLTIME = False
+SQLTIME = True
 
 if SQLTIME:
     app.add_middleware(MongoDBQueryTimeMiddleware)
@@ -193,6 +192,7 @@ def banner():
                   | |                                       __/ |
                   |_|                                      |___/ '''
     print(banner)
+    print("Server Version:", VERSION)
 
 
 if __name__ == "__main__":

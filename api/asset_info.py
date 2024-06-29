@@ -558,3 +558,306 @@ async def asset_data_statistics2(request_data: dict, db=Depends(get_mongo_db), _
         "code": 200,
         "data": result_list
     }
+
+
+@router.post("/asset/statistics/port")
+async def asset_data_statistics_port(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    search_query = request_data.get("search", "")
+    keyword = {
+        'app': '',
+        'body': 'responsebody',
+        'header': 'rawheaders',
+        'project': 'project',
+        'title': 'title',
+        'statuscode': 'statuscode',
+        'icon': 'faviconmmh3',
+        'ip': ['host', 'ip'],
+        'domain': ['host', 'url', 'domain'],
+        'port': 'port',
+        'protocol': ['protocol', 'type'],
+        'banner': 'raw',
+    }
+    query = await search_to_mongodb(search_query, keyword)
+    if query == "" or query is None:
+        return {"message": "Search condition parsing error", "code": 500}
+    query = query[0]
+    pipeline = [
+        {
+            "$match": query  # 添加搜索条件
+        },
+        {
+            "$facet": {
+                "by_port": [
+                    {"$group": {"_id": "$port", "num_tutorial": {"$sum": 1}}},
+                    {"$match": {"_id": {"$ne": None}}}
+                ]
+            }
+        }
+    ]
+    result = await db['asset'].aggregate(pipeline).to_list(None)
+    result_list = {"Port": []}
+    port_list = {}
+
+    for r in result:
+        for port in r['by_port']:
+            port_list[port["_id"]] = port["num_tutorial"]
+
+    port_list = dict(sorted(port_list.items(), key=lambda item: -item[1]))
+    for port in port_list:
+        result_list['Port'].append({"value": port, "number": port_list[port]})
+    return {
+        "code": 200,
+        "data": result_list
+    }
+
+
+@router.post("/asset/statistics/type")
+async def asset_data_statistics_type(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    search_query = request_data.get("search", "")
+    keyword = {
+        'app': '',
+        'body': 'responsebody',
+        'header': 'rawheaders',
+        'project': 'project',
+        'title': 'title',
+        'statuscode': 'statuscode',
+        'icon': 'faviconmmh3',
+        'ip': ['host', 'ip'],
+        'domain': ['host', 'url', 'domain'],
+        'port': 'port',
+        'protocol': ['protocol', 'type'],
+        'banner': 'raw',
+    }
+    query = await search_to_mongodb(search_query, keyword)
+    if query == "" or query is None:
+        return {"message": "Search condition parsing error", "code": 500}
+    query = query[0]
+    pipeline = [
+        {
+            "$match": query  # 添加搜索条件
+        },
+        {
+            "$facet": {
+                "by_type": [
+                    {"$group": {"_id": "$type", "num_tutorial": {"$sum": 1}}},
+                    {"$match": {"_id": {"$ne": None}}}
+                ],
+                "by_protocol": [
+                    {"$group": {"_id": "$protocol", "num_tutorial": {"$sum": 1}}},
+                    {"$match": {"_id": {"$ne": None}}}
+                ]
+            }
+        }
+    ]
+    result = await db['asset'].aggregate(pipeline).to_list(None)
+    result_list = {"Service": []}
+    service_list = {}
+    for r in result:
+        for t in r['by_type']:
+            if t['_id'] != 'other':
+                service_list[t['_id']] = t['num_tutorial']
+        for p in r['by_protocol']:
+            service_list[p['_id']] = p['num_tutorial']
+    service_list = dict(sorted(service_list.items(), key=lambda item: -item[1]))
+    for service in service_list:
+        result_list['Service'].append({"value": service, "number": service_list[service]})
+    return {
+        "code": 200,
+        "data": result_list
+    }
+
+
+@router.post("/asset/statistics/icon")
+async def asset_data_statistics_icon(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    search_query = request_data.get("search", "")
+    keyword = {
+        'app': '',
+        'body': 'responsebody',
+        'header': 'rawheaders',
+        'project': 'project',
+        'title': 'title',
+        'statuscode': 'statuscode',
+        'icon': 'faviconmmh3',
+        'ip': ['host', 'ip'],
+        'domain': ['host', 'url', 'domain'],
+        'port': 'port',
+        'protocol': ['protocol', 'type'],
+        'banner': 'raw',
+    }
+    query = await search_to_mongodb(search_query, keyword)
+    if query == "" or query is None:
+        return {"message": "Search condition parsing error", "code": 500}
+    query = query[0]
+    pipeline = [
+        {
+            "$match": query  # 添加搜索条件
+        },
+        {
+        "$project": {
+            "faviconmmh3": 1,
+            "iconcontent": 1
+        }
+    },
+        {
+            "$facet": {
+                "by_icon": [
+                    {"$group": {"_id": "$faviconmmh3",
+                                "num_tutorial": {"$sum": 1},
+                                "iconcontent": {"$first": "$iconcontent"}
+                                }
+                     },
+                    {"$match": {"_id": {"$ne": ""}}}
+                ]
+            }
+        }
+    ]
+    result = await db['asset'].aggregate(pipeline).to_list(None)
+    result_list = {"Icon": []}
+    icon_list = {}
+    icon_tmp = {}
+    for r in result:
+        for icon in r['by_icon']:
+            if icon['_id'] != "":
+                icon_tmp[icon['_id']] = icon['iconcontent']
+                icon_list[icon['_id']] = icon['num_tutorial']
+    icon_list = dict(sorted(icon_list.items(), key=lambda item: -item[1]))
+    for ic in icon_list:
+        result_list['Icon'].append({"value": icon_tmp[ic], "number": icon_list[ic], "icon_hash": ic})
+
+    return {
+        "code": 200,
+        "data": result_list
+    }
+
+
+# @router.post("/asset/statistics/icon2")
+# async def asset_data_statistics_icon2(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+#     search_query = request_data.get("search", "")
+#     keyword = {
+#         'app': '',
+#         'body': 'responsebody',
+#         'header': 'rawheaders',
+#         'project': 'project',
+#         'title': 'title',
+#         'statuscode': 'statuscode',
+#         'icon': 'faviconmmh3',
+#         'ip': ['host', 'ip'],
+#         'domain': ['host', 'url', 'domain'],
+#         'port': 'port',
+#         'protocol': ['protocol', 'type'],
+#         'banner': 'raw',
+#     }
+#     query = await search_to_mongodb(search_query, keyword)
+#     if query == "" or query is None:
+#         return {"message": "Search condition parsing error", "code": 500}
+#     query = query[0]
+#     query["faviconmmh3"] = {"$ne": ""}
+#     cursor = db.asset.find(query, {"_id": 0,
+#                                    "faviconmmh3": 1,
+#                                    "iconcontent": 1
+#                                    })
+#     results = await cursor.to_list(length=None)
+#     result_list = {"Icon": []}
+#     icon_list = {}
+#     icon_tmp = {}
+#     for r in results:
+#         if r['faviconmmh3'] not in icon_list:
+#             r['faviconmmh3'] = 1
+#             icon_tmp[r['faviconmmh3']] = r['iconcontent']
+#         else:
+#             r['faviconmmh3'] += 1
+#     icon_list = dict(sorted(icon_list.items(), key=lambda item: -item[1]))
+#     for ic in icon_list:
+#         result_list['Icon'].append({"value": icon_tmp[ic], "number": icon_list[ic], "icon_hash": ic})
+#
+#     return {
+#         "code": 200,
+#         "data": result_list
+#     }
+
+
+@router.post("/asset/statistics/app")
+async def asset_data_statistics_app(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    search_query = request_data.get("search", "")
+    keyword = {
+        'app': '',
+        'body': 'responsebody',
+        'header': 'rawheaders',
+        'project': 'project',
+        'title': 'title',
+        'statuscode': 'statuscode',
+        'icon': 'faviconmmh3',
+        'ip': ['host', 'ip'],
+        'domain': ['host', 'url', 'domain'],
+        'port': 'port',
+        'protocol': ['protocol', 'type'],
+        'banner': 'raw',
+    }
+    query = await search_to_mongodb(search_query, keyword)
+    if query == "" or query is None:
+        return {"message": "Search condition parsing error", "code": 500}
+    query = query[0]
+    pipeline = [
+        {
+            "$match": query  # 添加搜索条件
+        },
+        {
+            "$facet": {
+                "by_webfinger": [
+                    {"$unwind": "$webfinger"},
+                    {"$group": {"_id": "$webfinger", "num_tutorial": {"$sum": 1}}},
+                    {"$match": {"_id": {"$ne": None}}}
+                ],
+                "by_technologies": [
+                    {"$unwind": "$technologies"},
+                    {"$group": {"_id": "$technologies", "num_tutorial": {"$sum": 1}}},
+                    {"$match": {"_id": {"$ne": None}}}
+                ]
+            }
+        }
+    ]
+    result = await db['asset'].aggregate(pipeline).to_list(None)
+    result_list = {"Product": []}
+    tec_list = {}
+    for r in result:
+        for technologie in r['by_technologies']:
+            tec_list[technologie['_id']] = technologie['num_tutorial']
+        for webfinger in r['by_webfinger']:
+            try:
+                if APP[webfinger['_id']] not in tec_list:
+                    tec_list[APP[webfinger['_id']]] = webfinger['num_tutorial']
+                else:
+                    tec_list[APP[webfinger['_id']]] += webfinger['num_tutorial']
+            except:
+                pass
+    tec_list = dict(sorted(tec_list.items(), key=lambda item: -item[1]))
+    for tec in tec_list:
+        result_list['Product'].append({"value": tec, "number": tec_list[tec]})
+    return {
+        "code": 200,
+        "data": result_list
+    }
+
+
+@router.post("/data/delete")
+async def delete_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    try:
+        # Extract the list of IDs from the request_data dictionary
+        data_ids = request_data.get("ids", [])
+        index = request_data.get("index", "")
+        # Convert the provided rule_ids to ObjectId
+        obj_ids = [ObjectId(data_id) for data_id in data_ids]
+
+        # Delete the SensitiveRule documents based on the provided IDs
+        result = await db[index].delete_many({"_id": {"$in": obj_ids}})
+
+        # Check if the deletion was successful
+        if result.deleted_count > 0:
+            return {"code": 200, "message": "Data deleted successfully"}
+        else:
+            return {"code": 404, "message": "Data not found"}
+
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
+        return {"message": "error", "code": 500}

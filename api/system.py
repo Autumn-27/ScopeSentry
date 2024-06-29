@@ -5,6 +5,7 @@
 # @time      : 2024/5/14 21:59
 # -------------------------------------------
 import subprocess
+import traceback
 
 from fastapi import APIRouter, Depends
 import git
@@ -24,17 +25,26 @@ async def get_system_version(redis_con=Depends(get_redis_pool), _: dict = Depend
     scan_lversion = ""
     scan_msg = ""
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(verify=False) as client:
         try:
-            r = await client.get(f"https://raw.githubusercontent.com/Autumn-27/ScopeSentry/main/version.json", timeout=5)
+            r = await client.get(f"https://gitee.com/constL/scope-sentry/raw/main/version.json", timeout=10)
             r_json = r.json()
             server_lversion = r_json["server"]
             server_msg = r_json['server_msg']
             scan_lversion = r_json["scan"]
             scan_msg = r_json['scan_msg']
-        except Exception as e:
-            # 这里可以添加一些日志记录错误信息
-            logger.error(str(e))
+        except:
+            try:
+                r = await client.get(f"https://raw.githubusercontent.com/Autumn-27/ScopeSentry/main/version.json",
+                                     timeout=10)
+                r_json = r.json()
+                server_lversion = r_json["server"]
+                server_msg = r_json['server_msg']
+                scan_lversion = r_json["scan"]
+                scan_msg = r_json['scan_msg']
+            except Exception as e:
+                logger.error(traceback.format_exc())
+                logger.error(f"An unexpected error occurred: {e}")
 
     result_list = [{"name": "ScopeSentry-Server", "cversion": VERSION, "lversion": server_lversion, "msg": server_msg}]
     try:
@@ -43,21 +53,22 @@ async def get_system_version(redis_con=Depends(get_redis_pool), _: dict = Depend
             for key in keys:
                 name = key.split(":")[1]
                 hash_data = await redis.hgetall(key)
-                result_list.append({"name": name, "cversion": hash_data["version"], "lversion": scan_lversion, "msg": scan_msg})
+                result_list.append(
+                    {"name": name, "cversion": hash_data["version"], "lversion": scan_lversion, "msg": scan_msg})
     except:
         pass
     return {
-            "code": 200,
-            "data": {
-                'list': result_list
-            }
+        "code": 200,
+        "data": {
+            'list': result_list
         }
+    }
 
 
-@router.get("/system/update")
-async def system_update():
-    await update_server()
-    await refresh_config("all", 'UpdateSystem')
+# @router.get("/system/update")
+# async def system_update():
+#     await update_server()
+#     await refresh_config("all", 'UpdateSystem')
 
 
 async def update_server():
@@ -65,7 +76,8 @@ async def update_server():
     file_path = os.path.join(os.getcwd(), relative_path)
     async with httpx.AsyncClient() as client:
         try:
-            r = await client.get(f"https://raw.githubusercontent.com/Autumn-27/ScopeSentry/main/requirements.txt", timeout=5)
+            r = await client.get(f"https://raw.githubusercontent.com/Autumn-27/ScopeSentry/main/requirements.txt",
+                                 timeout=5)
             content = r.text
             with open(file_path, "w") as f:
                 f.write(content)
@@ -97,4 +109,3 @@ async def update_server():
     result = repo.remotes.origin.pull()
     for info in result:
         print(info)
-

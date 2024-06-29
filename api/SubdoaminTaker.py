@@ -54,6 +54,7 @@ async def get_subdomaintaker_data(request_data: dict, db=Depends(get_mongo_db), 
                 "value": doc["value"],
                 "type": doc["cname"],
                 "response": doc["response"],
+                "id": str(doc["_id"])
             }
             response_data.append(data)
         return {
