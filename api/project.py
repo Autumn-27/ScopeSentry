@@ -3,7 +3,7 @@ import time
 from bson import ObjectId
 from fastapi import APIRouter, Depends, BackgroundTasks
 
-from api.task import create_scan_task
+from api.task import create_scan_task, delete_asset
 from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor
 
@@ -187,25 +187,25 @@ async def add_project_rule(request_data: dict, db=Depends(get_mongo_db), _: dict
 async def delete_project_rules(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token),
                                background_tasks: BackgroundTasks = BackgroundTasks()):
     try:
-        # Extract the list of IDs from the request_data dictionary
-        pro_id = request_data.get("id", '')
-
-        # Convert the provided rule_ids to ObjectId
-        obj_id = ObjectId(pro_id)
-
-        # Delete the SensitiveRule documents based on the provided IDs
-        result = await db.project.delete_many({"_id": {"$eq": obj_id}})
-        await db.ProjectTargetData.delete_many({"id": {"$eq": pro_id}})
+        pro_ids = request_data.get("ids", [])
+        delA = request_data.get("delA", False)
+        if delA:
+            background_tasks.add_task(delete_asset, pro_ids, db, True)
+        obj_ids = [ObjectId(poc_id) for poc_id in pro_ids]
+        result = await db.project.delete_many({"_id": {"$in": obj_ids}})
+        await db.ProjectTargetData.delete_many({"id": {"$in": pro_ids}})
         # Check if the deletion was successful
         if result.deleted_count > 0:
-            job = scheduler.get_job(pro_id)
-            if job:
-                scheduler.remove_job(pro_id)
-            background_tasks.add_task(delete_asset_project_handler, pro_id)
-            for project_id in Project_List:
-                if pro_id == Project_List[project_id]:
-                    del Project_List[project_id]
-                    break
+            for pro_id in pro_ids:
+                job = scheduler.get_job(pro_id)
+                if job:
+                    scheduler.remove_job(pro_id)
+                background_tasks.add_task(delete_asset_project_handler, pro_id)
+                for project_id in Project_List:
+                    if pro_id == Project_List[project_id]:
+                        del Project_List[project_id]
+                        break
+            await db.ScheduledTasks.delete_many({"id": {"$in": pro_ids}})
             return {"code": 200, "message": "Project deleted successfully"}
         else:
             return {"code": 404, "message": "Project not found"}
@@ -323,7 +323,8 @@ async def add_asset_project(db, domain, project_id, updata=False):
         cursor: AsyncIOMotorCursor = ((db['asset'].find(query, {
             "_id": 0, "id": {"$toString": "$_id"},
             "url": 1,
-            "host": 1
+            "host": 1,
+            "project": 1,
         })))
         result = await cursor.to_list(length=None)
         logger.debug(f"asset project null number is {len(result)}")
@@ -349,12 +350,13 @@ async def add_asset_project(db, domain, project_id, updata=False):
                         }
                         await db['asset'].update_one({"_id": ObjectId(r['id'])}, update_document)
                     else:
-                        update_document = {
-                            "$set": {
-                                "project": "",
+                        if r["project"] != "":
+                            update_document = {
+                                "$set": {
+                                    "project": "",
+                                }
                             }
-                        }
-                        await db['asset'].update_one({"_id": ObjectId(r['id'])}, update_document)
+                            await db['asset'].update_one({"_id": ObjectId(r['id'])}, update_document)
     except Exception as e:
         logger.error(f"add_asset_project error:{e}")
 
@@ -367,7 +369,8 @@ async def add_subdomain_project(db, domain, project_id, updata=False):
             query = {"project": {"$eq": ""}}
         cursor: AsyncIOMotorCursor = ((db['subdomain'].find(query, {
             "_id": 0, "id": {"$toString": "$_id"},
-            "host": 1
+            "host": 1,
+            "project": 1
         })))
         result = await cursor.to_list(length=None)
         logger.debug(f"subdomain project null number is {len(result)}")
@@ -389,12 +392,13 @@ async def add_subdomain_project(db, domain, project_id, updata=False):
                         }
                         await db['subdomain'].update_one({"_id": ObjectId(r['id'])}, update_document)
                     else:
-                        update_document = {
-                            "$set": {
-                                "project": "",
+                        if r["project"] != "":
+                            update_document = {
+                                "$set": {
+                                    "project": "",
+                                }
                             }
-                        }
-                        await db['subdomain'].update_one({"_id": ObjectId(r['id'])}, update_document)
+                            await db['subdomain'].update_one({"_id": ObjectId(r['id'])}, update_document)
     except Exception as e:
         logger.error(f"add_subdomain_project error:{e}")
 
@@ -407,7 +411,8 @@ async def add_url_project(db, domain, project_id, updata=False):
             query = {"project": {"$eq": ""}}
         cursor: AsyncIOMotorCursor = ((db['UrlScan'].find(query, {
             "_id": 0, "id": {"$toString": "$_id"},
-            "input": 1
+            "input": 1,
+            "project": 1
         })))
         result = await cursor.to_list(length=None)
         logger.debug(f"url project null number is {len(result)}")
@@ -429,12 +434,13 @@ async def add_url_project(db, domain, project_id, updata=False):
                         }
                         await db['UrlScan'].update_one({"_id": ObjectId(r['id'])}, update_document)
                     else:
-                        update_document = {
-                            "$set": {
-                                "project": "",
+                        if r["project"] != "":
+                            update_document = {
+                                "$set": {
+                                    "project": "",
+                                }
                             }
-                        }
-                        await db['UrlScan'].update_one({"_id": ObjectId(r['id'])}, update_document)
+                            await db['UrlScan'].update_one({"_id": ObjectId(r['id'])}, update_document)
     except Exception as e:
         logger.error(f"add_url_project error:{e}")
 
@@ -447,7 +453,8 @@ async def add_crawler_project(db, domain, project_id, updata=False):
             query = {"project": {"$eq": ""}}
         cursor: AsyncIOMotorCursor = ((db['crawler'].find(query, {
             "_id": 0, "id": {"$toString": "$_id"},
-            "url": 1
+            "url": 1,
+            "project": 1
         })))
         result = await cursor.to_list(length=None)
         logger.debug(f"crawler project null number is {len(result)}")
@@ -469,12 +476,13 @@ async def add_crawler_project(db, domain, project_id, updata=False):
                         }
                         await db['crawler'].update_one({"_id": ObjectId(r['id'])}, update_document)
                     else:
-                        update_document = {
-                            "$set": {
-                                "project": "",
+                        if r["project"] != "":
+                            update_document = {
+                                "$set": {
+                                    "project": "",
+                                }
                             }
-                        }
-                        await db['crawler'].update_one({"_id": ObjectId(r['id'])}, update_document)
+                            await db['crawler'].update_one({"_id": ObjectId(r['id'])}, update_document)
     except Exception as e:
         logger.error(f"add_crawler_project error:{e}")
 
@@ -487,7 +495,8 @@ async def add_sensitive_project(db, domain, project_id, updata=False):
             query = {"project": {"$eq": ""}}
         cursor: AsyncIOMotorCursor = ((db['SensitiveResult'].find(query, {
             "_id": 0, "id": {"$toString": "$_id"},
-            "url": 1
+            "url": 1,
+            "project": 1
         })))
         result = await cursor.to_list(length=None)
         logger.debug(f"sensitive project null number is {len(result)}")
@@ -509,12 +518,13 @@ async def add_sensitive_project(db, domain, project_id, updata=False):
                         }
                         await db['SensitiveResult'].update_one({"_id": ObjectId(r['id'])}, update_document)
                     else:
-                        update_document = {
-                            "$set": {
-                                "project": "",
+                        if r["project"] != "":
+                            update_document = {
+                                "$set": {
+                                    "project": "",
+                                }
                             }
-                        }
-                        await db['SensitiveResult'].update_one({"_id": ObjectId(r['id'])}, update_document)
+                            await db['SensitiveResult'].update_one({"_id": ObjectId(r['id'])}, update_document)
     except Exception as e:
         logger.error(f"add_sensitive_project error:{e}")
 
@@ -527,7 +537,8 @@ async def add_dir_project(db, domain, project_id, updata=False):
             query = {"project": {"$eq": ""}}
         cursor: AsyncIOMotorCursor = ((db['DirScanResult'].find(query, {
             "_id": 0, "id": {"$toString": "$_id"},
-            "url": 1
+            "url": 1,
+            "project": 1
         })))
         result = await cursor.to_list(length=None)
         logger.debug(f"dir project null number is {len(result)}")
@@ -549,12 +560,13 @@ async def add_dir_project(db, domain, project_id, updata=False):
                         }
                         await db['DirScanResult'].update_one({"_id": ObjectId(r['id'])}, update_document)
                     else:
-                        update_document = {
-                            "$set": {
-                                "project": "",
+                        if r["project"] != "":
+                            update_document = {
+                                "$set": {
+                                    "project": "",
+                                }
                             }
-                        }
-                        await db['DirScanResult'].update_one({"_id": ObjectId(r['id'])}, update_document)
+                            await db['DirScanResult'].update_one({"_id": ObjectId(r['id'])}, update_document)
     except Exception as e:
         logger.error(f"add_dir_project error:{e}")
 
@@ -567,7 +579,8 @@ async def add_vul_project(db, domain, project_id, updata=False):
             query = {"project": {"$eq": ""}}
         cursor: AsyncIOMotorCursor = ((db['vulnerability'].find(query, {
             "_id": 0, "id": {"$toString": "$_id"},
-            "url": 1
+            "url": 1,
+            "project": 1
         })))
         result = await cursor.to_list(length=None)
         logger.debug(f"vul project null number is {len(result)}")
@@ -589,12 +602,13 @@ async def add_vul_project(db, domain, project_id, updata=False):
                         }
                         await db['vulnerability'].update_one({"_id": ObjectId(r['id'])}, update_document)
                     else:
-                        update_document = {
-                            "$set": {
-                                "project": "",
+                        if r["project"] != "":
+                            update_document = {
+                                "$set": {
+                                    "project": "",
+                                }
                             }
-                        }
-                        await db['vulnerability'].update_one({"_id": ObjectId(r['id'])}, update_document)
+                            await db['vulnerability'].update_one({"_id": ObjectId(r['id'])}, update_document)
 
     except Exception as e:
         logger.error(f"add_vul_project error:{e}")
@@ -608,7 +622,8 @@ async def add_PageMonitoring_project(db, domain, project_id, updata=False):
             query = {"project": {"$eq": ""}}
         cursor: AsyncIOMotorCursor = ((db['PageMonitoring'].find(query, {
             "_id": 0, "id": {"$toString": "$_id"},
-            "url": 1
+            "url": 1,
+            "project": 1
         })))
         result = await cursor.to_list(length=None)
         logger.debug(f"PageMonitoring project null number is {len(result)}")
@@ -630,12 +645,13 @@ async def add_PageMonitoring_project(db, domain, project_id, updata=False):
                         }
                         await db['PageMonitoring'].update_one({"_id": ObjectId(r['id'])}, update_document)
                     else:
-                        update_document = {
-                            "$set": {
-                                "project": "",
+                        if r["project"] != "":
+                            update_document = {
+                                "$set": {
+                                    "project": "",
+                                }
                             }
-                        }
-                        await db['PageMonitoring'].update_one({"_id": ObjectId(r['id'])}, update_document)
+                            await db['PageMonitoring'].update_one({"_id": ObjectId(r['id'])}, update_document)
     except Exception as e:
         logger.error(f"add_PageMonitoring_project error:{e}")
 
@@ -648,7 +664,8 @@ async def add_SubTaker_project(db, domain, project_id, updata=False):
             query = {"project": {"$eq": ""}}
         cursor: AsyncIOMotorCursor = ((db['SubdoaminTakerResult'].find(query, {
             "_id": 0, "id": {"$toString": "$_id"},
-            "Input": 1
+            "Input": 1,
+            "project": 1
         })))
         result = await cursor.to_list(length=None)
         logger.debug(f"SubTaker project null number is {len(result)}")
@@ -670,12 +687,13 @@ async def add_SubTaker_project(db, domain, project_id, updata=False):
                         }
                         await db['SubdoaminTakerResult'].update_one({"_id": ObjectId(r['id'])}, update_document)
                     else:
-                        update_document = {
-                            "$set": {
-                                "project": "",
+                        if r["project"] != "":
+                            update_document = {
+                                "$set": {
+                                    "project": "",
+                                }
                             }
-                        }
-                        await db['SubdoaminTakerResult'].update_one({"_id": ObjectId(r['id'])}, update_document)
+                            await db['SubdoaminTakerResult'].update_one({"_id": ObjectId(r['id'])}, update_document)
     except Exception as e:
         logger.error(f"add_SubTaker_project error:{e}")
 

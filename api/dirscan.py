@@ -25,14 +25,15 @@ async def dirscan_data(request_data: dict, db=Depends(get_mongo_db), _: dict = D
             'project': 'project',
             'statuscode': 'status',
             'url': 'url',
-            'redirect': 'msg'
+            'redirect': 'msg',
+            'length': 'length'
         }
         query = await search_to_mongodb(search_query, keyword)
         if query == "" or query is None:
             return {"message": "Search condition parsing error", "code": 500}
         query = query[0]
         total_count = await db['DirScanResult'].count_documents(query)
-        cursor: AsyncIOMotorCursor = ((db['DirScanResult'].find(query, {"_id": 0})
+        cursor: AsyncIOMotorCursor = ((db['DirScanResult'].find(query, {"_id": 0, "id": {"$toString": "$_id"}, "url": 1, "status": 1, "msg":1, "length": 1})
                                        .sort([('_id', -1)])
                                        .skip((page_index - 1) * page_size)
                                        .limit(page_size)))

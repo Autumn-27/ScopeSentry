@@ -706,7 +706,7 @@ async def asset_data_statistics_icon(request_data: dict, db=Depends(get_mongo_db
                                 "iconcontent": {"$first": "$iconcontent"}
                                 }
                      },
-                    {"$match": {"_id": {"$ne": ""}}}
+                    {"$match": {"_id": {"$ne": None}}}
                 ]
             }
         }

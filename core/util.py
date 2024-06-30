@@ -13,6 +13,8 @@ from datetime import datetime, timedelta
 import json
 from urllib.parse import urlparse
 
+from core.db import get_mongo_db
+
 
 def calculate_md5_from_content(content):
     md5 = hashlib.md5()
@@ -206,6 +208,7 @@ def string_to_postfix(expression):
 
 async def search_to_mongodb(expression_raw, keyword):
     try:
+        keyword["task"] = "taskId"
         if expression_raw == "":
             return [{}]
         if len(APP) == 0:
@@ -226,7 +229,7 @@ async def search_to_mongodb(expression_raw, keyword):
                 key = key.strip()
                 if key in keyword:
                     value = value.strip("\"")
-                    if key == 'statuscode':
+                    if key == 'statuscode' or key == 'length':
                         value = int(value)
                     if key == 'project':
                         if value.lower() in Project_List:
@@ -258,7 +261,14 @@ async def search_to_mongodb(expression_raw, keyword):
                 key = key.strip()
                 if key in keyword:
                     value = value.strip("\"")
-                    if key == 'statuscode':
+                    if key == "task":
+                        async for db in get_mongo_db():
+                            query = {"name": {"$eq": value}}
+                            doc = await db.task.find_one(query)
+                            if doc is not None:
+                                taskid = str(doc.get("_id"))
+                                value = taskid
+                    if key == 'statuscode' or key == 'length':
                         value = int(value)
                     if key == 'project':
                         if value.lower() in Project_List:

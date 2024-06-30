@@ -7,13 +7,18 @@ import os
 
 from bson import ObjectId
 
-from core.util import *
 from loguru import logger
 current_directory = os.getcwd()
 
 dict_directory = "dicts"
 
 combined_directory = os.path.join(current_directory, dict_directory)
+
+
+def read_json_file(file_path):
+    with open(file_path, encoding='utf-8') as f:
+        data = json.load(f)
+    return data
 
 
 def get_domainDict():
@@ -45,6 +50,13 @@ def get_poc():
         d.pop('_id', None)
     return data
 
+
+def get_finger():
+    fingerPath = os.path.join(combined_directory, "ScopeSentry.FingerprintRules.json")
+    data = read_json_file(fingerPath)
+    for d in data:
+        d.pop('_id', None)
+    return data
 
 def get_project_data():
     project_path = os.path.join(combined_directory, "ScopeSentry.project.json")

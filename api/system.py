@@ -43,7 +43,7 @@ async def get_system_version(redis_con=Depends(get_redis_pool), _: dict = Depend
                 scan_lversion = r_json["scan"]
                 scan_msg = r_json['scan_msg']
             except Exception as e:
-                logger.error(traceback.format_exc())
+                # logger.error(traceback.format_exc())
                 logger.error(f"An unexpected error occurred: {e}")
 
     result_list = [{"name": "ScopeSentry-Server", "cversion": VERSION, "lversion": server_lversion, "msg": server_msg}]

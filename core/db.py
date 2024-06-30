@@ -8,7 +8,6 @@ from urllib.parse import quote_plus
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCursor
 from core.default import *
 from core.config import *
-from core.util import string_to_postfix
 from loguru import logger
 
 
@@ -33,11 +32,11 @@ async def create_database():
                                             serverSelectionTimeoutMS=2000)
                 break
             except Exception as e:
-                time.sleep(5)
+                time.sleep(10)
                 check_flag += 1
-                if check_flag == 5:
+                if check_flag == 10:
                     logger.error(f"Error re creating database: {e}")
-                    exit(0)
+                    exit(1)
         # 获取数据库列表
         database_names = await client.list_database_names()
 
@@ -120,22 +119,8 @@ async def create_database():
             await collection.insert_many(target_data)
 
             collection = client[DATABASE_NAME]["FingerprintRules"]
-            fingerprint_rules = get_fingerprint_data()
-            for rule in fingerprint_rules:
-                express = string_to_postfix(rule['rule'])
-                if express == "":
-                    continue
-                default_rule = {
-                    'name': rule['product'],
-                    'rule': rule['rule'],
-                    'express': express,
-                    'category': rule['category'],
-                    'parent_category': rule['parent_category'],
-                    'company': rule['company'],
-                    'amount': 0,
-                    'state': True
-                }
-                await collection.insert_one(default_rule)
+            fingerprint = get_finger()
+            await collection.insert_many(fingerprint)
         else:
             collection = client[DATABASE_NAME]["config"]
             result = await collection.find_one({"name": "timezone"})

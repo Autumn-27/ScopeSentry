@@ -70,6 +70,10 @@ async def get_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict = 
 async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token), redis_con=Depends(get_redis_pool)):
     try:
         name = request_data.get("name")
+        cursor = db.task.find({"name": {"$eq": name}}, {"_id": 1})
+        results = await cursor.to_list(length=None)
+        if len(results) != 0:
+            return {"code": 400, "message": "name already exists"}
         target = request_data.get("target", "")
         node = request_data.get("node")
         if name == "" or target == "" or node == []:
@@ -160,10 +164,11 @@ async def task_content(request_data: dict, db=Depends(get_mongo_db), _: dict = D
 
 
 @router.post("/task/delete")
-async def delete_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token), redis_con=Depends(get_redis_pool)):
+async def delete_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token), redis_con=Depends(get_redis_pool), background_tasks: BackgroundTasks = BackgroundTasks()):
     try:
         # Extract the list of IDs from the request_data dictionary
         task_ids = request_data.get("ids", [])
+        delA = request_data.get("delA", False)
 
         # Convert the provided rule_ids to ObjectId
         obj_ids = []
@@ -171,6 +176,12 @@ async def delete_task(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         for task_id in task_ids:
             obj_ids.append(ObjectId(task_id))
             redis_key.append("TaskInfo:" + task_id)
+            job = scheduler.get_job(task_id)
+            if job:
+                scheduler.remove_job(task_id)
+        await db.ScheduledTasks.delete_many({"id": {"$in": task_ids}})
+        if delA:
+            background_tasks.add_task(delete_asset, task_ids, db)
         await redis_con.delete(*redis_key)
         # Delete the SensitiveRule documents based on the provided IDs
         result = await db.task.delete_many({"_id": {"$in": obj_ids}})
@@ -514,6 +525,7 @@ async def progress_info(request_data: dict, _: dict = Depends(verify_token), red
         }
     }
 
+
 async def scheduler_scan_task(id):
     logger.info(f"Scheduler scan {id}")
     async for db in get_mongo_db():
@@ -544,3 +556,21 @@ async def scheduler_scan_task(id):
                 if t != "" and t not in targetList:
                     targetList.append(t)
             await create_scan_task(doc, task_id, targetList, redis)
+
+
+async def delete_asset(task_ids, db, is_project = False):
+    key = ["asset", "subdomain", "SubdoaminTakerResult", "UrlScan", "crawler", "SensitiveResult", "DirScanResult", "vulnerability", "PageMonitoring"]
+    del_query = {"taskId": {"$in": task_ids}}
+    if is_project:
+        del_query = {
+                        "$or": [
+                            {"taskId": {"$in": task_ids}},
+                            {"project": {"$in": task_ids}}
+                        ]
+                    }
+    for k in key:
+        result = await db[k].delete_many(del_query)
+        if result.deleted_count > 0:
+            logger.info("Deleted {} {} documents".format(k, result.deleted_count))
+        else:
+            logger.info("Deleted {} None documents".format(k))
