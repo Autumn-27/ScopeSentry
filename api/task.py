@@ -16,7 +16,7 @@ from core.apscheduler_handler import scheduler
 from core.db import get_mongo_db
 from core.redis_handler import get_redis_pool, check_redis_task_target_is_null
 from core.util import *
-from api.node import get_redis_online_data
+from api.node import get_redis_online_data, get_node_all
 from api.page_monitoring import get_page_monitoring_data
 router = APIRouter()
 
@@ -254,7 +254,7 @@ async def create_scan_task(request_data, id, targetList, redis_con):
     try:
         request_data["id"] = str(id)
         if request_data['allNode']:
-            request_data["node"] = await get_redis_online_data(redis_con)
+            request_data["node"] = await get_node_all(redis_con)
 
         keys_to_delete = [
             f"TaskInfo:tmp:{id}",

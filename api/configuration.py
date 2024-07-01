@@ -118,3 +118,20 @@ async def save_system_data(data: dict, db=Depends(get_mongo_db), _: dict = Depen
         return {"message": "error", "code": 500}
 
 
+@router.get("/system/deduplication/config")
+async def get_deduplication_config(_: dict = Depends(verify_token), db=Depends(get_mongo_db)):
+    try:
+        # 查询所有 type 为 "system" 的文档
+        cursor = await db.config.find_one({"name": "deduplication"})
+        deduplication_data = {}
+
+        async for document in cursor:
+            deduplication_data[document["name"]] = document["value"]
+        return {
+            "code": 200,
+            "data": deduplication_data
+        }
+    except Exception as e:
+        logger.error(str(e))
+        # 根据需要处理异常
+        return {"message": "error", "code": 500}

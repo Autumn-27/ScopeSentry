@@ -150,3 +150,20 @@ async def get_redis_online_data(redis_con):
                     else:
                         result.append(name)
         return result
+
+
+async def get_node_all(redis_con):
+    try:
+        result = []
+        async with redis_con as redis:
+            # 获取所有以 node: 开头的键
+            keys = await redis.keys("node:*")
+            for key in keys:
+                name = key.split(":")[1]
+                hash_data = await redis.hgetall(key)
+                if hash_data.get('state') != '2':
+                    result.append(name)
+
+        return result
+    except:
+        return []

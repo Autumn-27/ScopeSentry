@@ -47,7 +47,7 @@ Scope Sentry是一款具有资产测绘、子域名枚举、信息泄露检测�
 
 Discord:
 
-[https://discord.gg/agsYdAyN](https://discord.gg/agsYdAyN)
+[https://discord.gg/GWVwSBBm48](https://discord.gg/GWVwSBBm48)
 
 QQ:
 

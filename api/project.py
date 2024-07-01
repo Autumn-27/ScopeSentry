@@ -170,7 +170,7 @@ async def add_project_rule(request_data: dict, db=Depends(get_mongo_db), _: dict
                     {"id": str(result.inserted_id), "name": name, 'hour': hour, 'type': 'Project', 'state': True,
                      'lastTime': get_now_time(), 'nextTime': formatted_time, 'runner_id': str(result.inserted_id)})
                 await scheduler_project(str(result.inserted_id))
-            background_tasks.add_task(update_project, tmsg, str(result.inserted_id))
+            background_tasks.add_task(update_project, root_domains, str(result.inserted_id))
             await refresh_config('all', 'project')
             Project_List[name] = str(result.inserted_id)
             return {"code": 200, "message": "Project added successfully"}
@@ -239,7 +239,9 @@ async def update_project_data(request_data: dict, db=Depends(get_mongo_db), _: d
                                       id=str(pro_id), jobstore='mongo')
                     await db.ScheduledTasks.update_one({"id": pro_id}, {"$set": {'state': True}})
                 else:
-                    scheduler.remove_job(pro_id)
+                    job = scheduler.get_job(pro_id)
+                    if job is not None:
+                        scheduler.remove_job(pro_id)
                     await db.ScheduledTasks.update_one({"id": pro_id}, {"$set": {'state': False}})
             else:
                 if newScheduledTasks:
@@ -278,7 +280,7 @@ async def update_project_data(request_data: dict, db=Depends(get_mongo_db), _: d
                     new_root_domain.append(t_root_domain)
             request_data["root_domains"] = new_root_domain
             await db.ProjectTargetData.update_one({"id": pro_id}, update_document)
-            background_tasks.add_task(change_update_project, new_targets.strip().strip('\n'), pro_id)
+            background_tasks.add_task(update_project, new_root_domain, pro_id, True)
         if old_name != new_name:
             del Project_List[old_name]
             Project_List[new_name] = pro_id
@@ -300,415 +302,72 @@ async def update_project_data(request_data: dict, db=Depends(get_mongo_db), _: d
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
 
-
-async def change_update_project(domain, project_id):
+async def update_project(root_domain, project_id, change=False):
+    asset_collection_list = {
+                        'asset': ["url", "host", "ip"],
+                        'subdomain': ["host", "ip"],
+                        'DirScanResult': ["url"],
+                        'vulnerability': ["url"],
+                        'SubdoaminTakerResult': ["input"],
+                        'PageMonitoring': ["url"],
+                        'SensitiveResult': ["url"],
+                        'UrlScan': ["input"],
+                        'crawler': ["url"]}
     async for db in get_mongo_db():
-        await add_asset_project(db, domain, project_id, True)
-        await add_subdomain_project(db, domain, project_id, True)
-        await add_dir_project(db, domain, project_id, True)
-        await add_vul_project(db, domain, project_id, True)
-        await add_SubTaker_project(db, domain, project_id, True)
-        await add_PageMonitoring_project(db, domain, project_id, True)
-        await add_sensitive_project(db, domain, project_id, True)
-        await add_url_project(db, domain, project_id, True)
-        await add_crawler_project(db, domain, project_id, True)
+        for a in asset_collection_list:
+            if change:
+                await asset_update_project(root_domain, asset_collection_list[a], a, db, project_id)
+            else:
+                await asset_add_project(root_domain, asset_collection_list[a], a, db, project_id)
 
 
-async def add_asset_project(db, domain, project_id, updata=False):
-    try:
-        if updata:
-            query = {"$or": [{"project": ""}, {"project": project_id}]}
-        else:
-            query = {"project": {"$eq": ""}}
-        cursor: AsyncIOMotorCursor = ((db['asset'].find(query, {
-            "_id": 0, "id": {"$toString": "$_id"},
-            "url": 1,
-            "host": 1,
-            "project": 1,
-        })))
-        result = await cursor.to_list(length=None)
-        logger.debug(f"asset project null number is {len(result)}")
-        if len(result) != 0:
-            domain_root_list = []
-            for d in domain.split("\n"):
-                u = get_root_domain(d)
-                if u not in domain_root_list:
-                    domain_root_list.append(u)
-            for r in result:
-                url = ""
-                if "url" in r:
-                    url = r['url']
-                else:
-                    url = r['host']
-                if url != "":
-                    targer_url = get_root_domain(url)
-                    if targer_url in domain_root_list:
-                        update_document = {
-                            "$set": {
-                                "project": project_id,
-                            }
-                        }
-                        await db['asset'].update_one({"_id": ObjectId(r['id'])}, update_document)
-                    else:
-                        if r["project"] != "":
-                            update_document = {
-                                "$set": {
-                                    "project": "",
-                                }
-                            }
-                            await db['asset'].update_one({"_id": ObjectId(r['id'])}, update_document)
-    except Exception as e:
-        logger.error(f"add_asset_project error:{e}")
+async def asset_add_project(root_domain, db_key, doc_name, db, project_id):
+    regex_patterns = [f".*{domain}.*" for domain in root_domain]
+    pattern = "|".join(regex_patterns)
+    # 构建查询条件
+    query = {
+        "$and": [
+            {
+                "$or": [
+                    {key: {"$regex": pattern, "$options": "i"}} for key in db_key
+                ]
+            },
+            {"project": {"$exists": True, "$eq": ""}}
+        ]
+    }
+    update_query = {
+        "$set": {
+            "project": project_id
+        }
+    }
+    result = await db[doc_name].update_many(query, update_query)
+    # 打印更新的文档数量
+    logger.info(f"Updated {doc_name} {result.modified_count} documents")
 
 
-async def add_subdomain_project(db, domain, project_id, updata=False):
-    try:
-        if updata:
-            query = {"$or": [{"project": ""}, {"project": project_id}]}
-        else:
-            query = {"project": {"$eq": ""}}
-        cursor: AsyncIOMotorCursor = ((db['subdomain'].find(query, {
-            "_id": 0, "id": {"$toString": "$_id"},
-            "host": 1,
-            "project": 1
-        })))
-        result = await cursor.to_list(length=None)
-        logger.debug(f"subdomain project null number is {len(result)}")
-        if len(result) != 0:
-            domain_root_list = []
-            for d in domain.split("\n"):
-                u = get_root_domain(d)
-                if u not in domain_root_list:
-                    domain_root_list.append(u)
-            for r in result:
-                url = r['host']
-                if url != "":
-                    targer_url = get_root_domain(url)
-                    if targer_url in domain_root_list:
-                        update_document = {
-                            "$set": {
-                                "project": project_id,
-                            }
-                        }
-                        await db['subdomain'].update_one({"_id": ObjectId(r['id'])}, update_document)
-                    else:
-                        if r["project"] != "":
-                            update_document = {
-                                "$set": {
-                                    "project": "",
-                                }
-                            }
-                            await db['subdomain'].update_one({"_id": ObjectId(r['id'])}, update_document)
-    except Exception as e:
-        logger.error(f"add_subdomain_project error:{e}")
-
-
-async def add_url_project(db, domain, project_id, updata=False):
-    try:
-        if updata:
-            query = {"$or": [{"project": ""}, {"project": project_id}]}
-        else:
-            query = {"project": {"$eq": ""}}
-        cursor: AsyncIOMotorCursor = ((db['UrlScan'].find(query, {
-            "_id": 0, "id": {"$toString": "$_id"},
-            "input": 1,
-            "project": 1
-        })))
-        result = await cursor.to_list(length=None)
-        logger.debug(f"url project null number is {len(result)}")
-        if len(result) != 0:
-            domain_root_list = []
-            for d in domain.split("\n"):
-                u = get_root_domain(d)
-                if u not in domain_root_list:
-                    domain_root_list.append(u)
-            for r in result:
-                url = r['input']
-                if url != "":
-                    targer_url = get_root_domain(url)
-                    if targer_url in domain_root_list:
-                        update_document = {
-                            "$set": {
-                                "project": project_id,
-                            }
-                        }
-                        await db['UrlScan'].update_one({"_id": ObjectId(r['id'])}, update_document)
-                    else:
-                        if r["project"] != "":
-                            update_document = {
-                                "$set": {
-                                    "project": "",
-                                }
-                            }
-                            await db['UrlScan'].update_one({"_id": ObjectId(r['id'])}, update_document)
-    except Exception as e:
-        logger.error(f"add_url_project error:{e}")
-
-
-async def add_crawler_project(db, domain, project_id, updata=False):
-    try:
-        if updata:
-            query = {"$or": [{"project": ""}, {"project": project_id}]}
-        else:
-            query = {"project": {"$eq": ""}}
-        cursor: AsyncIOMotorCursor = ((db['crawler'].find(query, {
-            "_id": 0, "id": {"$toString": "$_id"},
-            "url": 1,
-            "project": 1
-        })))
-        result = await cursor.to_list(length=None)
-        logger.debug(f"crawler project null number is {len(result)}")
-        if len(result) != 0:
-            domain_root_list = []
-            for d in domain.split("\n"):
-                u = get_root_domain(d)
-                if u not in domain_root_list:
-                    domain_root_list.append(u)
-            for r in result:
-                url = r['url']
-                if url != "":
-                    targer_url = get_root_domain(url)
-                    if targer_url in domain_root_list:
-                        update_document = {
-                            "$set": {
-                                "project": project_id,
-                            }
-                        }
-                        await db['crawler'].update_one({"_id": ObjectId(r['id'])}, update_document)
-                    else:
-                        if r["project"] != "":
-                            update_document = {
-                                "$set": {
-                                    "project": "",
-                                }
-                            }
-                            await db['crawler'].update_one({"_id": ObjectId(r['id'])}, update_document)
-    except Exception as e:
-        logger.error(f"add_crawler_project error:{e}")
-
-
-async def add_sensitive_project(db, domain, project_id, updata=False):
-    try:
-        if updata:
-            query = {"$or": [{"project": ""}, {"project": project_id}]}
-        else:
-            query = {"project": {"$eq": ""}}
-        cursor: AsyncIOMotorCursor = ((db['SensitiveResult'].find(query, {
-            "_id": 0, "id": {"$toString": "$_id"},
-            "url": 1,
-            "project": 1
-        })))
-        result = await cursor.to_list(length=None)
-        logger.debug(f"sensitive project null number is {len(result)}")
-        if len(result) != 0:
-            domain_root_list = []
-            for d in domain.split("\n"):
-                u = get_root_domain(d)
-                if u not in domain_root_list:
-                    domain_root_list.append(u)
-            for r in result:
-                url = r['url']
-                if url != "":
-                    targer_url = get_root_domain(url)
-                    if targer_url in domain_root_list:
-                        update_document = {
-                            "$set": {
-                                "project": project_id,
-                            }
-                        }
-                        await db['SensitiveResult'].update_one({"_id": ObjectId(r['id'])}, update_document)
-                    else:
-                        if r["project"] != "":
-                            update_document = {
-                                "$set": {
-                                    "project": "",
-                                }
-                            }
-                            await db['SensitiveResult'].update_one({"_id": ObjectId(r['id'])}, update_document)
-    except Exception as e:
-        logger.error(f"add_sensitive_project error:{e}")
-
-
-async def add_dir_project(db, domain, project_id, updata=False):
-    try:
-        if updata:
-            query = {"$or": [{"project": ""}, {"project": project_id}]}
-        else:
-            query = {"project": {"$eq": ""}}
-        cursor: AsyncIOMotorCursor = ((db['DirScanResult'].find(query, {
-            "_id": 0, "id": {"$toString": "$_id"},
-            "url": 1,
-            "project": 1
-        })))
-        result = await cursor.to_list(length=None)
-        logger.debug(f"dir project null number is {len(result)}")
-        if len(result) != 0:
-            domain_root_list = []
-            for d in domain.split("\n"):
-                u = get_root_domain(d)
-                if u not in domain_root_list:
-                    domain_root_list.append(u)
-            for r in result:
-                url = r['url']
-                if url != "":
-                    targer_url = get_root_domain(url)
-                    if targer_url in domain_root_list:
-                        update_document = {
-                            "$set": {
-                                "project": project_id,
-                            }
-                        }
-                        await db['DirScanResult'].update_one({"_id": ObjectId(r['id'])}, update_document)
-                    else:
-                        if r["project"] != "":
-                            update_document = {
-                                "$set": {
-                                    "project": "",
-                                }
-                            }
-                            await db['DirScanResult'].update_one({"_id": ObjectId(r['id'])}, update_document)
-    except Exception as e:
-        logger.error(f"add_dir_project error:{e}")
-
-
-async def add_vul_project(db, domain, project_id, updata=False):
-    try:
-        if updata:
-            query = {"$or": [{"project": ""}, {"project": project_id}]}
-        else:
-            query = {"project": {"$eq": ""}}
-        cursor: AsyncIOMotorCursor = ((db['vulnerability'].find(query, {
-            "_id": 0, "id": {"$toString": "$_id"},
-            "url": 1,
-            "project": 1
-        })))
-        result = await cursor.to_list(length=None)
-        logger.debug(f"vul project null number is {len(result)}")
-        if len(result) != 0:
-            domain_root_list = []
-            for d in domain.split("\n"):
-                u = get_root_domain(d)
-                if u not in domain_root_list:
-                    domain_root_list.append(u)
-            for r in result:
-                url = r['url']
-                if url != "":
-                    targer_url = get_root_domain(url)
-                    if targer_url in domain_root_list:
-                        update_document = {
-                            "$set": {
-                                "project": project_id,
-                            }
-                        }
-                        await db['vulnerability'].update_one({"_id": ObjectId(r['id'])}, update_document)
-                    else:
-                        if r["project"] != "":
-                            update_document = {
-                                "$set": {
-                                    "project": "",
-                                }
-                            }
-                            await db['vulnerability'].update_one({"_id": ObjectId(r['id'])}, update_document)
-
-    except Exception as e:
-        logger.error(f"add_vul_project error:{e}")
-
-
-async def add_PageMonitoring_project(db, domain, project_id, updata=False):
-    try:
-        if updata:
-            query = {"$or": [{"project": ""}, {"project": project_id}]}
-        else:
-            query = {"project": {"$eq": ""}}
-        cursor: AsyncIOMotorCursor = ((db['PageMonitoring'].find(query, {
-            "_id": 0, "id": {"$toString": "$_id"},
-            "url": 1,
-            "project": 1
-        })))
-        result = await cursor.to_list(length=None)
-        logger.debug(f"PageMonitoring project null number is {len(result)}")
-        if len(result) != 0:
-            domain_root_list = []
-            for d in domain.split("\n"):
-                u = get_root_domain(d)
-                if u not in domain_root_list:
-                    domain_root_list.append(u)
-            for r in result:
-                url = r['url']
-                if url != "":
-                    targer_url = get_root_domain(url)
-                    if targer_url in domain_root_list:
-                        update_document = {
-                            "$set": {
-                                "project": project_id,
-                            }
-                        }
-                        await db['PageMonitoring'].update_one({"_id": ObjectId(r['id'])}, update_document)
-                    else:
-                        if r["project"] != "":
-                            update_document = {
-                                "$set": {
-                                    "project": "",
-                                }
-                            }
-                            await db['PageMonitoring'].update_one({"_id": ObjectId(r['id'])}, update_document)
-    except Exception as e:
-        logger.error(f"add_PageMonitoring_project error:{e}")
-
-
-async def add_SubTaker_project(db, domain, project_id, updata=False):
-    try:
-        if updata:
-            query = {"$or": [{"project": ""}, {"project": project_id}]}
-        else:
-            query = {"project": {"$eq": ""}}
-        cursor: AsyncIOMotorCursor = ((db['SubdoaminTakerResult'].find(query, {
-            "_id": 0, "id": {"$toString": "$_id"},
-            "Input": 1,
-            "project": 1
-        })))
-        result = await cursor.to_list(length=None)
-        logger.debug(f"SubTaker project null number is {len(result)}")
-        if len(result) != 0:
-            domain_root_list = []
-            for d in domain.split("\n"):
-                u = get_root_domain(d)
-                if u not in domain_root_list:
-                    domain_root_list.append(u)
-            for r in result:
-                url = r['input']
-                if url != "":
-                    targer_url = get_root_domain(url)
-                    if targer_url in domain_root_list:
-                        update_document = {
-                            "$set": {
-                                "project": project_id,
-                            }
-                        }
-                        await db['SubdoaminTakerResult'].update_one({"_id": ObjectId(r['id'])}, update_document)
-                    else:
-                        if r["project"] != "":
-                            update_document = {
-                                "$set": {
-                                    "project": "",
-                                }
-                            }
-                            await db['SubdoaminTakerResult'].update_one({"_id": ObjectId(r['id'])}, update_document)
-    except Exception as e:
-        logger.error(f"add_SubTaker_project error:{e}")
-
-
-async def update_project(domain, project_id):
-    async for db in get_mongo_db():
-        await add_asset_project(db, domain, project_id)
-        await add_subdomain_project(db, domain, project_id)
-        await add_dir_project(db, domain, project_id)
-        await add_vul_project(db, domain, project_id)
-        await add_SubTaker_project(db, domain, project_id)
-        await add_PageMonitoring_project(db, domain, project_id)
-        await add_sensitive_project(db, domain, project_id)
-        await add_url_project(db, domain, project_id)
-        await add_crawler_project(db, domain, project_id)
+async def asset_update_project(root_domain, db_key, doc_name, db, project_id):
+    regex_patterns = [f".*{domain}.*" for domain in root_domain]
+    pattern = "|".join(regex_patterns)
+    # 构建查询条件
+    query = {
+        "$and": [
+            {"project": project_id},
+            {
+                "$nor": [
+                    {key: {"$regex": pattern, "$options": "i"}} for key in db_key
+                ]
+            }
+        ]
+    }
+    update_query = {
+        "$set": {
+            "project": ""
+        }
+    }
+    result = await db[doc_name].update_many(query, update_query)
+    # 打印更新的文档数量
+    logger.info(f"Updated {doc_name} {result.modified_count} documents to null ")
+    await asset_add_project(root_domain, db_key, doc_name, db, project_id)
 
 
 async def delete_asset_project(db, collection, project_id):

@@ -43,14 +43,14 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
     try:
         if len(APP) == 0:
             collection = db["FingerprintRules"]
-            cursor = collection.find({}, {"_id": 1, "name": 1})
+            cursor = await collection.find({}, {"_id": 1, "name": 1})
             async for document in cursor:
                 document['id'] = str(document['_id'])
                 del document['_id']
                 APP[document['id']] = document['name']
         if len(SensitiveRuleList) == 0:
             collection = db["SensitiveRule"]
-            cursor = collection.find({}, {"_id": 1, "name": 1})
+            cursor = await collection.find({}, {"_id": 1, "name": 1})
             async for document in cursor:
                 document['id'] = str(document['_id'])
                 del document['_id']

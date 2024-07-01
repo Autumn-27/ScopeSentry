@@ -4,6 +4,7 @@
 # @version:
 import json
 import os
+from urllib.parse import urlparse
 
 from bson import ObjectId
 
@@ -58,6 +59,7 @@ def get_finger():
         d.pop('_id', None)
     return data
 
+
 def get_project_data():
     project_path = os.path.join(combined_directory, "ScopeSentry.project.json")
     data = read_json_file(project_path)
@@ -68,8 +70,9 @@ def get_project_data():
         tmp = []
         for t in d['target'].split('\n'):
             root_domain = get_root_domain(t)
-            if root_domain not in tmp:
-                tmp.append(root_domain)
+            if root_domain is not None and root_domain != "":
+                if root_domain not in tmp:
+                    tmp.append(root_domain)
         d["root_domains"] = tmp
         d['_id'] = ObjectId(project_id)
         target_data.append({"id": project_id, "target": d['target']})
@@ -503,3 +506,50 @@ def get_fingerprint_data():
     except FileNotFoundError:
         logger.error("文件不存在")
     return json.loads(fingerprint)
+
+
+def get_root_domain(url):
+    # 如果URL不带协议，添加一个默认的http协议
+    global root_domain
+    if not url.startswith(('http://', 'https://')):
+        url = 'http://' + url
+
+    parsed_url = urlparse(url)
+
+    # 检查是否为IP地址
+    try:
+        # 使用ip_address来检查
+        from ipaddress import ip_address
+        ip_address(parsed_url.netloc)
+        return parsed_url.netloc  # 如果是IP地址，直接返回
+    except ValueError:
+        pass
+
+    domain_parts = parsed_url.netloc.split('.')
+
+    # 复合域名列表
+    compound_domains = [
+    'com.cn', 'net.cn', 'org.cn', 'gov.cn', 'edu.cn', 'ac.cn', 'mil.cn',
+    'co.uk', 'org.uk', 'net.uk', 'gov.uk', 'ac.uk', 'sch.uk',
+    'co.jp', 'ne.jp', 'or.jp', 'go.jp', 'ac.jp', 'ad.jp',
+    'com.de', 'org.de', 'net.de', 'gov.de',
+    'com.ca', 'net.ca', 'org.ca', 'gov.ca',
+    'com.au', 'net.au', 'org.au', 'gov.au', 'edu.au',
+    'com.fr', 'net.fr', 'org.fr', 'gov.fr',
+    'com.br', 'com.mx', 'com.ar', 'com.ru',
+    'co.in', 'co.za',
+    'co.kr', 'com.tw'
+]
+
+    # 检查是否为复合域名
+    is_compound_domain = False
+    for compound_domain in compound_domains:
+        if domain_parts[-2:] == compound_domain.split('.'):
+            is_compound_domain = True
+            root_domain = '.'.join(domain_parts[-3:])
+            break
+
+    if not is_compound_domain:
+        root_domain = '.'.join(domain_parts[-2:])
+
+    return root_domain
