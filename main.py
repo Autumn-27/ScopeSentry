@@ -136,6 +136,17 @@ async def read_root():
     return FileResponse("static/index.html")
 
 
+# @app.on_event("shutdown")
+# async def shutdown_event():
+#     global subscriber_task
+#     if subscriber_task:
+#         subscriber_task.cancel()
+#         try:
+#             await subscriber_task
+#         except asyncio.CancelledError:
+#             pass
+
+
 class MongoDBQueryTimeMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         start_time = time.time()
