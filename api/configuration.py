@@ -168,14 +168,60 @@ async def save_deduplication_config(request_data: dict, _: dict = Depends(verify
 async def do_asset_deduplication():
     async for db in get_mongo_db():
         result = await db.config.find_one({"name": "deduplication"})
-        print(result)
+        result.pop("_id")
+        result.pop("name")
+        result.pop("hour")
+        result.pop("flag")
+        f_g_k = {
+              "DirScanResult": {
+                  "filters": [],
+                  "groups": ["url", "status", "msg"]
+              },
+              "PageMonitoring": {
+                  "filters": [],
+                  "groups": ["url"]
+              },
+              "SensitiveResult": {
+                  "filters": [],
+                  "groups": ["url"]
+              },#############
+              "SubdoaminTakerResult": {
+                  "filters": [],
+                  "groups": ["input", "value"]
+              },
+              "UrlScan": {
+                  "filters": [],
+                  "groups": ["output"]
+              },
+              "asset": {
+                  "filters": [],
+                  "groups": [""]
+              },################
+              "crawler": {
+                  "filters": [],
+                  "groups": ["url", "body"]
+              },
+              "subdomain": {
+                  "filters": [],
+                  "groups": ["host", "type", "ip"]
+              },
+              "vulnerability": {
+                  "filters": [],
+                  "groups": ["url", "vulnid", "matched"]
+              }
+            }
+        for r in result:
+            if result[r]:
+                await asset_data_dedup(db, r, )
 
 
-async def asset_data_dedup(db, filters, groups):
+async def asset_data_dedup(db, collection_name, filters, groups):
     # db[].update_many({}, {'$set': {'process_flag': timestamp}})
     # 去重http资产
+    logger.info(f"{collection_name} 开始去重")
+    collection = db[collection_name]
     timestamp = datetime.datetime.now()
-    db['asset'].update_many({}, {'$set': {'process_flag': timestamp}})
+    collection.update_many({}, {'$set': {'process_flag': timestamp}})
     filter = {
         "process_flag": timestamp
     }
@@ -183,7 +229,7 @@ async def asset_data_dedup(db, filters, groups):
         filter[f] = filters[f]
     group = {}
     for g in groups:
-        group[g] = "$" + groups[g]
+        group[g.replace(".")] = "$" + g
 
     pipeline = [
         {
@@ -203,5 +249,12 @@ async def asset_data_dedup(db, filters, groups):
         }
     ]
     latest_ids = []
-    for doc in db['asset'].aggregate(pipeline):
+    for doc in collection.aggregate(pipeline):
         latest_ids.append(doc['latestId'])
+    collection.update_many({'_id': {'$in': latest_ids}}, {'$set': {'latest': True}})
+    collection.delete_many({'process_flag': timestamp, 'latest': {'$ne': True}})
+    collection.update_many({'process_flag': timestamp}, {'$unset': {'process_flag': "", 'latest': ""}})
+    timestamp2 = datetime.datetime.now()
+    time_difference = timestamp2 - timestamp
+    time_difference_in_seconds = time_difference.total_seconds()
+    logger.info(f"{collection_name} 去重消耗时间: {time_difference_in_seconds}")

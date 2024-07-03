@@ -137,8 +137,10 @@ async def delete_sensitive_rules(request_data: dict, db=Depends(get_mongo_db), _
         rule_ids = request_data.get("ids", [])
 
         # Convert the provided rule_ids to ObjectId
-        obj_ids = [ObjectId(rule_id) for rule_id in rule_ids]
-
+        obj_ids = []
+        for rule_id in rule_ids:
+            if rule_id != None and rule_id != "":
+                obj_ids.append(ObjectId(rule_id))
         # Delete the SensitiveRule documents based on the provided IDs
         result = await db.SensitiveRule.delete_many({"_id": {"$in": obj_ids}})
 
@@ -175,6 +177,14 @@ async def get_sensitive_result_rules(request_data: dict, db=Depends(get_mongo_db
         if query == "" or query is None:
             return {"message": "Search condition parsing error", "code": 500}
         query = query[0]
+        filter = request_data.get("filter", {})
+        if filter:
+            query["$and"] = []
+            for f in filter:
+                tmp_or = []
+                for v in filter[f]:
+                    tmp_or.append({f: v})
+                query["$and"].append({"$or": tmp_or})
         total_count = await db['SensitiveResult'].count_documents(query)
         cursor: AsyncIOMotorCursor = ((db['SensitiveResult'].find(query, {"_id": 0,
                                                                 "id": {"$toString": "$_id"},
@@ -210,6 +220,85 @@ async def get_sensitive_result_rules(request_data: dict, db=Depends(get_mongo_db
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error","code":500}
+
+
+@router.post("/sensitive/result/data2")
+async def get_sensitive_result_rules(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    try:
+        search_query = request_data.get("search", "")
+        page_index = request_data.get("pageIndex", 1)
+        page_size = request_data.get("pageSize", 10)
+        keyword = {
+            'url': 'url',
+            'sname': 'sid',
+            "body": "body",
+            "info": "match",
+            'project': 'project',
+            'md5': 'md5'
+        }
+        query = await search_to_mongodb(search_query, keyword)
+        if query == "" or query is None:
+            return {"message": "Search condition parsing error", "code": 500}
+        query = query[0]
+        total_count = await db['SensitiveResult'].count_documents(query)
+        pipeline = [
+            {
+                "$match": query  # 增加搜索条件
+            },
+            {
+                "$project": {
+                    "_id": 1,
+                    "url": 1,
+                    "time": 1,
+                    "sid": 1,
+                    "match": 1,
+                    "color": 1
+                }
+            },
+            {
+                "$sort": {"_id": DESCENDING}  # 按时间降序排序
+            },
+            {
+                "$group": {
+                    "_id": "$url",
+                    "time": {"$first": "$time"},  # 记录相同url下最早插入数据的时间
+                    "url": {"$first": "$url"},
+                    "body_id": {"$last": {"$toString": "$_id"}},  # 记录相同url下最早插入数据的_id
+                    "children": {
+                        "$push": {
+                            "id": {"$toString": "$_id"},
+                            "name": "$sid",
+                            "color": "$color",
+                            "match": "$match",
+                            "time": "$time"
+                        }
+                    }
+                }
+            },
+            {
+                "$sort": {"time": DESCENDING}  # 按每组的最新时间降序排序
+            },
+            {
+                "$skip": (page_index - 1) * page_size  # 跳过前面的URL，用于分页
+            },
+            {
+                "$limit": page_size  # 获取当前页的URL
+            }
+        ]
+        # 执行聚合查询
+        result = await db['SensitiveResult'].aggregate(pipeline).to_list(None)
+        return {
+            "code": 200,
+            "data": {
+                'list': result,
+                'total': total_count
+            }
+        }
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
+        return {"message": "error","code":500}
+
 
 
 @router.post("/sensitive/result/body")
