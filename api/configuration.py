@@ -177,14 +177,14 @@ async def do_asset_deduplication():
                   "filters": [],
                   "groups": ["url", "status", "msg"]
               },
-              "PageMonitoring": {
-                  "filters": [],
-                  "groups": ["url"]
-              },
-              "SensitiveResult": {
-                  "filters": [],
-                  "groups": ["url"]
-              },#############
+              # "PageMonitoring": {
+              #     "filters": [],
+              #     "groups": ["url"]
+              # },
+              # "SensitiveResult": {
+              #     "filters": [],
+              #     "groups": ["url"]
+              # },
               "SubdoaminTakerResult": {
                   "filters": [],
                   "groups": ["input", "value"]
@@ -196,7 +196,7 @@ async def do_asset_deduplication():
               "asset": {
                   "filters": [],
                   "groups": [""]
-              },################
+              },
               "crawler": {
                   "filters": [],
                   "groups": ["url", "body"]
@@ -205,14 +205,24 @@ async def do_asset_deduplication():
                   "filters": [],
                   "groups": ["host", "type", "ip"]
               },
-              "vulnerability": {
-                  "filters": [],
-                  "groups": ["url", "vulnid", "matched"]
-              }
+              # "vulnerability": {
+              #     "filters": [],
+              #     "groups": ["url", "vulnid", "matched"]
+              # }
             }
         for r in result:
             if result[r]:
-                await asset_data_dedup(db, r, )
+                if r in f_g_k:
+                    if r == "asset":
+                        # http资产去重
+                        http_filter = [{"type": {"$ne": "other"}}]
+                        http_group = ["url", "statuscode", "hashes.body_mmh3"]
+                        await asset_data_dedup(db, r, http_filter, http_group)
+                        other_filter = [{"type":"other"}]
+                        other_group = ["host", "ip", "protocol"]
+                        await asset_data_dedup(db, r, other_filter, other_group)
+                    else:
+                        await asset_data_dedup(db, r, f_g_k[r]['filters'], f_g_k[r]['groups'])
 
 
 async def asset_data_dedup(db, collection_name, filters, groups):

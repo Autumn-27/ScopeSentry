@@ -11,7 +11,6 @@ from pymongo import ASCENDING, DESCENDING
 from loguru import logger
 from core.redis_handler import refresh_config
 from core.util import *
-from core.config import POC_LIST
 router = APIRouter()
 
 
@@ -124,7 +123,6 @@ async def update_poc_data(request_data: dict, db=Depends(get_mongo_db), _: dict 
         result = await db.PocList.update_one({"_id": ObjectId(poc_id)}, update_document)
         # Check if the update was successful
         if result:
-            POC_LIST[poc_id] = level
             await refresh_config('all', 'poc')
             return {"message": "Data updated successfully", "code": 200}
         else:
@@ -160,7 +158,6 @@ async def add_poc_data(request_data: dict, db=Depends(get_mongo_db), _: dict = D
 
         # Check if the insertion was successful
         if result.inserted_id:
-            POC_LIST[str(result.inserted_id)] = level
             await refresh_config('all', 'poc')
             return {"message": "Data added successfully", "code": 200}
         else:
@@ -186,9 +183,6 @@ async def delete_poc_rules(request_data: dict, db=Depends(get_mongo_db), _: dict
 
         # Check if the deletion was successful
         if result.deleted_count > 0:
-            for pid in poc_ids:
-                if pid in POC_LIST:
-                    del POC_LIST[pid]
             return {"code": 200, "message": "Poc deleted successfully"}
         else:
             return {"code": 404, "message": "Poc not found"}

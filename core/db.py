@@ -133,7 +133,6 @@ async def create_database():
                     {"id": "page_monitoring", "name": "Page Monitoring", 'hour': 24, 'type': 'Page Monitoring', 'state': True})
         await get_fingerprint(client[DATABASE_NAME])
         await get_sens_rule(client[DATABASE_NAME])
-        await get_pocList(client[DATABASE_NAME])
         await get_project(client[DATABASE_NAME])
     except Exception as e:
         # 处理异常
@@ -164,14 +163,6 @@ async def get_sens_rule(client):
             "name": document['name'],
             "color": document['color']
         }
-
-
-async def get_pocList(client):
-    collection = client["PocList"]
-    cursor = collection.find({}, {"_id": 1, "level": 1})
-    async for document in cursor:
-        document['id'] = str(document['_id'])
-        POC_LIST[document['id']] = document['level']
 
 
 async def get_project(client):

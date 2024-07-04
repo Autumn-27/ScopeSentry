@@ -68,7 +68,7 @@ async def get_projects_data(request_data: dict, db=Depends(get_mongo_db), _: dic
         for result in results:
             result["AssetCount"] = result.get("AssetCount", 0)
             result_list[tag].append(result)
-            background_tasks.add_task(update_project_count, db=db, id=result["id"])
+            background_tasks.add_task(update_project_count, id=result["id"])
 
     return {
         "code": 200,
@@ -79,15 +79,16 @@ async def get_projects_data(request_data: dict, db=Depends(get_mongo_db), _: dic
     }
 
 
-async def update_project_count(db, id):
-    query = {"project": {"$eq": id}}
-    total_count = await db['asset'].count_documents(query)
-    update_document = {
-        "$set": {
-            "AssetCount": total_count
+async def update_project_count(id):
+    async for db in get_mongo_db():
+        query = {"project": {"$eq": id}}
+        total_count = await db['asset'].count_documents(query)
+        update_document = {
+            "$set": {
+                "AssetCount": total_count
+            }
         }
-    }
-    await db.project.update_one({"_id": ObjectId(id)}, update_document)
+        await db.project.update_one({"_id": ObjectId(id)}, update_document)
 
 
 @router.post("/project/content")
@@ -190,7 +191,7 @@ async def delete_project_rules(request_data: dict, db=Depends(get_mongo_db), _: 
         pro_ids = request_data.get("ids", [])
         delA = request_data.get("delA", False)
         if delA:
-            background_tasks.add_task(delete_asset, pro_ids, db, True)
+            background_tasks.add_task(delete_asset, pro_ids, True)
         obj_ids = [ObjectId(poc_id) for poc_id in pro_ids]
         result = await db.project.delete_many({"_id": {"$in": obj_ids}})
         await db.ProjectTargetData.delete_many({"id": {"$in": pro_ids}})

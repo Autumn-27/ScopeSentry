@@ -181,7 +181,7 @@ async def delete_task(request_data: dict, db=Depends(get_mongo_db), _: dict = De
                 scheduler.remove_job(task_id)
         await db.ScheduledTasks.delete_many({"id": {"$in": task_ids}})
         if delA:
-            background_tasks.add_task(delete_asset, task_ids, db)
+            background_tasks.add_task(delete_asset, task_ids)
         await redis_con.delete(*redis_key)
         # Delete the SensitiveRule documents based on the provided IDs
         result = await db.task.delete_many({"_id": {"$in": obj_ids}})
@@ -558,19 +558,20 @@ async def scheduler_scan_task(id):
             await create_scan_task(doc, task_id, targetList, redis)
 
 
-async def delete_asset(task_ids, db, is_project = False):
-    key = ["asset", "subdomain", "SubdoaminTakerResult", "UrlScan", "crawler", "SensitiveResult", "DirScanResult", "vulnerability", "PageMonitoring"]
-    del_query = {"taskId": {"$in": task_ids}}
-    if is_project:
-        del_query = {
-                        "$or": [
-                            {"taskId": {"$in": task_ids}},
-                            {"project": {"$in": task_ids}}
-                        ]
-                    }
-    for k in key:
-        result = await db[k].delete_many(del_query)
-        if result.deleted_count > 0:
-            logger.info("Deleted {} {} documents".format(k, result.deleted_count))
-        else:
-            logger.info("Deleted {} None documents".format(k))
+async def delete_asset(task_ids, is_project = False):
+    async for db in get_mongo_db():
+        key = ["asset", "subdomain", "SubdoaminTakerResult", "UrlScan", "crawler", "SensitiveResult", "DirScanResult", "vulnerability", "PageMonitoring"]
+        del_query = {"taskId": {"$in": task_ids}}
+        if is_project:
+            del_query = {
+                            "$or": [
+                                {"taskId": {"$in": task_ids}},
+                                {"project": {"$in": task_ids}}
+                            ]
+                        }
+        for k in key:
+            result = await db[k].delete_many(del_query)
+            if result.deleted_count > 0:
+                logger.info("Deleted {} {} documents".format(k, result.deleted_count))
+            else:
+                logger.info("Deleted {} None documents".format(k))

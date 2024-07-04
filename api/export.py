@@ -124,7 +124,7 @@ async def export_data(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         "file_size": ""
     })
     if result.inserted_id:
-        background_tasks.add_task(export_data_from_mongodb, quantity, query, file_name, index, db)
+        background_tasks.add_task(export_data_from_mongodb, quantity, query, file_name, index)
         return {"message": "Successfully added data export task", "code": 200}
     else:
         return {"message": "Failed to export data", "code": 500}
@@ -154,133 +154,134 @@ async def fetch_data(db, collection, query, quantity, project_list):
     return cursor
 
 
-async def export_data_from_mongodb(quantity, query, file_name, index, db):
-    try:
-        cursor = await fetch_data(db, index, query, quantity, Project_List)
-        result = await cursor.to_list(length=None)
-        relative_path = f'file/{file_name}.xlsx'
-        file_path = os.path.join(os.getcwd(), relative_path)
-        if index == "asset":
-            http_columns = {
-                "timestamp": "时间",
-                "tlsdata": "TLS_Data",
-                "hashes": "Hash",
-                "cdnname": "Cdn_Name",
-                "port": "端口",
-                "url": "url",
-                "title": "标题",
-                "type": "类型",
-                "error": "错误",
-                "responsebody": "响应体",
-                "host": "IP",
-                "faviconmmh3": "图标Hash",
-                "faviconpath": "faviconpath",
-                "rawheaders": "响应头",
-                "jarm": "jarm",
-                "technologies": "technologies",
-                "statuscode": "响应码",
-                "contentlength": "contentlength",
-                "cdn": "cdn",
-                "webcheck": "webcheck",
-                "project": "项目",
-                "webfinger": "指纹",
-                "iconcontent": "图标",
-                "domain": "域名"
+async def export_data_from_mongodb(quantity, query, file_name, index):
+    async for db in get_mongo_db():
+        try:
+            cursor = await fetch_data(db, index, query, quantity, Project_List)
+            result = await cursor.to_list(length=None)
+            relative_path = f'file/{file_name}.xlsx'
+            file_path = os.path.join(os.getcwd(), relative_path)
+            if index == "asset":
+                http_columns = {
+                    "timestamp": "时间",
+                    "tlsdata": "TLS_Data",
+                    "hashes": "Hash",
+                    "cdnname": "Cdn_Name",
+                    "port": "端口",
+                    "url": "url",
+                    "title": "标题",
+                    "type": "类型",
+                    "error": "错误",
+                    "responsebody": "响应体",
+                    "host": "IP",
+                    "faviconmmh3": "图标Hash",
+                    "faviconpath": "faviconpath",
+                    "rawheaders": "响应头",
+                    "jarm": "jarm",
+                    "technologies": "technologies",
+                    "statuscode": "响应码",
+                    "contentlength": "contentlength",
+                    "cdn": "cdn",
+                    "webcheck": "webcheck",
+                    "project": "项目",
+                    "webfinger": "指纹",
+                    "iconcontent": "图标",
+                    "domain": "域名"
+                }
+                other_columns = {
+                    "timestamp": "时间",
+                    "host": "域名",
+                    "ip": "IP",
+                    "port": "端口",
+                    "protocol": "协议",
+                    "tls": "TLS",
+                    "transport": "transport",
+                    "version": "版本",
+                    "raw": "banner",
+                    "project": "项目",
+                    "type": "类型"
+                }
+                other_df = pd.DataFrame()
+                http_df = pd.DataFrame()
+                for doc in result:
+                    if doc["type"] == "other":
+                        other_df = pd.concat([other_df, pd.DataFrame([doc])], ignore_index=True)
+                    else:
+                        if doc['webfinger'] is not None:
+                            webfinger = []
+                            for webfinger_id in doc['webfinger']:
+                                webfinger.append(APP[webfinger_id])
+                            doc['webfinger'] = webfinger
+                        http_df = pd.concat([http_df, pd.DataFrame([doc])], ignore_index=True)
+                try:
+                    excel_writer = pd.ExcelWriter(file_path, engine='xlsxwriter')
+                    http_df.rename(columns=http_columns, inplace=True)
+                    http_df.to_excel(excel_writer, sheet_name='HTTP Data', index=False)
+                    other_df.rename(columns=other_columns, inplace=True)
+                    other_df.to_excel(excel_writer, sheet_name='Other Data', index=False)
+                    excel_writer.close()
+                except IllegalCharacterError as e:
+                    logger.error("导出内容有不可见字符，忽略此错误")
+            else:
+                columns = {}
+                if index == "subdomain":
+                    columns = {'host': '域名', 'type': '解析类型', 'value': '解析值', 'ip': '解析IP', 'project': '项目',
+                               'time': '时间'}
+                if index == "SubdoaminTakerResult":
+                    columns = {
+                        'input': '源域名', 'value': '解析值', 'cname': '接管类型', 'response': '响应体', 'project': '项目'
+                    }
+                if index == "UrlScan":
+                    columns = {
+                        'input': '输入', 'source': '来源', 'outputtype': '输出类型', 'output': '输出',
+                        'statuscode': 'statuscode', 'length': 'length', 'time': '时间', 'project': '项目'
+                    }
+                if index == "crawler":
+                    columns = {
+                        'url': 'URL', 'method': 'Method', 'body': 'Body', 'project': '项目'
+                    }
+                if index == "SensitiveResult":
+                    columns = {
+                        'url': 'URL', 'sid': '规则名称', 'match': '匹配内容', 'project': '项目', 'body': '响应体',
+                        'color': '等级', 'time': '时间', 'md5': '响应体MD5'
+                    }
+                if index == "DirScanResult":
+                    columns = {
+                        'url': 'URL', 'status': '响应码', 'msg': '跳转', 'project': '项目'
+                    }
+                if index == "vulnerability":
+                    columns = {
+                        'url': 'URL', 'vulname': '漏洞', 'matched': '匹配', 'project': '项目', 'level': '危害等级',
+                        'time': '时间', 'request': '请求', 'response': '响应'
+                    }
+                if index == "PageMonitoring":
+                    columns = {
+                        'url': 'URL', 'content': '响应体', 'hash': '响应体Hash', 'diff': 'Diff',
+                        'state': '状态', 'project': '项目', 'time': '时间'
+                    }
+                try:
+                    df = pd.DataFrame(result)
+                    df.rename(columns=columns, inplace=True)
+                    df.to_excel(file_path, index=False)
+                except IllegalCharacterError as e:
+                    logger.error("导出内容有不可见字符，忽略此错误")
+            file_size = os.path.getsize(file_path) / (1024 * 1024)  # kb
+            update_document = {
+                "$set": {
+                    "state": 1,
+                    "end_time": get_now_time(),
+                    "file_size": str(round(file_size, 2))
+                }
             }
-            other_columns = {
-                "timestamp": "时间",
-                "host": "域名",
-                "ip": "IP",
-                "port": "端口",
-                "protocol": "协议",
-                "tls": "TLS",
-                "transport": "transport",
-                "version": "版本",
-                "raw": "banner",
-                "project": "项目",
-                "type": "类型"
+            await db.export.update_one({"file_name": file_name}, update_document)
+        except Exception as e:
+            logger.error(str(e))
+            update_document = {
+                "$set": {
+                    "state": 2,
+                }
             }
-            other_df = pd.DataFrame()
-            http_df = pd.DataFrame()
-            for doc in result:
-                if doc["type"] == "other":
-                    other_df = pd.concat([other_df, pd.DataFrame([doc])], ignore_index=True)
-                else:
-                    if doc['webfinger'] is not None:
-                        webfinger = []
-                        for webfinger_id in doc['webfinger']:
-                            webfinger.append(APP[webfinger_id])
-                        doc['webfinger'] = webfinger
-                    http_df = pd.concat([http_df, pd.DataFrame([doc])], ignore_index=True)
-            try:
-                excel_writer = pd.ExcelWriter(file_path, engine='xlsxwriter')
-                http_df.rename(columns=http_columns, inplace=True)
-                http_df.to_excel(excel_writer, sheet_name='HTTP Data', index=False)
-                other_df.rename(columns=other_columns, inplace=True)
-                other_df.to_excel(excel_writer, sheet_name='Other Data', index=False)
-                excel_writer.close()
-            except IllegalCharacterError as e:
-                logger.error("导出内容有不可见字符，忽略此错误")
-        else:
-            columns = {}
-            if index == "subdomain":
-                columns = {'host': '域名', 'type': '解析类型', 'value': '解析值', 'ip': '解析IP', 'project': '项目',
-                           'time': '时间'}
-            if index == "SubdoaminTakerResult":
-                columns = {
-                    'input': '源域名', 'value': '解析值', 'cname': '接管类型', 'response': '响应体', 'project': '项目'
-                }
-            if index == "UrlScan":
-                columns = {
-                    'input': '输入', 'source': '来源', 'outputtype': '输出类型', 'output': '输出',
-                    'statuscode': 'statuscode', 'length': 'length', 'time': '时间', 'project': '项目'
-                }
-            if index == "crawler":
-                columns = {
-                    'url': 'URL', 'method': 'Method', 'body': 'Body', 'project': '项目'
-                }
-            if index == "SensitiveResult":
-                columns = {
-                    'url': 'URL', 'sid': '规则名称', 'match': '匹配内容', 'project': '项目', 'body': '响应体',
-                    'color': '等级', 'time': '时间', 'md5': '响应体MD5'
-                }
-            if index == "DirScanResult":
-                columns = {
-                    'url': 'URL', 'status': '响应码', 'msg': '跳转', 'project': '项目'
-                }
-            if index == "vulnerability":
-                columns = {
-                    'url': 'URL', 'vulname': '漏洞', 'matched': '匹配', 'project': '项目', 'level': '危害等级',
-                    'time': '时间', 'request': '请求', 'response': '响应'
-                }
-            if index == "PageMonitoring":
-                columns = {
-                    'url': 'URL', 'content': '响应体', 'hash': '响应体Hash', 'diff': 'Diff',
-                    'state': '状态', 'project': '项目', 'time': '时间'
-                }
-            try:
-                df = pd.DataFrame(result)
-                df.rename(columns=columns, inplace=True)
-                df.to_excel(file_path, index=False)
-            except IllegalCharacterError as e:
-                logger.error("导出内容有不可见字符，忽略此错误")
-        file_size = os.path.getsize(file_path) / (1024 * 1024)  # kb
-        update_document = {
-            "$set": {
-                "state": 1,
-                "end_time": get_now_time(),
-                "file_size": str(round(file_size, 2))
-            }
-        }
-        await db.export.update_one({"file_name": file_name}, update_document)
-    except Exception as e:
-        logger.error(str(e))
-        update_document = {
-            "$set": {
-                "state": 2,
-            }
-        }
-        await db.export.update_one({"file_name": file_name}, update_document)
+            await db.export.update_one({"file_name": file_name}, update_document)
 
 
 @router.get("/export/record")

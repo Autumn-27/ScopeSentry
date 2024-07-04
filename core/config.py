@@ -27,7 +27,6 @@ NODE_TIMEOUT = 50
 TOTAL_LOGS = 1000
 APP = {}
 SensitiveRuleList = {}
-POC_LIST = {}
 Project_List = {}
 def set_timezone(t):
     global TIMEZONE

@@ -321,6 +321,55 @@ async def search_to_mongodb(expression_raw, keyword):
         logger.error(e)
         return ""
 
+async def get_search_query(name, request_data):
+    search_query = request_data.get("search", "")
+    search_key_v = {
+        'sens':{
+            'url': 'url',
+            'sname': 'sid',
+            "body": "body",
+            "info": "match",
+            'project': 'project',
+            'md5': 'md5'
+        },
+        'dir': {
+            'project': 'project',
+            'statuscode': 'status',
+            'url': 'url',
+            'redirect': 'msg',
+            'length': 'length'
+        },
+        'vul': {
+            'url': 'url',
+            'vulname': 'vulname',
+            'project': 'project',
+            'matched': 'matched',
+            'request': 'request',
+            'response': 'response',
+            'level': 'level'
+        }
+    }
+    keyword = search_key_v[name]
+    query = await search_to_mongodb(search_query, keyword)
+    if query == "" or query is None:
+        return ""
+    query = query[0]
+    filter_key = ['color', 'status', 'level']
+    filter = request_data.get("filter", {})
+    if filter:
+        query["$and"] = []
+        for f in filter:
+            if f in filter_key:
+                tmp_or = []
+                for v in filter[f]:
+                    tmp_or.append({f: v})
+                if len(tmp_or) != 0:
+                    query["$and"].append({"$or": tmp_or})
+    if "$and" in query:
+        if len(query["$and"]) == 0:
+            query.pop("$and")
+    return query
+
 
 def get_root_domain(url):
     # 如果URL不带协议，添加一个默认的http协议

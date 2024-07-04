@@ -16,7 +16,7 @@ from core.db import get_mongo_db
 from core.redis_handler import refresh_config
 from loguru import logger
 
-from core.util import search_to_mongodb
+from core.util import search_to_mongodb, get_search_query
 
 router = APIRouter()
 
@@ -223,23 +223,13 @@ async def get_sensitive_result_rules(request_data: dict, db=Depends(get_mongo_db
 
 
 @router.post("/sensitive/result/data2")
-async def get_sensitive_result_rules(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+async def get_sensitive_result_data2(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
-        search_query = request_data.get("search", "")
         page_index = request_data.get("pageIndex", 1)
         page_size = request_data.get("pageSize", 10)
-        keyword = {
-            'url': 'url',
-            'sname': 'sid',
-            "body": "body",
-            "info": "match",
-            'project': 'project',
-            'md5': 'md5'
-        }
-        query = await search_to_mongodb(search_query, keyword)
-        if query == "" or query is None:
+        query = await get_search_query("sens", request_data)
+        if query == "":
             return {"message": "Search condition parsing error", "code": 500}
-        query = query[0]
         total_count = await db['SensitiveResult'].count_documents(query)
         pipeline = [
             {
