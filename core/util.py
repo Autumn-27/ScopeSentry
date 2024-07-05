@@ -347,6 +347,13 @@ async def get_search_query(name, request_data):
             'request': 'request',
             'response': 'response',
             'level': 'level'
+        },
+        'subdomain': {
+            'domain': 'host',
+            'ip': 'ip',
+            'type': 'type',
+            'project': 'project',
+            'value': 'value'
         }
     }
     keyword = search_key_v[name]
@@ -354,7 +361,7 @@ async def get_search_query(name, request_data):
     if query == "" or query is None:
         return ""
     query = query[0]
-    filter_key = ['color', 'status', 'level']
+    filter_key = ['color', 'status', 'level', 'type']
     filter = request_data.get("filter", {})
     if filter:
         query["$and"] = []

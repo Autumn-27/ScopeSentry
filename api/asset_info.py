@@ -328,20 +328,11 @@ async def asset_data_statistics(request_data: dict, db=Depends(get_mongo_db), _:
 @router.post("/subdomain/data")
 async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
-        search_query = request_data.get("search", "")
         page_index = request_data.get("pageIndex", 1)
         page_size = request_data.get("pageSize", 10)
-        keyword = {
-            'domain': 'host',
-            'ip': 'ip',
-            'type': 'type',
-            'project': 'project',
-            'value': 'value'
-        }
-        query = await search_to_mongodb(search_query, keyword)
-        if query == "" or query is None:
+        query = await get_search_query("subdomain", request_data)
+        if query == "":
             return {"message": "Search condition parsing error", "code": 500}
-        query = query[0]
         total_count = await db['subdomain'].count_documents(query)
         cursor: AsyncIOMotorCursor = ((db['subdomain'].find(query, {"_id": 0,
                                                                     "id": {"$toString": "$_id"},
