@@ -18,7 +18,7 @@ import pandas as pd
 from core.util import *
 from pymongo import ASCENDING, DESCENDING, results
 from loguru import logger
-
+from openpyxl import Workbook
 router = APIRouter()
 
 keywords = {
@@ -154,13 +154,32 @@ async def fetch_data(db, collection, query, quantity, project_list):
     return cursor
 
 
+def flatten_dict(d):
+    items = []
+    for k, v in d.items():
+        if isinstance(v, dict):
+            items.append((k, str(v)))
+        elif isinstance(v, list):
+            if k == "webfinger":
+                tem = ""
+                for w in v:
+                    tem += str(APP[w]) + ","
+                items.append((k, tem.strip(",")))
+            else:
+                items.append((k, ', '.join(map(str, v))))
+        else:
+            items.append((k, v))
+    return dict(items)
+
 async def export_data_from_mongodb(quantity, query, file_name, index):
+    logger.info("导出开始")
     async for db in get_mongo_db():
         try:
             cursor = await fetch_data(db, index, query, quantity, Project_List)
             result = await cursor.to_list(length=None)
             relative_path = f'file/{file_name}.xlsx'
             file_path = os.path.join(os.getcwd(), relative_path)
+            wb = Workbook()
             if index == "asset":
                 http_columns = {
                     "timestamp": "时间",
@@ -201,27 +220,25 @@ async def export_data_from_mongodb(quantity, query, file_name, index):
                     "project": "项目",
                     "type": "类型"
                 }
-                other_df = pd.DataFrame()
-                http_df = pd.DataFrame()
+                # 创建两个工作表
+                http_ws = wb.active
+                http_ws.title = 'HTTP Data'
+                other_ws = wb.create_sheet(title='Other Data')
+
+                # 写入HTTP Data列名
+                http_ws.append(list(http_columns.values()))
+                # 写入Other Data列名
+                other_ws.append(list(other_columns.values()))
+
+                # 分别写入数据
                 for doc in result:
+                    flattened_doc = flatten_dict(doc)
                     if doc["type"] == "other":
-                        other_df = pd.concat([other_df, pd.DataFrame([doc])], ignore_index=True)
+                        row = [flattened_doc.get(col, "") for col in other_columns.keys()]
+                        other_ws.append(row)
                     else:
-                        if doc['webfinger'] is not None:
-                            webfinger = []
-                            for webfinger_id in doc['webfinger']:
-                                webfinger.append(APP[webfinger_id])
-                            doc['webfinger'] = webfinger
-                        http_df = pd.concat([http_df, pd.DataFrame([doc])], ignore_index=True)
-                try:
-                    excel_writer = pd.ExcelWriter(file_path, engine='xlsxwriter')
-                    http_df.rename(columns=http_columns, inplace=True)
-                    http_df.to_excel(excel_writer, sheet_name='HTTP Data', index=False)
-                    other_df.rename(columns=other_columns, inplace=True)
-                    other_df.to_excel(excel_writer, sheet_name='Other Data', index=False)
-                    excel_writer.close()
-                except IllegalCharacterError as e:
-                    logger.error("导出内容有不可见字符，忽略此错误")
+                        row = [flattened_doc.get(col, "") for col in http_columns.keys()]
+                        http_ws.append(row)
             else:
                 columns = {}
                 if index == "subdomain":
@@ -259,12 +276,19 @@ async def export_data_from_mongodb(quantity, query, file_name, index):
                         'url': 'URL', 'content': '响应体', 'hash': '响应体Hash', 'diff': 'Diff',
                         'state': '状态', 'project': '项目', 'time': '时间'
                     }
-                try:
-                    df = pd.DataFrame(result)
-                    df.rename(columns=columns, inplace=True)
-                    df.to_excel(file_path, index=False)
-                except IllegalCharacterError as e:
-                    logger.error("导出内容有不可见字符，忽略此错误")
+                ws = wb.active
+                ws.title = index
+                ws.append(list(columns.values()))
+
+                for doc in result:
+                    flattened_doc = flatten_dict(doc)
+                    row = [flattened_doc.get(col, "") for col in columns.keys()]
+                    ws.append(row)
+            try:
+                wb.save(file_path)
+                logger.info(f"Data saved to {file_path} successfully.")
+            except IllegalCharacterError as e:
+                logger.error("导出内容有不可见字符，忽略此错误")
             file_size = os.path.getsize(file_path) / (1024 * 1024)  # kb
             update_document = {
                 "$set": {
@@ -282,7 +306,7 @@ async def export_data_from_mongodb(quantity, query, file_name, index):
                 }
             }
             await db.export.update_one({"file_name": file_name}, update_document)
-
+    logger.info("导出结束")
 
 @router.get("/export/record")
 async def get_export_record(db=Depends(get_mongo_db), _: dict = Depends(verify_token)):

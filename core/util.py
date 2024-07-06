@@ -354,6 +354,34 @@ async def get_search_query(name, request_data):
             'type': 'type',
             'project': 'project',
             'value': 'value'
+        },
+        'asset': {
+            'app': '',
+            'body': 'responsebody',
+            'header': 'rawheaders',
+            'project': 'project',
+            'title': 'title',
+            'statuscode': 'statuscode',
+            'icon': 'faviconmmh3',
+            'ip': ['host', 'ip'],
+            'domain': ['host', 'url', 'domain'],
+            'port': 'port',
+            'protocol': ['protocol', 'type'],
+            'banner': 'raw',
+        },
+        'subdomainTaker': {
+            'domain': 'input',
+            'value': 'value',
+            'type': 'cname',
+            'response': 'response',
+            'project': 'project',
+        },
+        'url': {
+            'url': 'output',
+            'project': 'project',
+            'input': 'input',
+            'source': 'source',
+            "type": "outputtype"
         }
     }
     keyword = search_key_v[name]
@@ -361,7 +389,7 @@ async def get_search_query(name, request_data):
     if query == "" or query is None:
         return ""
     query = query[0]
-    filter_key = ['color', 'status', 'level', 'type']
+    filter_key = ['color', 'status', 'level', 'type', 'project']
     filter = request_data.get("filter", {})
     if filter:
         query["$and"] = []
@@ -369,7 +397,8 @@ async def get_search_query(name, request_data):
             if f in filter_key:
                 tmp_or = []
                 for v in filter[f]:
-                    tmp_or.append({f: v})
+                    if v != "":
+                        tmp_or.append({f: v})
                 if len(tmp_or) != 0:
                     query["$and"].append({"$or": tmp_or})
     if "$and" in query:

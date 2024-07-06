@@ -8,9 +8,10 @@ from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorCursor
 from api.users import verify_token
 from core.db import get_mongo_db
-from core.util import search_to_mongodb
+from core.util import search_to_mongodb, get_search_query
 from loguru import logger
 router = APIRouter()
+
 
 @router.post("/subdomaintaker/data")
 async def get_subdomaintaker_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
@@ -20,17 +21,9 @@ async def get_subdomaintaker_data(request_data: dict, db=Depends(get_mongo_db), 
         page_size = request_data.get("pageSize", 10)
         # MongoDB collection for SensitiveRule
         # Fuzzy search based on the name field
-        keyword = {
-            'domain': 'input',
-            'value': 'value',
-            'type': 'cname',
-            'response': 'response',
-            'project': 'project',
-        }
-        query = await search_to_mongodb(search_query, keyword)
-        if query == "" or query is None:
+        query = await get_search_query("subdomainTaker", request_data)
+        if query == "":
             return {"message": "Search condition parsing error", "code": 500}
-        query = query[0]
         # Get the total count of documents matching the search criteria
         total_count = await db.SubdoaminTakerResult.count_documents(query)
         if total_count == 0:

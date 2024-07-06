@@ -58,27 +58,11 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
                     "name": document['name'],
                     "color": document['color']
                 }
-        search_query = request_data.get("search", "")
         page_index = request_data.get("pageIndex", 1)
         page_size = request_data.get("pageSize", 10)
-        keyword = {
-            'app': '',
-            'body': 'responsebody',
-            'header': 'rawheaders',
-            'project': 'project',
-            'title': 'title',
-            'statuscode': 'statuscode',
-            'icon': 'faviconmmh3',
-            'ip': ['host', 'ip'],
-            'domain': ['host', 'url', 'domain'],
-            'port': 'port',
-            'protocol': ['protocol', 'type'],
-            'banner': 'raw',
-        }
-        query = await search_to_mongodb(search_query, keyword)
-        if query == "" or query is None:
+        query = await get_search_query("asset", request_data)
+        if query == "":
             return {"message": "Search condition parsing error", "code": 500}
-        query = query[0]
         total_count = await db['asset'].count_documents(query)
         cursor: AsyncIOMotorCursor = ((db['asset'].find(query, {"_id": 0,
                                                                 "id": {"$toString": "$_id"},
@@ -235,25 +219,9 @@ async def asset_detail(request_data: dict, db=Depends(get_mongo_db), _: dict = D
 
 @router.post("/asset/statistics")
 async def asset_data_statistics(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    search_query = request_data.get("search", "")
-    keyword = {
-        'app': '',
-        'body': 'responsebody',
-        'header': 'rawheaders',
-        'project': 'project',
-        'title': 'title',
-        'statuscode': 'statuscode',
-        'icon': 'faviconmmh3',
-        'ip': ['host', 'ip'],
-        'domain': ['host', 'url', 'domain'],
-        'port': 'port',
-        'protocol': ['protocol', 'type'],
-        'banner': 'raw',
-    }
-    query = await search_to_mongodb(search_query, keyword)
-    if query == "" or query is None:
+    query = await get_search_query("asset", request_data)
+    if query == "":
         return {"message": "Search condition parsing error", "code": 500}
-    query = query[0]
     cursor: AsyncIOMotorCursor = ((db['asset'].find(query, {
         "port": 1,
         "protocol": 1,
@@ -369,20 +337,11 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
 @router.post("/url/data")
 async def url_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
-        search_query = request_data.get("search", "")
         page_index = request_data.get("pageIndex", 1)
         page_size = request_data.get("pageSize", 10)
-        keyword = {
-            'url': 'output',
-            'project': 'project',
-            'input': 'input',
-            'source': 'source',
-            "type": "outputtype"
-        }
-        query = await search_to_mongodb(search_query, keyword)
-        if query == "" or query is None:
+        query = await get_search_query("url", request_data)
+        if query == "":
             return {"message": "Search condition parsing error", "code": 500}
-        query = query[0]
         total_count = await db['UrlScan'].count_documents(query)
         cursor: AsyncIOMotorCursor = ((db['UrlScan'].find(query, {"_id": 0,
                                                                   "id": {"$toString": "$_id"},
@@ -452,25 +411,9 @@ async def crawler_data(request_data: dict, db=Depends(get_mongo_db), _: dict = D
 
 @router.post("/asset/statistics2")
 async def asset_data_statistics2(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    search_query = request_data.get("search", "")
-    keyword = {
-        'app': '',
-        'body': 'responsebody',
-        'header': 'rawheaders',
-        'project': 'project',
-        'title': 'title',
-        'statuscode': 'statuscode',
-        'icon': 'faviconmmh3',
-        'ip': ['host', 'ip'],
-        'domain': ['host', 'url', 'domain'],
-        'port': 'port',
-        'protocol': ['protocol', 'type'],
-        'banner': 'raw',
-    }
-    query = await search_to_mongodb(search_query, keyword)
-    if query == "" or query is None:
+    query = await get_search_query("asset", request_data)
+    if query == "":
         return {"message": "Search condition parsing error", "code": 500}
-    query = query[0]
     pipeline = [
         {
             "$match": query  # 添加搜索条件
@@ -553,25 +496,9 @@ async def asset_data_statistics2(request_data: dict, db=Depends(get_mongo_db), _
 
 @router.post("/asset/statistics/port")
 async def asset_data_statistics_port(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    search_query = request_data.get("search", "")
-    keyword = {
-        'app': '',
-        'body': 'responsebody',
-        'header': 'rawheaders',
-        'project': 'project',
-        'title': 'title',
-        'statuscode': 'statuscode',
-        'icon': 'faviconmmh3',
-        'ip': ['host', 'ip'],
-        'domain': ['host', 'url', 'domain'],
-        'port': 'port',
-        'protocol': ['protocol', 'type'],
-        'banner': 'raw',
-    }
-    query = await search_to_mongodb(search_query, keyword)
-    if query == "" or query is None:
+    query = await get_search_query("asset", request_data)
+    if query == "":
         return {"message": "Search condition parsing error", "code": 500}
-    query = query[0]
     pipeline = [
         {
             "$match": query  # 添加搜索条件
@@ -604,25 +531,9 @@ async def asset_data_statistics_port(request_data: dict, db=Depends(get_mongo_db
 
 @router.post("/asset/statistics/type")
 async def asset_data_statistics_type(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    search_query = request_data.get("search", "")
-    keyword = {
-        'app': '',
-        'body': 'responsebody',
-        'header': 'rawheaders',
-        'project': 'project',
-        'title': 'title',
-        'statuscode': 'statuscode',
-        'icon': 'faviconmmh3',
-        'ip': ['host', 'ip'],
-        'domain': ['host', 'url', 'domain'],
-        'port': 'port',
-        'protocol': ['protocol', 'type'],
-        'banner': 'raw',
-    }
-    query = await search_to_mongodb(search_query, keyword)
-    if query == "" or query is None:
+    query = await get_search_query("asset", request_data)
+    if query == "":
         return {"message": "Search condition parsing error", "code": 500}
-    query = query[0]
     pipeline = [
         {
             "$match": query  # 添加搜索条件
@@ -660,25 +571,9 @@ async def asset_data_statistics_type(request_data: dict, db=Depends(get_mongo_db
 
 @router.post("/asset/statistics/icon")
 async def asset_data_statistics_icon(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    search_query = request_data.get("search", "")
-    keyword = {
-        'app': '',
-        'body': 'responsebody',
-        'header': 'rawheaders',
-        'project': 'project',
-        'title': 'title',
-        'statuscode': 'statuscode',
-        'icon': 'faviconmmh3',
-        'ip': ['host', 'ip'],
-        'domain': ['host', 'url', 'domain'],
-        'port': 'port',
-        'protocol': ['protocol', 'type'],
-        'banner': 'raw',
-    }
-    query = await search_to_mongodb(search_query, keyword)
-    if query == "" or query is None:
+    query = await get_search_query("asset", request_data)
+    if query == "":
         return {"message": "Search condition parsing error", "code": 500}
-    query = query[0]
     pipeline = [
         {
             "$match": query  # 添加搜索条件
@@ -769,25 +664,9 @@ async def asset_data_statistics_icon(request_data: dict, db=Depends(get_mongo_db
 
 @router.post("/asset/statistics/app")
 async def asset_data_statistics_app(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    search_query = request_data.get("search", "")
-    keyword = {
-        'app': '',
-        'body': 'responsebody',
-        'header': 'rawheaders',
-        'project': 'project',
-        'title': 'title',
-        'statuscode': 'statuscode',
-        'icon': 'faviconmmh3',
-        'ip': ['host', 'ip'],
-        'domain': ['host', 'url', 'domain'],
-        'port': 'port',
-        'protocol': ['protocol', 'type'],
-        'banner': 'raw',
-    }
-    query = await search_to_mongodb(search_query, keyword)
-    if query == "" or query is None:
+    query = await get_search_query("asset", request_data)
+    if query == "":
         return {"message": "Search condition parsing error", "code": 500}
-    query = query[0]
     pipeline = [
         {
             "$match": query  # 添加搜索条件
