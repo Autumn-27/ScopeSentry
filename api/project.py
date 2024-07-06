@@ -84,16 +84,20 @@ async def get_projects_data(request_data: dict, db=Depends(get_mongo_db), _: dic
 async def get_projects_all(db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         pipeline = [
-            {"$group": {
-                "_id": "$tag",  # 根据 tag 字段分组
-                "children": {"$push": {"value": {"$toString": "$_id"}, "label": "$name"}}  # 将每个文档的 _id 和 name 放入 children 集合中
-            }},
-            {"$project": {
-                "_id": 0,
-                "label": "$_id",
-                "value": {"$literal": ""},
-                "children": 1
-            }}
+            {
+                "$group": {
+                    "_id": "$tag",  # 根据 tag 字段分组
+                    "children": {"$push": {"value": {"$toString": "$_id"}, "label": "$name"}}  # 将每个文档的 _id 和 name 放入 children 集合中
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "label": "$_id",
+                    "value": {"$literal": ""},
+                    "children": 1
+                }
+            }
         ]
         result = await db['project'].aggregate(pipeline).to_list(None)
         return {

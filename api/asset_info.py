@@ -371,19 +371,11 @@ async def url_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
 @router.post("/crawler/data")
 async def crawler_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
-        search_query = request_data.get("search", "")
         page_index = request_data.get("pageIndex", 1)
         page_size = request_data.get("pageSize", 10)
-        keyword = {
-            'url': 'url',
-            'method': 'method',
-            'body': 'body',
-            'project': 'project'
-        }
-        query = await search_to_mongodb(search_query, keyword)
-        if query == "" or query is None:
+        query = await get_search_query("crawler", request_data)
+        if query == "":
             return {"message": "Search condition parsing error", "code": 500}
-        query = query[0]
         total_count = await db['crawler'].count_documents(query)
         cursor: AsyncIOMotorCursor = ((db['crawler'].find(query, {"_id": 0,
                                                                   "id": {"$toString": "$_id"},

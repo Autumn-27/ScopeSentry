@@ -321,6 +321,7 @@ async def search_to_mongodb(expression_raw, keyword):
         logger.error(e)
         return ""
 
+
 async def get_search_query(name, request_data):
     search_query = request_data.get("search", "")
     search_key_v = {
@@ -382,6 +383,19 @@ async def get_search_query(name, request_data):
             'input': 'input',
             'source': 'source',
             "type": "outputtype"
+        },
+        'page': {
+            'url': 'url',
+            'project': 'project',
+            'hash': 'hash',
+            'diff': 'diff',
+            'response': 'response'
+        },
+        'crawler': {
+            'url': 'url',
+            'method': 'method',
+            'body': 'body',
+            'project': 'project'
         }
     }
     keyword = search_key_v[name]

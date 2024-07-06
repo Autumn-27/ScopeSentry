@@ -31,21 +31,11 @@ async def get_page_monitoring_data(db, all):
 
 @router.post("/page/monitoring/result")
 async def page_monitoring_result(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    search_query = request_data.get("search", "")
     page_index = request_data.get("pageIndex", 1)
     page_size = request_data.get("pageSize", 10)
-    keyword = {
-        'url': 'url',
-        'project': 'project',
-        'hash': 'hash',
-        'diff': 'diff',
-        'response': 'response'
-    }
-    query = await search_to_mongodb(search_query, keyword)
-    if query == "" or query is None:
+    query = await get_search_query("page", request_data)
+    if query == "":
         return {"message": "Search condition parsing error", "code": 500}
-    query = query[0]
-    # Get the total count of documents matching the search criteria
     query["diff"] = {"$ne": []}
     total_count = await db.PageMonitoring.count_documents(query)
     # Perform pagination query and sort by time
