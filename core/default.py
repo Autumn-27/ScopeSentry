@@ -26,7 +26,7 @@ def get_domainDict():
     domainDict = ""
     try:
         # 尝试打开文件并读取内容
-        with open(os.path.join(combined_directory, "domainDict"), "r") as file:
+        with open(os.path.join(combined_directory, "domainDict"), "r", encoding="utf-8") as file:
             domainDict = file.read()
     except FileNotFoundError:
         logger.error("文件不存在")
@@ -37,7 +37,7 @@ def get_dirDict():
     domainDict = ""
     try:
         # 尝试打开文件并读取内容
-        with open(os.path.join(combined_directory, "dirDict"), "r") as file:
+        with open(os.path.join(combined_directory, "dirDict"), "r", encoding="utf-8") as file:
             domainDict = file.read()
     except FileNotFoundError:
         logger.error("文件不存在")

@@ -78,9 +78,9 @@ async def create_database():
                 {"name": "SubfinderApiConfig", 'value': subfinderApiConfig, 'type': 'subfinder'})
             await collection.insert_one(
                 {"name": "RadConfig", 'value': radConfig, 'type': 'rad'})
-            dirDict = get_dirDict()
-            await collection.insert_one(
-                {"name": "DirDic", 'value': dirDict, 'type': 'dirDict'})
+            # dirDict = get_dirDict()
+            # await collection.insert_one(
+            #     {"name": "DirDic", 'value': dirDict, 'type': 'dirDict'})
             await collection.insert_one(
                 {"name": "notification", 'dirScanNotification': True,
                  'portScanNotification': True, 'sensitiveNotification': True,
@@ -89,9 +89,9 @@ async def create_database():
                  'subdomainNotification': True,
                  'vulNotification': True,
                  'type': 'notification'})
-            domainDict = get_domainDict()
-            await collection.insert_one(
-                {"name": "DomainDic", 'value': domainDict, 'type': 'domainDict'})
+            # domainDict = get_domainDict()
+            # await collection.insert_one(
+            #     {"name": "DomainDic", 'value': domainDict, 'type': 'domainDict'})
             sensitive_data = get_sensitive()
             collection = client[DATABASE_NAME]["SensitiveRule"]
             if sensitiveList:

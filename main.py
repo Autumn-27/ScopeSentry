@@ -3,10 +3,13 @@ import time
 
 from loguru import logger
 import uvicorn
+from motor.motor_asyncio import AsyncIOMotorGridFSBucket
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.staticfiles import StaticFiles
 
 from core.config import *
+from core.default import get_dirDict, get_domainDict
+
 set_config()
 
 from core.db import get_mongo_db
@@ -32,6 +35,7 @@ from core.apscheduler_handler import scheduler
 
 async def update():
     async for db in get_mongo_db():
+        # 默认项目有个root_domain为空导致匹配上所有资产
         cursor = db.project.find({"root_domains": ""}, {"_id": 1, "root_domains": 1})
         async for document in cursor:
             logger.info("Update found empty root_domains")
@@ -45,6 +49,29 @@ async def update():
                 }
             }
             await db.project.update_one({"_id": document['_id']}, update_document)
+        # 修改目录字典存储方式
+        fs = AsyncIOMotorGridFSBucket(db)
+        result = await db.config.find_one({"name": "DirDic"})
+        if result:
+            await db.config.delete_one({"name": "DirDic"})
+            content = get_dirDict()
+            if content:
+                byte_content = content.encode('utf-8')
+                await fs.upload_from_stream('dirdict', byte_content)
+                logger.info("Document DirDict uploaded to GridFS.")
+            else:
+                logger.error("No dirdict content to upload.")
+        # 修改子域名字典存储方式
+        result = await db.config.find_one({"name": "DomainDic"})
+        if result:
+            await db.config.delete_one({"name": "DomainDic"})
+            content = get_domainDict()
+            if content:
+                byte_content = content.encode('utf-8')
+                await fs.upload_from_stream('DomainDic', byte_content)
+                logger.info("Document DomainDic uploaded to GridFS.")
+            else:
+                logger.error("No DomainDic content to upload.")
 
 
 @app.on_event("startup")

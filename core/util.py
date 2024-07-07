@@ -403,7 +403,7 @@ async def get_search_query(name, request_data):
     if query == "" or query is None:
         return ""
     query = query[0]
-    filter_key = ['color', 'status', 'level', 'type', 'project']
+    filter_key = {'app':'app','color': 'color', 'status': 'status', 'level': 'level', 'type': 'type', 'project': 'project', 'port': 'port', 'protocol': ['protocol', 'type'], 'icon': 'faviconmmh3'}
     filter = request_data.get("filter", {})
     if filter:
         query["$and"] = []
@@ -412,7 +412,17 @@ async def get_search_query(name, request_data):
                 tmp_or = []
                 for v in filter[f]:
                     if v != "":
-                        tmp_or.append({f: v})
+                        if f == 'app':
+                            for ap_key in APP:
+                                if v == APP[ap_key]:
+                                    tmp_or.append({'webfinger': ap_key})
+                            tmp_or.append({'technologies': v})
+                        else:
+                            if type(filter_key[f]) is list:
+                                for li in filter_key[f]:
+                                    tmp_or.append({li: v})
+                            else:
+                                tmp_or.append({filter_key[f]: v})
                 if len(tmp_or) != 0:
                     query["$and"].append({"$or": tmp_or})
     if "$and" in query:
