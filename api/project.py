@@ -1,6 +1,6 @@
 import time
 import traceback
-
+import asyncio
 from bson import ObjectId
 from fastapi import APIRouter, Depends, BackgroundTasks
 
@@ -24,56 +24,59 @@ async def get_projects_data(request_data: dict, db=Depends(get_mongo_db), _: dic
     search_query = request_data.get("search", "")
     page_index = request_data.get("pageIndex", 1)
     page_size = request_data.get("pageSize", 10)
-    if search_query == "":
-        query = {}
-    else:
-        query = {
-            "$or": [
-                {"name": {"$regex": search_query, "$options": "i"}},
-                {"target": {"$regex": search_query, "$options": "i"}}
-            ]
-        }
-    tag_num = {}
-    tag_result = await db.project.aggregate([{
-        "$group": {
-            "_id": "$tag",
-            "count": {"$sum": 1}
-        }
-    }]).to_list(None)
-    all_num = 0
-    for tag in tag_result:
-        tag_num[tag["_id"]] = tag["count"]
-        all_num += tag["count"]
-    result_list = {}
+
+    query = {
+        "$or": [
+            {"name": {"$regex": search_query, "$options": "i"}},
+            {"target": {"$regex": search_query, "$options": "i"}}
+        ]
+    } if search_query else {}
+
+    # 获取标签统计信息
+    tag_result = await db.project.aggregate([
+        {"$group": {"_id": "$tag", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}
+    ]).to_list(None)
+
+    tag_num = {tag["_id"]: tag["count"] for tag in tag_result}
+    all_num = sum(tag_num.values())
     tag_num["All"] = all_num
-    for tag in tag_num:
-        if tag != "All":
-            tag_query = {
-                "$and": [
-                    query,
-                    {"tag": tag}
-                ]
-            }
-        else:
-            tag_query = query
-        cursor = db.project.find(tag_query, {"_id": 0,
-                                             "id": {"$toString": "$_id"},
-                                             "name": 1,
-                                             "logo": 1,
-                                             "AssetCount": 1,
-                                             "tag": 1
-                                             }).sort("AssetCount", -1).skip((page_index - 1) * page_size).limit(
-            page_size)
+
+    result_list = {}
+
+    async def fetch_projects(tag, tag_query):
+        cursor = db.project.find(tag_query, {
+            "_id": 0,
+            "id": {"$toString": "$_id"},
+            "name": 1,
+            "logo": 1,
+            "AssetCount": 1,
+            "tag": 1
+        }).sort("AssetCount", -1).skip((page_index - 1) * page_size).limit(page_size)
+
         results = await cursor.to_list(length=None)
-        result_list[tag] = []
         for result in results:
             result["AssetCount"] = result.get("AssetCount", 0)
-            result_list[tag].append(result)
             background_tasks.add_task(update_project_count, id=result["id"])
+        return results
+
+    fetch_tasks = []
+    for tag in tag_num:
+        if tag != "All":
+            tag_query = {"$and": [query, {"tag": tag}]}
+        else:
+            tag_query = query
+
+        fetch_tasks.append(fetch_projects(tag, tag_query))
+
+    fetch_results = await asyncio.gather(*fetch_tasks)
+
+    for tag, results in zip(tag_num, fetch_results):
+        result_list[tag] = results
 
     return {
         "code": 200,
-        'data': {
+        "data": {
             "result": result_list,
             "tag": tag_num
         }
