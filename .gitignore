@@ -3,3 +3,4 @@ __pycache__/
 __pycache__
 config.yaml
 file/
+.env
