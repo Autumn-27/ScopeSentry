@@ -10,6 +10,7 @@ import traceback
 
 from bson import ObjectId
 from fastapi import APIRouter, Depends, BackgroundTasks
+from pymongo import DESCENDING
 
 from api.task import create_scan_task, delete_asset
 from api.users import verify_token
@@ -55,3 +56,32 @@ async def get_projects_asset_count(request_data: dict, db=Depends(get_mongo_db),
         "subdomainCount": subdomain_count,
         "vulCount": vulnerability_count
     }}
+
+
+@router.post("/project/vul/statistics")
+async def get_projects_vul_statistics(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    id = request_data.get("id", "")
+    pipeline = [
+        {"$match": {"project": id}},
+        {
+            "$group": {
+                "_id": "$level",
+                "count": {"$sum": 1}
+            }
+        }
+    ]
+    result = await db['vulnerability'].aggregate(pipeline).to_list(None)
+    return {"code": 200, "data": result}
+
+
+@router.post("/project/vul/data")
+async def get_projects_vul_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    id = request_data.get("id", "")
+    cursor: AsyncIOMotorCursor = db.vulnerability.find({"project": id}, {"_id": 0, "url": 1, "vulname": 1, "level": 1, "time": 1, "matched": 1}).sort([("time", DESCENDING)])
+    result = await cursor.to_list(length=None)
+    return {
+        "code": 200,
+        "data": {
+            'list': result
+        }
+    }
