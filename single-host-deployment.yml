@@ -17,6 +17,11 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
       - ./data/mongodb:/data/db
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     networks:
       - scopesentry-network
 
@@ -40,9 +45,6 @@ services:
   scope-sentry:
     image: autumn27/scopesentry:latest
     container_name: scope-sentry
-    depends_on:
-      - mongodb
-      - redis
     restart: always
     ports:
       - "8082:80"
@@ -61,6 +63,11 @@ services:
       interval: 30s
       timeout: 10s
       retries: 10
+    depends_on:
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
     networks:
       - scopesentry-network
 
