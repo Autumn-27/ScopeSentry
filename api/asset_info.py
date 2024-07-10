@@ -520,6 +520,40 @@ async def asset_data_statistics_port(request_data: dict, db=Depends(get_mongo_db
         "data": result_list
     }
 
+@router.post("/asset/statistics/title")
+async def asset_data_statistics_title(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    request_data['filter']['type'] = ['https', 'http']
+    query = await get_search_query("asset", request_data)
+    if query == "":
+        return {"message": "Search condition parsing error", "code": 500}
+    pipeline = [
+        {
+            "$match": query  # 添加搜索条件
+        },
+        {
+            "$facet": {
+                "by_title": [
+                    {"$group": {"_id": "$title", "num_tutorial": {"$sum": 1}}},
+                    {"$match": {"_id": {"$ne": ""}}}
+                ]
+            }
+        }
+    ]
+    result = await db['asset'].aggregate(pipeline).to_list(None)
+    result_list = {"Title": []}
+    title_list = {}
+
+    for r in result:
+        for port in r['by_title']:
+            title_list[port["_id"]] = port["num_tutorial"]
+
+    title_list = dict(sorted(title_list.items(), key=lambda item: -item[1]))
+    for title in title_list:
+        result_list['Title'].append({"value": title, "number": title_list[title]})
+    return {
+        "code": 200,
+        "data": result_list
+    }
 
 @router.post("/asset/statistics/type")
 async def asset_data_statistics_type(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
@@ -704,16 +738,14 @@ async def asset_data_statistics_app(request_data: dict, db=Depends(get_mongo_db)
 @router.post("/data/delete")
 async def delete_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
-        # Extract the list of IDs from the request_data dictionary
         data_ids = request_data.get("ids", [])
         index = request_data.get("index", "")
-        # Convert the provided rule_ids to ObjectId
-        obj_ids = [ObjectId(data_id) for data_id in data_ids]
-
-        # Delete the SensitiveRule documents based on the provided IDs
+        obj_ids = []
+        for data_id in data_ids:
+            if data_id != "" and len(data_id) > 6:
+                obj_ids.append(ObjectId(data_id))
         result = await db[index].delete_many({"_id": {"$in": obj_ids}})
 
-        # Check if the deletion was successful
         if result.deleted_count > 0:
             return {"code": 200, "message": "Data deleted successfully"}
         else:

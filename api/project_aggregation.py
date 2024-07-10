@@ -4,7 +4,7 @@
 # @contact   : rainy-autumn@outlook.com
 # @time      : 2024/7/8 21:02
 # -------------------------------------------
-
+import asyncio
 import time
 import traceback
 
@@ -30,14 +30,14 @@ router = APIRouter()
 async def get_projects_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     id = request_data.get("id", "")
     result = await db.project.find_one({"_id": ObjectId(id)}, {
-                                                                    "_id": 0,
-                                                                    "tag": 1,
-                                                                    "hour": 1,
-                                                                    "scheduledTasks": 1,
-                                                                    "AssetCount": 1,
-                                                                    "root_domains": 1,
-                                                                    "name":1
-                                                                }
+        "_id": 0,
+        "tag": 1,
+        "hour": 1,
+        "scheduledTasks": 1,
+        "AssetCount": 1,
+        "root_domains": 1,
+        "name": 1
+    }
                                        )
     if result['scheduledTasks']:
         job = scheduler.get_job(id)
@@ -77,11 +77,51 @@ async def get_projects_vul_statistics(request_data: dict, db=Depends(get_mongo_d
 @router.post("/project/vul/data")
 async def get_projects_vul_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     id = request_data.get("id", "")
-    cursor: AsyncIOMotorCursor = db.vulnerability.find({"project": id}, {"_id": 0, "url": 1, "vulname": 1, "level": 1, "time": 1, "matched": 1}).sort([("time", DESCENDING)])
+    cursor: AsyncIOMotorCursor = db.vulnerability.find({"project": id},
+                                                       {"_id": 0, "url": 1, "vulname": 1, "level": 1, "time": 1,
+                                                        "matched": 1}).sort([("time", DESCENDING)])
     result = await cursor.to_list(length=None)
     return {
         "code": 200,
         "data": {
             'list': result
+        }
+    }
+
+
+@router.post("/project/subdomain/data")
+async def get_projects_vul_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    filter = request_data.get("filter", {})
+    project_id = filter["project"][0]
+    project_query = {}
+    host_filter = ""
+    if "host" in filter:
+        host_filter = filter["host"]
+    project_query["_id"] = ObjectId(project_id)
+    doc = await db.project.find_one(project_query, {"_id": 0, "root_domains": 1})
+    if not doc or "root_domains" not in doc:
+        return {"code": 404, "message": "domain is null"}
+    query = await get_search_query("subdomain", request_data)
+    if query == "":
+        return {"message": "Search condition parsing error", "code": 500}
+    results = []
+    for root_domain in doc["root_domains"]:
+        query["$and"].append({"host": {"$regex": f"{root_domain}$"}})
+        cursor: AsyncIOMotorCursor = db['subdomain'].find(query, {
+            "_id": 0, "id": {"$toString": "$_id"}, "host": 1, "type": 1, "value": 1, "ip": 1, "time": 1
+        }).sort([("time", -1)])
+        result = await cursor.to_list(length=None)
+        result_list = []
+        for r in result:
+            if r['value'] is None:
+                r['value'] = []
+            if r['ip'] is None:
+                r['ip'] = []
+            result_list.append(r)
+        results.append({"host": root_domain, "type": "", "value": [], "ip": [], "id": generate_random_string(5), "children": result_list})
+    return {
+        "code": 200,
+        "data": {
+            'list': results
         }
     }
