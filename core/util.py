@@ -323,6 +323,7 @@ async def search_to_mongodb(expression_raw, keyword):
 
 
 async def get_search_query(name, request_data):
+    global tmp_f_q
     search_query = request_data.get("search", "")
     search_key_v = {
         'sens':{
@@ -425,6 +426,22 @@ async def get_search_query(name, request_data):
                                 tmp_or.append({filter_key[f]: v})
                 if len(tmp_or) != 0:
                     query["$and"].append({"$or": tmp_or})
+    fuzzy_query = request_data.get("fq", {})
+    fuzzy_query_key = {"sub_host": 'host', "sub_value": "value", "sub_ip": "ip", "port_port": "port", "port_domain":['domain', 'host'], 'port_ip': ['ip', 'host'], 'port_protocol': ['type', 'protocol']}
+    if fuzzy_query:
+        if "$and" not in query:
+            query["$and"] = []
+        for q in fuzzy_query:
+            if fuzzy_query[q] != "":
+                tmp_f_q = []
+                if q in fuzzy_query_key:
+                    if type(fuzzy_query_key[q]) is list:
+                        for key in fuzzy_query_key[q]:
+                            tmp_f_q.append({key: {"$regex": fuzzy_query[q]}})
+                    else:
+                        tmp_f_q.append({fuzzy_query_key[q]: {"$regex": fuzzy_query[q]}})
+                if len(tmp_f_q) != 0:
+                    query["$and"].append({"$or": tmp_f_q})
     if "$and" in query:
         if len(query["$and"]) == 0:
             query.pop("$and")

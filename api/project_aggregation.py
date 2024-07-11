@@ -90,13 +90,10 @@ async def get_projects_vul_data(request_data: dict, db=Depends(get_mongo_db), _:
 
 
 @router.post("/project/subdomain/data")
-async def get_projects_vul_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+async def get_projects_subdomain_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     filter = request_data.get("filter", {})
     project_id = filter["project"][0]
     project_query = {}
-    host_filter = ""
-    if "host" in filter:
-        host_filter = filter["host"]
     project_query["_id"] = ObjectId(project_id)
     doc = await db.project.find_one(project_query, {"_id": 0, "root_domains": 1})
     if not doc or "root_domains" not in doc:
@@ -124,4 +121,172 @@ async def get_projects_vul_data(request_data: dict, db=Depends(get_mongo_db), _:
         "data": {
             'list': results
         }
+    }
+
+
+@router.post("/project/port/data")
+async def get_projects_vul_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    query = await get_search_query("asset", request_data)
+    if query == "":
+        return {"message": "Search condition parsing error", "code": 500}
+    pipeline = [
+        {
+            "$match": query  # 添加搜索条件
+        },
+        {
+            "$group":
+                {
+                    "_id": "$port",
+                    "count":
+                        {
+                            "$sum": 1
+                        }
+                }
+        },
+        {
+            "$sort": {"count": -1}
+        }
+    ]
+    result = await db['asset'].aggregate(pipeline).to_list(None)
+
+    async def fetch_asset_data(r):
+        tmp_result = {
+            "port": r['_id'],
+            "id": generate_random_string(5)
+        }
+
+        query_copy = query.copy()
+        query_copy["port"] = r['_id']
+
+        cursor: AsyncIOMotorCursor = db['asset'].find(query_copy, {
+            "_id": 0,
+            "id": {"$toString": "$_id"},
+            "host": 1,
+            "ip": 1,
+            "type": 1,
+            "timestamp": 1,
+            "domain": 1,
+            "protocol": 1
+        }).sort([("timestamp", DESCENDING)])
+
+        asset_result = await cursor.to_list(length=None)
+        children_list = []
+
+        for asset in asset_result:
+            children_data = {}
+
+            if asset['type'] == "other":
+                children_data['protocol'] = asset['protocol']
+                children_data['domain'] = asset['host']
+                children_data['ip'] = asset['ip']
+            else:
+                children_data['protocol'] = asset['type']
+                children_data['domain'] = asset['domain']
+                children_data['ip'] = asset['host']
+
+            children_data['timestamp'] = asset['timestamp']
+            children_data['id'] = asset['id']
+            children_list.append(children_data)
+
+        if len(children_list) != 0:
+            tmp_result["children"] = children_list
+
+        return tmp_result
+
+    tasks = [fetch_asset_data(r) for r in result]
+    result_list = await asyncio.gather(*tasks)
+
+    return {
+        "code": 200,
+        "data": {
+            'list': result_list
+        }
+    }
+
+
+@router.post("/project/service/data")
+async def get_projects_service_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    query = await get_search_query("asset", request_data)
+    if query == "":
+        return {"message": "Search condition parsing error", "code": 500}
+
+    pipeline = [
+        {
+            "$match": query
+        },
+        {
+            "$group": {
+                "_id": {
+                    "$cond": {
+                        "if": {"$eq": ["$type", "other"]},
+                        "then": "$protocol",
+                        "else": "$type"
+                    }
+                },
+                "count": {"$sum": 1}
+            }
+        },
+        {
+            "$sort": {"count": -1}
+        }
+    ]
+
+    result = await db['asset'].aggregate(pipeline).to_list(None)
+
+    async def fetch_asset_data(r):
+        tmp_result = {
+            "service": r['_id'],
+            "id": generate_random_string(5)
+        }
+
+        query_copy = query.copy()
+        if r['_id'] == 'http' or r['_id'] == 'https':
+            query_copy["type"] = r['_id']
+        else:
+            query_copy["type"] = r['_id']
+            if r['_id'] == "":
+                tmp_result['service'] = 'unknown'
+
+        cursor: AsyncIOMotorCursor = db['asset'].find(query_copy, {
+            "_id": 0,
+            "id": {"$toString": "$_id"},
+            "host": 1,
+            "ip": 1,
+            "type": 1,
+            "timestamp": 1,
+            "webServer": 1,
+            "domain": 1,
+            "protocol": 1
+        }).sort([("timestamp", DESCENDING)])
+
+        asset_result = await cursor.to_list(length=None)
+        children_list = []
+
+        for asset in asset_result:
+            children_data = {}
+
+            if asset['type'] == "other":
+                children_data['protocol'] = asset['protocol']
+                children_data['domain'] = asset['host']
+                children_data['ip'] = asset['ip']
+            else:
+                children_data['service'] = asset['webServer']
+                children_data['protocol'] = asset['type']
+                children_data['domain'] = asset['domain']
+                children_data['ip'] = asset['host']
+
+            children_data['timestamp'] = asset['timestamp']
+            children_data['id'] = asset['id']
+            children_list.append(children_data)
+
+        if len(children_list) != 0:
+            tmp_result["children"] = children_list
+
+        return tmp_result
+
+    tasks = [fetch_asset_data(r) for r in result]
+    result_list = await asyncio.gather(*tasks)
+    return {
+        "code": 200,
+        "data": result_list
     }
