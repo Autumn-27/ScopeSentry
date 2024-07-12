@@ -236,14 +236,18 @@ async def get_projects_service_data(request_data: dict, db=Depends(get_mongo_db)
     async def fetch_asset_data(r):
         tmp_result = {
             "service": r['_id'],
-            "id": generate_random_string(5)
+            "id": generate_random_string(5),
+            "domain": "",
+            "ip": "",
+            "timestamp": "",
+            "port": ""
         }
 
         query_copy = query.copy()
         if r['_id'] == 'http' or r['_id'] == 'https':
             query_copy["type"] = r['_id']
         else:
-            query_copy["type"] = r['_id']
+            query_copy["protocol"] = r['_id']
             if r['_id'] == "":
                 tmp_result['service'] = 'unknown'
 
@@ -256,6 +260,7 @@ async def get_projects_service_data(request_data: dict, db=Depends(get_mongo_db)
             "timestamp": 1,
             "webServer": 1,
             "domain": 1,
+            "port": 1,
             "protocol": 1
         }).sort([("timestamp", DESCENDING)])
 
@@ -266,16 +271,19 @@ async def get_projects_service_data(request_data: dict, db=Depends(get_mongo_db)
             children_data = {}
 
             if asset['type'] == "other":
-                children_data['protocol'] = asset['protocol']
+                children_data['service'] = ''
                 children_data['domain'] = asset['host']
                 children_data['ip'] = asset['ip']
             else:
-                children_data['service'] = asset['webServer']
-                children_data['protocol'] = asset['type']
+                if 'webServer' in asset:
+                    children_data['service'] = asset['webServer']
+                else:
+                    children_data['service'] = ''
                 children_data['domain'] = asset['domain']
                 children_data['ip'] = asset['host']
 
             children_data['timestamp'] = asset['timestamp']
+            children_data['port'] = asset['port']
             children_data['id'] = asset['id']
             children_list.append(children_data)
 
@@ -288,5 +296,7 @@ async def get_projects_service_data(request_data: dict, db=Depends(get_mongo_db)
     result_list = await asyncio.gather(*tasks)
     return {
         "code": 200,
-        "data": result_list
+        "data": {
+            'list': result_list
+        }
     }
