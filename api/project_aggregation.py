@@ -152,7 +152,8 @@ async def get_projects_vul_data(request_data: dict, db=Depends(get_mongo_db), _:
     async def fetch_asset_data(r):
         tmp_result = {
             "port": r['_id'],
-            "id": generate_random_string(5)
+            "id": generate_random_string(5),
+            "count": r['count']
         }
 
         query_copy = query.copy()
@@ -236,6 +237,7 @@ async def get_projects_service_data(request_data: dict, db=Depends(get_mongo_db)
     async def fetch_asset_data(r):
         tmp_result = {
             "service": r['_id'],
+            "count": r['count'],
             "id": generate_random_string(5),
             "domain": "",
             "ip": "",

@@ -427,7 +427,8 @@ async def get_search_query(name, request_data):
                 if len(tmp_or) != 0:
                     query["$and"].append({"$or": tmp_or})
     fuzzy_query = request_data.get("fq", {})
-    fuzzy_query_key = {"sub_host": 'host', "sub_value": "value", "sub_ip": "ip", "port_port": "port", "port_domain":['domain', 'host'], 'port_ip': ['ip', 'host'], 'port_protocol': ['type', 'protocol']}
+    fuzzy_query_key = {"sub_host": 'host', "sub_value": "value", "sub_ip": "ip", "port_port": "port", "port_domain":['domain', 'host'], 'port_ip': ['ip', 'host'], 'port_protocol': ['type', 'protocol'],
+                       "service_service": ['type', 'webServer', 'protocol'], "service_domain": ['domain', 'host'], "service_port": "port", "service_ip": ['ip', 'host']}
     if fuzzy_query:
         if "$and" not in query:
             query["$and"] = []

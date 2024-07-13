@@ -28,7 +28,7 @@ async def get_projects_data(request_data: dict, db=Depends(get_mongo_db), _: dic
     query = {
         "$or": [
             {"name": {"$regex": search_query, "$options": "i"}},
-            {"target": {"$regex": search_query, "$options": "i"}}
+            {"root_domain": {"$regex": search_query, "$options": "i"}}
         ]
     } if search_query else {}
 
