@@ -347,6 +347,8 @@ async def url_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
                                                                   "id": {"$toString": "$_id"},
                                                                   "input": 1,
                                                                   "source": 1,
+                                                                  "status": 1,
+                                                                  "length": 1,
                                                                   "type": "$outputtype",
                                                                   "url": "$output",
                                                                   "time": 1,
