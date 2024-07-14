@@ -48,16 +48,6 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
                 document['id'] = str(document['_id'])
                 del document['_id']
                 APP[document['id']] = document['name']
-        if len(SensitiveRuleList) == 0:
-            collection = db["SensitiveRule"]
-            cursor = await collection.find({}, {"_id": 1, "name": 1})
-            async for document in cursor:
-                document['id'] = str(document['_id'])
-                del document['_id']
-                SensitiveRuleList[document['id']] = {
-                    "name": document['name'],
-                    "color": document['color']
-                }
         page_index = request_data.get("pageIndex", 1)
         page_size = request_data.get("pageSize", 10)
         query = await get_search_query("asset", request_data)
@@ -105,7 +95,11 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
                         for k in raw_data:
                             tmp['banner'] += k + ":" + str(raw_data[k]).strip("\n") + "\n"
                 except:
-                    tmp['banner'] = ""
+                    try:
+                        raw_data = r['raw'].decode('utf-8')
+                        tmp['banner'] = raw_data
+                    except:
+                        tmp['banner'] = ""
                 tmp['products'] = []
             else:
                 tmp['domain'] = r['url'].replace(f'{r["type"]}://', '')
@@ -342,6 +336,17 @@ async def url_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         query = await get_search_query("url", request_data)
         if query == "":
             return {"message": "Search condition parsing error", "code": 500}
+        sort = request_data.get("sort", {})
+        sort_by = [('_id', -1)]
+        if sort != {}:
+            if 'length' in sort:
+                sort_value = sort['length']
+                if sort_value is not None:
+                    if sort_value == "ascending":
+                        sort_value = 1
+                    else:
+                        sort_value = -1
+                    sort_by = [('length', sort_value)]
         total_count = await db['UrlScan'].count_documents(query)
         cursor: AsyncIOMotorCursor = ((db['UrlScan'].find(query, {"_id": 0,
                                                                   "id": {"$toString": "$_id"},
@@ -353,9 +358,9 @@ async def url_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
                                                                   "url": "$output",
                                                                   "time": 1,
                                                                   })
+                                       .sort(sort_by)
                                        .skip((page_index - 1) * page_size)
-                                       .limit(page_size))
-                                      .sort([("time", DESCENDING)]))
+                                       .limit(page_size)))
         result = await cursor.to_list(length=None)
         return {
             "code": 200,

@@ -2,6 +2,7 @@
 # @name: node
 # @auth: rainy-autumn@outlook.com
 # @version:
+import time
 from datetime import datetime
 from fastapi import WebSocket
 from fastapi import APIRouter, Depends
@@ -69,6 +70,9 @@ async def node_data_online(_: dict = Depends(verify_token), redis_con=Depends(ge
 async def node_config_update(config_data: dict, _: dict = Depends(verify_token), redis_con=Depends(get_redis_pool)):
     try:
         name = config_data.get("name")
+        old_name = config_data.get("oldName", "")
+        if old_name == "":
+            old_name = name
         max_task_num = config_data.get("maxTaskNum")
         state = config_data.get("state")
         if name is None or max_task_num is None or state is None:
@@ -76,6 +80,24 @@ async def node_config_update(config_data: dict, _: dict = Depends(verify_token),
 
         async with redis_con as redis:
             key = f"node:{name}"
+            if old_name != name:
+                old_name_key = f"node:{old_name}"
+                value = await redis_con.hgetall(old_name_key)
+                await redis_con.hmset(key, value)
+                await refresh_config(old_name, 'UpdateNodeName', name)
+                await redis_con.delete(old_name_key)
+                flag = 0
+                # while True:
+                #     key_exists = await redis_con.exists(key)
+                #     if flag == 5:
+                #         logger.error("未检测节点名称更新")
+                #         break
+                #     if key_exists:
+                #         await redis_con.delete(old_name_key)
+                #         break
+                #     else:
+                #         flag += 1
+                #         time.sleep(4)
             redis_state = await redis.hget(key, "state")
             if state:
                 if redis_state == "2":
@@ -85,6 +107,7 @@ async def node_config_update(config_data: dict, _: dict = Depends(verify_token),
                     await redis.hset(key, "state", "2")
             del config_data["name"]
             del config_data["state"]
+            del config_data["oldName"]
             for c in config_data:
                 await redis.hset(key, c, config_data[c])
             await refresh_config(name, 'nodeConfig')

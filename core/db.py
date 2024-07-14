@@ -58,7 +58,7 @@ async def create_database():
             await collection.insert_one(
                 {"name": "DirscanThread", 'value': '15', 'type': 'system'})
             await collection.insert_one(
-                {"name": "PortscanThread", 'value': '15', 'type': 'system'})
+                {"name": "PortscanThread", 'value': '5', 'type': 'system'})
             await collection.insert_one(
                 {"name": "CrawlerThread", 'value': '2', 'type': 'system'})
             await collection.insert_one(
@@ -132,7 +132,7 @@ async def create_database():
                 await collection.insert_one(
                     {"id": "page_monitoring", "name": "Page Monitoring", 'hour': 24, 'type': 'Page Monitoring', 'state': True})
         await get_fingerprint(client[DATABASE_NAME])
-        await get_sens_rule(client[DATABASE_NAME])
+        # await get_sens_rule(client[DATABASE_NAME])
         await get_project(client[DATABASE_NAME])
     except Exception as e:
         # 处理异常
@@ -153,16 +153,16 @@ async def get_fingerprint(client):
         APP[document['id']] = document['name']
 
 
-async def get_sens_rule(client):
-    collection = client["SensitiveRule"]
-    cursor = collection.find({}, {"_id": 1, "name": 1, "color": 1})
-    async for document in cursor:
-        document['id'] = str(document['_id'])
-        del document['_id']
-        SensitiveRuleList[document['id']] = {
-            "name": document['name'],
-            "color": document['color']
-        }
+# async def get_sens_rule(client):
+#     collection = client["SensitiveRule"]
+#     cursor = collection.find({}, {"_id": 1, "name": 1, "color": 1})
+#     async for document in cursor:
+#         document['id'] = str(document['_id'])
+#         del document['_id']
+#         SensitiveRuleList[document['id']] = {
+#             "name": document['name'],
+#             "color": document['color']
+#         }
 
 
 async def get_project(client):

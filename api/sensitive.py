@@ -11,7 +11,6 @@ from pymongo import DESCENDING
 from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor
 
-from core.config import SensitiveRuleList
 from core.db import get_mongo_db
 from core.redis_handler import refresh_config
 from loguru import logger
@@ -19,6 +18,7 @@ from loguru import logger
 from core.util import search_to_mongodb, get_search_query
 
 router = APIRouter()
+
 
 @router.post("/sensitive/data")
 async def get_sensitive_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
@@ -78,10 +78,6 @@ async def upgrade_sensitive_rule(request_data: dict, db=Depends(get_mongo_db), _
         # Perform the update
         result = await db.SensitiveRule.update_one(update_query, update_values)
         if result:
-            SensitiveRuleList[str(rule_id)] = {
-                "name": name,
-                "color": color
-            }
             await refresh_config('all', 'sensitive')
             return {"code": 200, "message": "SensitiveRule updated successfully"}
         else:
@@ -115,10 +111,6 @@ async def add_sensitive_rule(request_data: dict, db=Depends(get_mongo_db), _: di
 
         # Check if the insertion was successful
         if result.inserted_id:
-            SensitiveRuleList[str(result.inserted_id)] = {
-                "name": name,
-                "color": color
-            }
             await refresh_config('all', 'sensitive')
             return {"code": 200, "message": "SensitiveRule added successfully"}
         else:
@@ -129,6 +121,30 @@ async def add_sensitive_rule(request_data: dict, db=Depends(get_mongo_db), _: di
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
 
+
+@router.post("/sensitive/update/state")
+async def update_state_sensitive_rule(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    try:
+        rule_ids = request_data.get("ids", [])
+        state = request_data.get("state")
+        if state is None:
+            return {"code": 500, "message": "state not found"}
+        obj_ids = []
+        for rule_id in rule_ids:
+            if rule_id != None and rule_id != "":
+                obj_ids.append(ObjectId(rule_id))
+        result = await db.SensitiveRule.update_many({'_id': {'$in': obj_ids}}, {'$set': {'state': state}})
+        # Check if the deletion was successful
+        if result.modified_count > 0:
+            await refresh_config('all', 'sensitive')
+            return {"code": 200, "message": "SensitiveRules update successfully"}
+        else:
+            return {"code": 404, "message": "SensitiveRules not found"}
+
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
+        return {"message": "error", "code": 500}
 
 @router.post("/sensitive/delete")
 async def delete_sensitive_rules(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
@@ -146,8 +162,6 @@ async def delete_sensitive_rules(request_data: dict, db=Depends(get_mongo_db), _
 
         # Check if the deletion was successful
         if result.deleted_count > 0:
-            for rule_id in rule_ids:
-                del SensitiveRuleList[rule_id]
             await refresh_config('all', 'sensitive')
             return {"code": 200, "message": "SensitiveRules deleted successfully"}
         else:

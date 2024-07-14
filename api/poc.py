@@ -25,7 +25,7 @@ async def poc_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         # Get the total count of documents matching the search criteria
         total_count = await db.PocList.count_documents(query)
         # Perform pagination query and sort by time
-        cursor: AsyncIOMotorCursor = db.PocList.find(query, {"_id": 0, "id": {"$toString": "$_id"}, "name": 1, "level": 1, "time": 1}).sort([("level", DESCENDING), ("time", DESCENDING)]).skip((page_index - 1) * page_size).limit(page_size)
+        cursor: AsyncIOMotorCursor = db.PocList.find(query, {"_id": 0, "id": {"$toString": "$_id"}, "name": 1, "level": 1, "time": 1}).sort([("time", DESCENDING)]).skip((page_index - 1) * page_size).limit(page_size)
         result = await cursor.to_list(length=None)
         return {
             "code": 200,

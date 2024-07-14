@@ -7,7 +7,7 @@ import re
 import string
 import sys
 from loguru import logger
-from core.config import TIMEZONE, APP, SensitiveRuleList, Project_List
+from core.config import TIMEZONE, APP, Project_List
 from datetime import timezone
 from datetime import datetime, timedelta
 import json
@@ -404,7 +404,7 @@ async def get_search_query(name, request_data):
     if query == "" or query is None:
         return ""
     query = query[0]
-    filter_key = {'app':'app','color': 'color', 'status': 'status', 'level': 'level', 'type': 'type', 'project': 'project', 'port': 'port', 'protocol': ['protocol', 'type'], 'icon': 'faviconmmh3'}
+    filter_key = {'app':'app','color': 'color', 'status': 'status', 'level': 'level', 'type': 'type', 'project': 'project', 'port': 'port', 'protocol': ['protocol', 'type'], 'icon': 'faviconmmh3', "statuscode":"statuscode"}
     filter = request_data.get("filter", {})
     if filter:
         query["$and"] = []
