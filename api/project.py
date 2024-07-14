@@ -170,6 +170,8 @@ async def add_project_rule(request_data: dict, db=Depends(get_mongo_db), _: dict
         # Extract values from request data
         name = request_data.get("name")
         target = request_data.get("target")
+        runNow = request_data.get("runNow")
+        del request_data["runNow"]
         scheduledTasks = request_data.get("scheduledTasks", False)
         hour = request_data.get("hour", 1)
         t_list = []
@@ -206,7 +208,8 @@ async def add_project_rule(request_data: dict, db=Depends(get_mongo_db), _: dict
                 db.ScheduledTasks.insert_one(
                     {"id": str(result.inserted_id), "name": name, 'hour': hour, 'type': 'Project', 'state': True,
                      'lastTime': get_now_time(), 'nextTime': formatted_time, 'runner_id': str(result.inserted_id)})
-                await scheduler_project(str(result.inserted_id))
+                if runNow:
+                    await scheduler_project(str(result.inserted_id))
             background_tasks.add_task(update_project, root_domains, str(result.inserted_id))
             await refresh_config('all', 'project')
             Project_List[name] = str(result.inserted_id)
@@ -260,6 +263,8 @@ async def update_project_data(request_data: dict, db=Depends(get_mongo_db), _: d
         # Get the ID from the request data
         pro_id = request_data.get("id")
         hour = request_data.get("hour")
+        runNow = request_data.get("runNow")
+        del request_data["runNow"]
         # Check if ID is provided
         if not pro_id:
             return {"message": "ID is missing in the request data", "code": 400}
@@ -330,12 +335,15 @@ async def update_project_data(request_data: dict, db=Depends(get_mongo_db), _: d
         result = await db.project.update_one({"_id": ObjectId(pro_id)}, update_document)
         # Check if the update was successful
         if result:
+            if runNow:
+                await scheduler_project(str(pro_id))
             return {"message": "Task updated successfully", "code": 200}
         else:
             return {"message": "Failed to update data", "code": 404}
 
     except Exception as e:
         logger.error(str(e))
+        logger.error(traceback.format_exc())
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
 
@@ -432,23 +440,25 @@ async def scheduler_project(id):
     logger.info(f"Scheduler project {id}")
     async for db in get_mongo_db():
         async for redis in get_redis_pool():
-            next_time = scheduler.get_job(id).next_run_time
-            formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
-            doc = await db.ScheduledTasks.find_one({"id": id})
-            run_id_last = doc.get("runner_id", "")
-            if run_id_last != "":
-                progresskeys = await redis.keys(f"TaskInfo:progress:{run_id_last}:*")
-                for pgk in progresskeys:
-                    await redis.delete(pgk)
+            job = scheduler.get_job(id)
             task_id = generate_random_string(15)
-            update_document = {
-                "$set": {
-                    "lastTime": get_now_time(),
-                    "nextTime": formatted_time,
-                    "runner_id": task_id
+            if job:
+                next_time = job.next_run_time
+                formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
+                doc = await db.ScheduledTasks.find_one({"id": id})
+                run_id_last = doc.get("runner_id", "")
+                if run_id_last != "":
+                    progresskeys = await redis.keys(f"TaskInfo:progress:{run_id_last}:*")
+                    for pgk in progresskeys:
+                        await redis.delete(pgk)
+                update_document = {
+                    "$set": {
+                        "lastTime": get_now_time(),
+                        "nextTime": formatted_time,
+                        "runner_id": task_id
+                    }
                 }
-            }
-            await db.ScheduledTasks.update_one({"id": id}, update_document)
+                await db.ScheduledTasks.update_one({"id": id}, update_document)
             query = {"_id": ObjectId(id)}
             doc = await db.project.find_one(query)
             targetList = []
