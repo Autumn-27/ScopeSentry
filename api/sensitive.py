@@ -33,7 +33,7 @@ async def get_sensitive_data(request_data: dict, db=Depends(get_mongo_db), _: di
         total_count = await db.SensitiveRule.count_documents(query)
 
         # Perform pagination query
-        cursor: AsyncIOMotorCursor = db.SensitiveRule.find(query).skip((page_index - 1) * page_size).limit(page_size).sort([("timestamp", DESCENDING)])
+        cursor: AsyncIOMotorCursor = db.SensitiveRule.find(query).skip((page_index - 1) * page_size).limit(page_size).sort([("_id", DESCENDING)])
         result = await cursor.to_list(length=None)
         if len(result) == 0:
             return {

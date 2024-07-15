@@ -21,6 +21,7 @@ router = APIRouter()
 @router.post("/project/data")
 async def get_projects_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token),
                             background_tasks: BackgroundTasks = BackgroundTasks()):
+    background_tasks.add_task(update_project_count)
     search_query = request_data.get("search", "")
     page_index = request_data.get("pageIndex", 1)
     page_size = request_data.get("pageSize", 10)
@@ -57,7 +58,6 @@ async def get_projects_data(request_data: dict, db=Depends(get_mongo_db), _: dic
         results = await cursor.to_list(length=None)
         for result in results:
             result["AssetCount"] = result.get("AssetCount", 0)
-            background_tasks.add_task(update_project_count, id=result["id"])
         return results
 
     fetch_tasks = []
@@ -115,16 +115,24 @@ async def get_projects_all(db=Depends(get_mongo_db), _: dict = Depends(verify_to
         return {"message": "error","code":500}
 
 
-async def update_project_count(id):
-    async for db in get_mongo_db():
+async def update_project_count():
+    db = await get_mongo_db()
+    cursor = db.project.find({}, {"_id": 0, "id": {"$toString": "$_id"}})
+    results = await cursor.to_list(length=None)
+
+    async def update_count(id):
         query = {"project": {"$eq": id}}
-        total_count = await db['asset'].count_documents(query)
+        total_count = await db.asset.count_documents(query)
         update_document = {
             "$set": {
                 "AssetCount": total_count
             }
         }
         await db.project.update_one({"_id": ObjectId(id)}, update_document)
+
+    fetch_tasks = [update_count(r['id']) for r in results]
+
+    await asyncio.gather(*fetch_tasks)
 
 
 @router.post("/project/content")
