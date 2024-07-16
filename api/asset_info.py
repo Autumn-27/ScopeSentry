@@ -55,27 +55,24 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
         if query == "":
             return {"message": "Search condition parsing error", "code": 500}
         total_count = await db['asset'].count_documents(query)
-        cursor: AsyncIOMotorCursor = ((db['asset'].find(query, {"_id": 0,
-                                                                "id": {"$toString": "$_id"},
-                                                                "host": 1,
-                                                                "url": 1,
-                                                                "ip": 1,
-                                                                "port": 1,
-                                                                "protocol": 1,
-                                                                "type": 1,
-                                                                "title": 1,
-                                                                "statuscode": 1,
-                                                                "rawheaders": 1,
-                                                                "webfinger": 1,
-                                                                "technologies": 1,
-                                                                "raw": 1,
-                                                                "timestamp": 1,
-                                                                "iconcontent": 1
-                                                                })
-                                       .skip((page_index - 1) * page_size)
-                                       .limit(page_size))
-                                      .sort([("timestamp", DESCENDING)]))
-        result = cursor.to_list(length=None)
+        cursor = db['asset'].find(query, {"_id": 0,
+                                            "id": {"$toString": "$_id"},
+                                            "host": 1,
+                                            "url": 1,
+                                            "ip": 1,
+                                            "port": 1,
+                                            "protocol": 1,
+                                            "type": 1,
+                                            "title": 1,
+                                            "statuscode": 1,
+                                            "rawheaders": 1,
+                                            "webfinger": 1,
+                                            "technologies": 1,
+                                            "raw": 1,
+                                            "timestamp": 1,
+                                            "iconcontent": 1
+                                            }).skip((page_index - 1) * page_size).limit(page_size).sort([("timestamp", DESCENDING)])
+        result = await cursor.to_list(length=None)
         result_list = []
         for r in result:
             tmp = {}

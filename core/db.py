@@ -94,7 +94,7 @@ async def create_database():
             #     {"name": "DomainDic", 'value': domainDict, 'type': 'domainDict'})
             sensitive_data = get_sensitive()
             collection = client[DATABASE_NAME]["SensitiveRule"]
-            if sensitiveList:
+            if sensitive_data:
                 await collection.insert_many(sensitive_data)
 
             collection = client[DATABASE_NAME]["ScheduledTasks"]

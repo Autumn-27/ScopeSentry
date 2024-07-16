@@ -14,7 +14,7 @@ from starlette.responses import FileResponse
 
 from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor
-from core.db import get_mongo_db
+from core.db import get_mongo_db, get_project
 import pandas as pd
 from core.util import *
 from pymongo import ASCENDING, DESCENDING, results
@@ -151,7 +151,7 @@ async def fetch_data(db, collection, query, quantity, project_list):
         {"$project": {"_id": 0, "vulnid": 0}}
     ]
 
-    cursor = await db[collection].aggregate(pipeline)
+    cursor = db[collection].aggregate(pipeline)
     return cursor
 
 
@@ -172,10 +172,21 @@ def flatten_dict(d):
             items.append((k, v))
     return dict(items)
 
+
+def clean_string(value):
+    if isinstance(value, str):
+        # 过滤掉非法字符（ASCII码 < 32 或 >= 127）
+        return ''.join(char for char in value if 32 <= ord(char) < 127)
+    return value
+
+
 async def export_data_from_mongodb(quantity, query, file_name, index):
     logger.info("导出开始")
     async for db in get_mongo_db():
         try:
+            global Project_List
+            if len(Project_List) == 0:
+                await get_project(db)
             cursor = await fetch_data(db, index, query, quantity, Project_List)
             result = await cursor.to_list(length=None)
             relative_path = f'file/{file_name}.xlsx'
@@ -235,10 +246,10 @@ async def export_data_from_mongodb(quantity, query, file_name, index):
                 for doc in result:
                     flattened_doc = flatten_dict(doc)
                     if doc["type"] == "other":
-                        row = [flattened_doc.get(col, "") for col in other_columns.keys()]
+                        row = [clean_string(flattened_doc.get(col, "")) for col in other_columns.keys()]
                         other_ws.append(row)
                     else:
-                        row = [flattened_doc.get(col, "") for col in http_columns.keys()]
+                        row = [clean_string(flattened_doc.get(col, "")) for col in http_columns.keys()]
                         http_ws.append(row)
             else:
                 columns = {}
@@ -283,7 +294,7 @@ async def export_data_from_mongodb(quantity, query, file_name, index):
 
                 for doc in result:
                     flattened_doc = flatten_dict(doc)
-                    row = [flattened_doc.get(col, "") for col in columns.keys()]
+                    row = [clean_string(flattened_doc.get(col, "")) for col in columns.keys()]
                     ws.append(row)
             try:
                 wb.save(file_path)

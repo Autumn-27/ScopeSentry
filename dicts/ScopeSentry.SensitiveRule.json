@@ -104,7 +104,7 @@
   "name": "Chinese Bank Card ID",
   "regular": "'[^0-9]([1-9]\\d{12,18})[^0-9]'",
   "color": "orange",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -176,7 +176,7 @@
   "name": "Github Access Token",
   "regular": "[a-z0-9_-]*:[a-z0-9_\\-]+@github\\.com",
   "color": "green",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -210,9 +210,9 @@
     "$oid": "664b4407efaa5cfd9a79a8c6"
   },
   "name": "Create Script",
-  "regular": "(createElement\\(\\\"script\\\"\\))",
+  "regular": "(\\+\\{.*?\\}\\[[a-zA-Z]\\]\\+\".*?\\.js\")",
   "color": "green",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -230,7 +230,7 @@
   "name": "Potential cryptographic private key",
   "regular": "(\\.pem['\"])",
   "color": "green",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -239,7 +239,7 @@
   "name": "google_api",
   "regular": "(AIza[0-9A-Za-z-_]{35})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -248,7 +248,7 @@
   "name": "firebase",
   "regular": "(AAAA[A-Za-z0-9_-]{7}:[A-Za-z0-9_-]{140})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -257,7 +257,7 @@
   "name": "authorization_api",
   "regular": "(api[key|_key|\\s+]+[a-zA-Z0-9_\\-]{5,100})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -266,7 +266,7 @@
   "name": "Log file",
   "regular": "(\\.log['\"])",
   "color": "green",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -275,7 +275,7 @@
   "name": "Potential cryptographic key bundle",
   "regular": "(\\.pkcs12['\"])",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -284,7 +284,7 @@
   "name": "Potential cryptographic key bundle",
   "regular": "(\\.p12['\"])",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -293,7 +293,7 @@
   "name": "Potential cryptographic key bundle",
   "regular": "(\\.pfx['\"])",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -302,7 +302,7 @@
   "name": "Pidgin OTR private key",
   "regular": "(otr\\.private_key)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -311,7 +311,7 @@
   "name": "File",
   "regular": "(\\.((asc)|(ovpn)|(cscfg)|(rdp)|(mdf)|(sdf)|(sqlite)|(sqlite3)|(bek)|(tpm)|(fve)|(jks)|(psafe3)|(agilekeychain)|(keychain)|(pcap)|(gnucash)|(kwallet)|(tblk)|(dayone)|(exports)|(functions)|(extra)|(proftpdpasswd))['\"])",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -320,7 +320,7 @@
   "name": "Ruby On Rails secret token configuration file",
   "regular": "(secret_token\\.rb)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -329,7 +329,7 @@
   "name": "Carrierwave configuration file",
   "regular": "(carrierwave\\.rb)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -338,7 +338,7 @@
   "name": "Potential Ruby On Rails database configuration file",
   "regular": "(database\\.yml)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -347,7 +347,7 @@
   "name": "OmniAuth configuration file",
   "regular": "(omniauth\\.rb)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -356,7 +356,7 @@
   "name": "Django configuration file",
   "regular": "(settings\\.py)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -365,7 +365,7 @@
   "name": "Jenkins publish over SSH plugin file",
   "regular": "(jenkins.plugins.publish_over_ssh\\.BapSshPublisherPlugin.xml)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -374,7 +374,7 @@
   "name": "Potential Jenkins credentials file",
   "regular": "(credentials\\.xml)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -383,7 +383,7 @@
   "name": "Potential MediaWiki configuration file",
   "regular": "LocalSettings\\.php",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -392,7 +392,7 @@
   "name": "Sequel Pro MySQL database manager bookmark file",
   "regular": "Favorites\\.plist",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -401,7 +401,7 @@
   "name": "Little Snitch firewall configuration file",
   "regular": "(configuration\\.user\\.xpl)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -410,7 +410,7 @@
   "name": "Potential jrnl journal file",
   "regular": "(journal\\.txt)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -419,7 +419,7 @@
   "name": "Chef Knife configuration file",
   "regular": "(knife\\.rb)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -428,7 +428,7 @@
   "name": "Robomongo MongoDB manager configuration file",
   "regular": "(robomongo\\.json)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -437,7 +437,7 @@
   "name": "FileZilla FTP configuration file",
   "regular": "(filezilla\\.xml)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -446,7 +446,7 @@
   "name": "FileZilla FTP recent servers file",
   "regular": "(recentservers\\.xml)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -455,7 +455,7 @@
   "name": "Ventrilo server configuration file",
   "regular": "(ventrilo_srv\\.ini)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -464,7 +464,7 @@
   "name": "Terraform variable config file",
   "regular": "(terraform\\.tfvars)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -473,7 +473,7 @@
   "name": "SSH configuration file",
   "regular": "(\\.ssh_config)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -482,7 +482,7 @@
   "name": "Shell command history file",
   "regular": "\\.?(bash_|zsh_|sh_|z)history",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -491,7 +491,7 @@
   "name": "MySQL client command history file",
   "regular": "\\.mysql_history",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -500,7 +500,7 @@
   "name": "PostgreSQL client command history file",
   "regular": "(\\.?psql_history)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -509,7 +509,7 @@
   "name": "PostgreSQL password file",
   "regular": "(\\.?pgpass)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -518,7 +518,7 @@
   "name": "Ruby IRB console history file",
   "regular": "(\\.?irb_history)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -527,7 +527,7 @@
   "name": "Pidgin chat client account configuration file",
   "regular": "(\\.?purple/accounts\\\\.xml)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -536,7 +536,7 @@
   "name": "DBeaver SQL database manager configuration file",
   "regular": "(\\.?dbeaver-data-sources.xml)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -545,7 +545,7 @@
   "name": "Mutt e-mail client configuration file",
   "regular": "(\\.?muttrc)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -554,7 +554,7 @@
   "name": "S3cmd configuration file",
   "regular": "(\\.?s3cfg)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -563,7 +563,7 @@
   "name": "AWS CLI credentials file",
   "regular": "(\\.?aws/credentials)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -572,7 +572,7 @@
   "name": "SFTP connection configuration file",
   "regular": "(sftp-config(\\.json)?)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -581,7 +581,7 @@
   "name": "T command-line Twitter client configuration file",
   "regular": "(\\.?trc)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -590,7 +590,7 @@
   "name": "Shell configuration file",
   "regular": "(\\.?(bash|zsh|csh)rc)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -599,7 +599,7 @@
   "name": "Shell profile configuration file",
   "regular": "(\\.?(bash_|zsh_)profile)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -608,7 +608,7 @@
   "name": "Shell command alias configuration file",
   "regular": "\\.?(bash_|zsh_)aliases",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -617,7 +617,7 @@
   "name": "PHP configuration file",
   "regular": "(config(\\.inc)?\\.php)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -626,7 +626,7 @@
   "name": "GNOME Keyring database file",
   "regular": "(key(store|ring))",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -635,7 +635,7 @@
   "name": "KeePass password manager database file",
   "regular": "(kdbx?)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -644,7 +644,7 @@
   "name": "SQL dump file",
   "regular": "(sql(dump)?)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -653,7 +653,7 @@
   "name": "Apache htpasswd file",
   "regular": "(\\.?htpasswd)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -671,7 +671,7 @@
   "name": "Rubygems credentials file",
   "regular": "(\\.?gem/credentials)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -680,7 +680,7 @@
   "name": "Tugboat DigitalOcean management tool configuration",
   "regular": "(\\.?tugboat)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -689,7 +689,7 @@
   "name": "DigitalOcean doctl command-line client configuration file",
   "regular": "(doctl/config.yaml)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -698,7 +698,7 @@
   "name": "git-credential-store helper credentials file",
   "regular": "(\\.?git-credentials)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -707,7 +707,7 @@
   "name": "GitHub Hub command-line client configuration file",
   "regular": "config/hub",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -716,7 +716,7 @@
   "name": "Git configuration file",
   "regular": "(\\.?gitconfig)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -725,7 +725,7 @@
   "name": "Chef private key",
   "regular": "(\\.?chef/(.*)\\\\.pem)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -734,7 +734,7 @@
   "name": "Potential Linux shadow file",
   "regular": "(etc/shadow)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -743,7 +743,7 @@
   "name": "Potential Linux passwd file",
   "regular": "(etc/passwd)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -752,7 +752,7 @@
   "name": "Docker configuration file",
   "regular": "(\\.?dockercfg)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -761,7 +761,7 @@
   "name": "NPM configuration file",
   "regular": "(\\.?npmrc)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -779,7 +779,7 @@
   "name": "AWS Access Key ID Value",
   "regular": "((A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -797,7 +797,7 @@
   "name": "AWS Access Key ID",
   "regular": "(?:'||\")?(A3T[A-Z0-9]{16}|AKIA[A-Z0-9]{16}|AGPA[A-Z0-9]{16}|AIDA[A-Z0-9]{16}|AROA[A-Z0-9]{16}|AIPA[A-Z0-9]{16}|ANPA[A-Z0-9]{16}|ANVA[A-Z0-9]{16}|ASIA[A-Z0-9]{16})(?:'||\")?",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -806,7 +806,7 @@
   "name": "AWS Account ID",
   "regular": "((\"|'|`)?((?i)aws)?_?((?i)account)_?((?i)id)?(\"|'|`)?\\s{0,50}(:|=>|=)\\s{0,50}(\"|'|`)?[0-9]{4}-?[0-9]{4}-?[0-9]{4}(\"|'|`)?)",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -815,7 +815,7 @@
   "name": "Artifactory API Token",
   "regular": "((?:\\s|=|:|\"|^)AKC[a-zA-Z0-9]{10,})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -824,7 +824,7 @@
   "name": "Artifactory Password",
   "regular": "((?:\\s|=|:|\"|^)AP[\\dABCDEF][a-zA-Z0-9]{8,})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -833,7 +833,7 @@
   "name": "Authorization Basic",
   "regular": "basic [a-zA-Z0-9_\\-:\\.=]+",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -842,7 +842,7 @@
   "name": "Authorization Authorization Bearer",
   "regular": "(bearer [a-zA-Z0-9_\\\\-\\\\.=]+)",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -851,7 +851,7 @@
   "name": "AWS Client ID",
   "regular": "((A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -860,7 +860,7 @@
   "name": "AWS MWS Key",
   "regular": "(amzn\\.mws\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -869,7 +869,7 @@
   "name": "AWS MWS Key",
   "regular": "(amzn\\.mws\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -878,7 +878,7 @@
   "name": "AWS Secret Key",
   "regular": "((?i)aws(.{0,20})?(?-i)['\\\"][0-9a-zA-Z\\/+]{40}['\"])",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -887,7 +887,7 @@
   "name": "Base64",
   "regular": "((eyJ|YTo|Tzo|PD[89]|aHR0cHM6L|aHR0cDo|rO0)[a-zA-Z0-9+/]+={0,2})",
   "color": "null",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -896,7 +896,7 @@
   "name": "Basic Auth Credentials",
   "regular": "(?<=:\\/\\/)[a-zA-Z0-9]+:[a-zA-Z0-9]+@[a-zA-Z0-9]+\\.[a-zA-Z]+",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -905,7 +905,7 @@
   "name": "Cloudinary Basic Auth",
   "regular": "(cloudinary:\\/\\/[0-9]{15}:[0-9A-Za-z]+@[a-z]+)",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -914,7 +914,7 @@
   "name": "Facebook Access Token",
   "regular": "(EAACEdEose0cBA[0-9A-Za-z]+)",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -923,7 +923,7 @@
   "name": "Facebook Client ID",
   "regular": "((?i)(facebook|fb)(.{0,20})?['\\\"][0-9]{13,17})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -932,7 +932,7 @@
   "name": "Facebook Oauth",
   "regular": "([f|F][a|A][c|C][e|E][b|B][o|O][o|O][k|K].*['|\\\"][0-9a-f]{32}['|\\\"])",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -941,7 +941,7 @@
   "name": "Facebook Secret Key",
   "regular": "((?i)(facebook|fb)(.{0,20})?(?-i)['\\\"][0-9a-f]{32})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -950,7 +950,7 @@
   "name": "Github",
   "regular": "((?i)github(.{0,20})?(?-i)['\\\"][0-9a-zA-Z]{35,40})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -959,7 +959,7 @@
   "name": "Google API Key",
   "regular": "(AIza[0-9A-Za-z\\\\-_]{35})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -968,7 +968,7 @@
   "name": "Google Cloud Platform API Key",
   "regular": "((?i)(google|gcp|youtube|drive|yt)(.{0,20})?['\\\"][AIza[0-9a-z\\\\-_]{35}]['\\\"])",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -977,7 +977,7 @@
   "name": "Google Oauth",
   "regular": "([0-9]+-[0-9A-Za-z_]{32}\\.apps\\.googleusercontent\\.com)",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -986,7 +986,7 @@
   "name": "Heroku API Key",
   "regular": "([h|H][e|E][r|R][o|O][k|K][u|U].{0,30}[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -995,7 +995,7 @@
   "name": "LinkedIn Secret Key",
   "regular": "((?i)linkedin(.{0,20})?['\\\"][0-9a-z]{16}['\\\"])",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1004,7 +1004,7 @@
   "name": "Mailchamp API Key",
   "regular": "[0-9a-f]{32}-us[0-9]{1,2}",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1013,7 +1013,7 @@
   "name": "Mailgun API Key",
   "regular": "(key-[0-9a-zA-Z]{32})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1022,7 +1022,7 @@
   "name": "Picatic API Key",
   "regular": "(sk_live_[0-9a-z]{32})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1031,7 +1031,7 @@
   "name": "Slack Token",
   "regular": "(xox[baprs]-([0-9a-zA-Z]{10,48})?)",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1040,7 +1040,7 @@
   "name": "Slack Webhook",
   "regular": "(https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1049,7 +1049,7 @@
   "name": "Stripe API Key",
   "regular": "((?:r|s)k_live_[0-9a-zA-Z]{24})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1058,7 +1058,7 @@
   "name": "Square Access Token",
   "regular": "(sqOatp-[0-9A-Za-z\\\\-_]{22})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1067,7 +1067,7 @@
   "name": "Square Oauth Secret",
   "regular": "(sq0csp-[ 0-9A-Za-z\\\\-_]{43})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1076,7 +1076,7 @@
   "name": "Twilio API Key",
   "regular": "(SK[0-9a-fA-F]{32})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1085,7 +1085,7 @@
   "name": "Twitter Oauth",
   "regular": "([t|T][w|W][i|I][t|T][t|T][e|E][r|R].{0,30}['\\\"\\\\s][0-9a-zA-Z]{35,44}['\\\"\\\\s])",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1094,7 +1094,7 @@
   "name": "Twitter Secret Key",
   "regular": "(?i)twitter(.{0,20})?['\\\"][0-9a-z]{35,44}",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1103,7 +1103,7 @@
   "name": "google_captcha",
   "regular": "(6L[0-9A-Za-z-_]{38}|^6[0-9a-zA-Z_-]{39})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1112,7 +1112,7 @@
   "name": "google_oauth",
   "regular": "(ya29\\.[0-9A-Za-z\\-_]+)",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1121,7 +1121,7 @@
   "name": "amazon_aws_access_key_id",
   "regular": "A[SK]IA[0-9A-Z]{16}",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1130,7 +1130,7 @@
   "name": "amazon_aws_url",
   "regular": "s3\\.amazonaws.com[/]+|[a-zA-Z0-9_-]*\\.s3\\.amazonaws.com",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1139,7 +1139,7 @@
   "name": "authorization_api",
   "regular": "(api[key|\\s*]+[a-zA-Z0-9_\\-]+)",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1148,7 +1148,7 @@
   "name": "twilio_account_sid",
   "regular": "(AC[a-zA-Z0-9_\\-]{32})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1157,7 +1157,7 @@
   "name": "twilio_app_sid",
   "regular": "AP[a-zA-Z0-9_\\-]{32}",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1166,7 +1166,7 @@
   "name": "paypal_braintree_access_token",
   "regular": "(access_token\\$production\\$[0-9a-z]{16}\\$[0-9a-f]{32})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1175,7 +1175,7 @@
   "name": "square_oauth_secret",
   "regular": "(sq0csp-[ 0-9A-Za-z\\-_]{43}|sq0[a-z]{3}-[0-9A-Za-z\\-_]{22,43})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1184,7 +1184,7 @@
   "name": "square_access_token",
   "regular": "(sqOatp-[0-9A-Za-z\\-_]{22}|EAAA[a-zA-Z0-9]{60})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1193,7 +1193,7 @@
   "name": "rsa_private_key",
   "regular": "(-----BEGIN RSA PRIVATE KEY-----)",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1202,7 +1202,7 @@
   "name": "ssh_dsa_private_key",
   "regular": "(-----BEGIN DSA PRIVATE KEY-----)",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1211,7 +1211,7 @@
   "name": "ssh_dc_private_key",
   "regular": "(-----BEGIN EC PRIVATE KEY-----)",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1220,7 +1220,7 @@
   "name": "pgp_private_block",
   "regular": "(-----BEGIN PGP PRIVATE KEY BLOCK-----)",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1229,7 +1229,7 @@
   "name": "json_web_token",
   "regular": "eyJ[A-Za-z0-9_-]*\\.[A-Za-z0-9_-]*\\.[A-Za-z0-9_\\-\\/.+=]*",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1238,7 +1238,7 @@
   "name": "Google Cloud",
   "regular": "(GOOG[\\w\\W]{10,30})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1247,7 +1247,7 @@
   "name": "Microsoft Azure",
   "regular": "(AZ[A-Za-z0-9]{34,40})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1256,7 +1256,7 @@
   "name": "腾讯云",
   "regular": "(AKID[A-Za-z0-9]{13,20})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1265,7 +1265,7 @@
   "name": "亚马逊云",
   "regular": "(AKIA[A-Za-z0-9]{16})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1274,7 +1274,7 @@
   "name": "IBM Cloud",
   "regular": "(IBM[A-Za-z0-9]{10,40})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1283,7 +1283,7 @@
   "name": "Oracle Cloud",
   "regular": "(OCID[A-Za-z0-9]{10,40})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1292,7 +1292,7 @@
   "name": "阿里云",
   "regular": "(LTAI[A-Za-z0-9]{12,20})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1310,7 +1310,7 @@
   "name": "百度云",
   "regular": "(AK[A-Za-z0-9]{10,40})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1319,7 +1319,7 @@
   "name": "京东云",
   "regular": "(AK[A-Za-z0-9]{10,40})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1328,7 +1328,7 @@
   "name": "UCloud",
   "regular": "(UC[A-Za-z0-9]{10,40})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1337,7 +1337,7 @@
   "name": "青云",
   "regular": "(QY[A-Za-z0-9]{10,40})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1346,7 +1346,7 @@
   "name": "金山云",
   "regular": "(KS3[A-Za-z0-9]{10,40})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1355,7 +1355,7 @@
   "name": "联通云",
   "regular": "(LTC[A-Za-z0-9]{10,60})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1364,7 +1364,7 @@
   "name": "移动云",
   "regular": "(YD[A-Za-z0-9]{10,60})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1373,7 +1373,7 @@
   "name": "电信云",
   "regular": "(CTC[A-Za-z0-9]{10,60})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1382,7 +1382,7 @@
   "name": "一云通",
   "regular": "(YYT[A-Za-z0-9]{10,60})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1391,7 +1391,7 @@
   "name": "用友云",
   "regular": "(YY[A-Za-z0-9]{10,40})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1400,7 +1400,7 @@
   "name": "南大通用云",
   "regular": "CI[A-Za-z0-9]{10,40}",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1409,7 +1409,7 @@
   "name": "G-Core Labs",
   "regular": "(gcore[A-Za-z0-9]{10,30})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1418,7 +1418,7 @@
   "name": "MailChimp API Key",
   "regular": "([0-9a-f]{32}-us[0-9]{12})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1427,7 +1427,7 @@
   "name": "Outlook team",
   "regular": "((https://outlook\\.office.com/webhook/[0-9a-f-]{36}@))",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1436,7 +1436,7 @@
   "name": "Sauce Token",
   "regular": "(?i)sauce.{0,50}(\"|'|`)?[0-9a-f-]{36}(\"|'|`)?",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1445,7 +1445,7 @@
   "name": "SonarQube Docs API Key",
   "regular": "((?i)sonar.{0,50}(\"|'|`)?[0-9a-f]{40}(\"|'|`)?)",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1454,7 +1454,7 @@
   "name": "HockeyApp",
   "regular": "(?i)hockey.{0,50}(\"|'|`)?[0-9a-f]{32}(\"|'|`)?",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1463,7 +1463,7 @@
   "name": "NuGet API Key",
   "regular": "(oy2[a-z0-9]{43})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1472,7 +1472,7 @@
   "name": "StackHawk API Key",
   "regular": "(hawk\\.[0-9A-Za-z\\-_]{20}\\.[0-9A-Za-z\\-_]{20})",
   "color": "red",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1481,7 +1481,7 @@
   "name": "Heroku config file",
   "regular": "(heroku\\.json)",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1490,7 +1490,7 @@
   "name": "jwt_token",
   "regular": "eyJ[A-Za-z0-9_\\/+-]{10,}={0,2}\\.[A-Za-z0-9_\\/+\\-]{15,}={0,2}\\\\.[A-Za-z0-9_\\/+\\-]{10,}={0,2}",
   "color": "yellow",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -1499,5 +1499,50 @@
   "name": "INFO-KEY",
   "regular": "(access_key|access_token|admin_pass|admin_user|algolia_admin_key|algolia_api_key|alias_pass|alicloud_access_key|amazon_secret_access_key|amazonaws|ansible_vault_password|aos_key|api_key|api_key_secret|api_key_sid|api_secret|api.googlemaps AIza|apidocs|apikey|apiSecret|app_debug|app_id|app_key|app_log_level|app_secret|appkey|appkeysecret|application_key|appsecret|appspot|auth_token|authorizationToken|authsecret|aws_access|aws_access_key_id|aws_bucket|aws_key|aws_secret|aws_secret_key|aws_token|AWSSecretKey|b2_app_key|bashrc password|bintray_apikey|bintray_gpg_password|bintray_key|bintraykey|bluemix_api_key|bluemix_pass|browserstack_access_key|bucket_password|bucketeer_aws_access_key_id|bucketeer_aws_secret_access_key|built_branch_deploy_key|bx_password|cache_driver|cache_s3_secret_key|cattle_access_key|cattle_secret_key|certificate_password|ci_deploy_password|client_secret|client_zpk_secret_key|clojars_password|cloud_api_key|cloud_watch_aws_access_key|cloudant_password|cloudflare_api_key|cloudflare_auth_key|cloudinary_api_secret|cloudinary_name|codecov_token|conn.login|connectionstring|consumer_key|consumer_secret|credentials|cypress_record_key|database_password|database_schema_test|datadog_api_key|datadog_app_key|db_password|db_server|db_username|dbpasswd|dbpassword|dbuser|deploy_password|digitalocean_ssh_key_body|digitalocean_ssh_key_ids|docker_hub_password|docker_key|docker_pass|docker_passwd|docker_password|dockerhub_password|dockerhubpassword|dot-files|dotfiles|droplet_travis_password|dynamoaccesskeyid|dynamosecretaccesskey|elastica_host|elastica_port|elasticsearch_password|encryption_key|encryption_password|env.heroku_api_key|env.sonatype_password|eureka.awssecretkey)",
   "color": "yellow",
+  "state": false
+},
+{
+  "_id": {
+    "$oid": "669683ab793467d11cf992b1"
+  },
+  "name": "Druid",
+  "regular": "(Druid Stat Index)",
+  "color": "red",
+  "state": true
+},
+{
+  "_id": {
+    "$oid": "66968474793467d11cf992b7"
+  },
+  "name": "Router Push",
+  "regular": "(\\$router\\.push)",
+  "color": "red",
+  "state": true
+},
+{
+  "_id": {
+    "$oid": "669684d5793467d11cf992bc"
+  },
+  "name": "AccessKey",
+  "regular": "((?i)((access_key|access_token|admin_pass|admin_user|algolia_admin_key|algolia_api_key|alias_pass|alicloud_access_key|amazon_secret_access_key|amazonaws|ansible_vault_password|aos_key|api_key|api_key_secret|api_key_sid|api_secret|api.googlemaps AIza|apidocs|apikey|apiSecret|app_debug|app_id|app_key|app_log_level|app_secret|appkey|appkeysecret|application_key|appsecret|appspot|auth_token|authorizationToken|authsecret|aws_access|aws_access_key_id|aws_bucket|aws_key|aws_secret|aws_secret_key|aws_token|AWSSecretKey|b2_app_key|bashrc password|bintray_apikey|bintray_gpg_password|bintray_key|bintraykey|bluemix_api_key|bluemix_pass|browserstack_access_key|bucket_password|bucketeer_aws_access_key_id|bucketeer_aws_secret_access_key|built_branch_deploy_key|bx_password|cache_driver|cache_s3_secret_key|cattle_access_key|cattle_secret_key|certificate_password|ci_deploy_password|client_secret|client_zpk_secret_key|clojars_password|cloud_api_key|cloud_watch_aws_access_key|cloudant_password|cloudflare_api_key|cloudflare_auth_key|cloudinary_api_secret|cloudinary_name|codecov_token|config|conn.login|connectionstring|consumer_key|consumer_secret|credentials|cypress_record_key|database_password|database_schema_test|datadog_api_key|datadog_app_key|db_password|db_server|db_username|dbpasswd|dbpassword|dbuser|deploy_password|digitalocean_ssh_key_body|digitalocean_ssh_key_ids|docker_hub_password|docker_key|docker_pass|docker_passwd|docker_password|dockerhub_password|dockerhubpassword|dot-files|dotfiles|droplet_travis_password|dynamoaccesskeyid|dynamosecretaccesskey|elastica_host|elastica_port|elasticsearch_password|encryption_key|encryption_password|env.heroku_api_key|env.sonatype_password|eureka.awssecretkey)[a-z0-9_ .\\-,]{0,25})(=|>|:=|\\|\\|:|<=|=>|:).{0,5}['\\\"\\ ]([0-9a-zA-Z\\-_=]{8,64})['\\\"\\ ])",
+  "color": "red",
+  "state": true
+},
+{
+  "_id": {
+    "$oid": "669684f0793467d11cf992bf"
+  },
+  "name": "AccessKey2",
+  "regular": "(['\\\"\\ ](GOOG[\\w\\W]{10,30})['\\\"\\ ]|(['\\\"\\ ]AZ[A-Za-z0-9]{34,40}['\\\"\\ ])|(['\\\"\\ ]AKID[A-Za-z0-9]{13,20}['\\\"\\ ])|(['\\\"\\ ]AKIA[A-Za-z0-9]{16}['\\\"\\ ])|(['\\\"\\ ][a-zA-Z0-9]{8}(-[a-zA-Z0-9]{4}){3}-[a-zA-Z0-9]{12}['\\\"\\ ])|(['\\\"\\ ]OCID[A-Za-z0-9]{10,40}['\\\"\\ ])|(['\\\"\\ ]LTAI[A-Za-z0-9]{12,20}['\\\"\\ ])|(['\\\"\\ ][A-Z0-9]{20}$['\\\"\\ ])|(['\\\"\\ ]JDC_[A-Z0-9]{28,32}['\\\"\\ ])|(['\\\"\\ ]AK[A-Za-z0-9]{10,40}['\\\"\\ ])|(['\\\"\\ ]UC[A-Za-z0-9]{10,40}['\\\"\\ ])|(['\\\"\\ ]QY[A-Za-z0-9]{10,40}['\\\"\\ ])|(['\\\"\\ ]AKLT[a-zA-Z0-9-_]{16,28}['\\\"\\ ])|(['\\\"\\ ]LTC[A-Za-z0-9]{10,60}['\\\"\\ ])|(['\\\"\\ ]YD[A-Za-z0-9]{10,60}['\\\"\\ ])|(['\\\"\\ ]CTC[A-Za-z0-9]{10,60}['\\\"\\ ])|(['\\\"\\ ]YYT[A-Za-z0-9]{10,60}['\\\"\\ ])|(['\\\"\\ ]YY[A-Za-z0-9]{10,40}['\\\"\\ ])|(['\\\"\\ ]CI[A-Za-z0-9]{10,40}['\\\"\\ ])|(['\\\"\\ ]gcore[A-Za-z0-9]{10,30}['\\\"\\ ]))",
+  "color": "red",
+  "state": true
+},
+{
+  "_id": {
+    "$oid": "66968503793467d11cf992c2"
+  },
+  "name": "敏感信息",
+  "regular": "((?i)((access_key|appsecret|app_secret|access_token|password|secretkey|accesskey|accesskeyid|accesskeysecret|secret_key|pwd|test_user|admin_pass|admin_user|algolia_admin_key|algolia_api_key|alias_pass|alicloud_access_key|amazon_secret_access_key|amazonaws|ansible_vault_password|aos_key|api_key|api_key_secret|api_key_sid|api_secret|api.googlemaps AIza|apidocs|apikey|apiSecret|app_debug|app_id|app_key|app_log_level|app_secret|appkey|appkeysecret|application_key|appsecret|appspot|auth_token|authorizationToken|authsecret|aws_access|aws_access_key_id|aws_bucket|aws_key|aws_secret|aws_secret_key|aws_token|AWSSecretKey|b2_app_key|bashrc password|bintray_apikey|bintray_gpg_password|bintray_key|bintraykey|bluemix_api_key|bluemix_pass|browserstack_access_key|bucket_password|bucketeer_aws_access_key_id|bucketeer_aws_secret_access_key|built_branch_deploy_key|bx_password|cache_driver|cache_s3_secret_key|cattle_access_key|cattle_secret_key|certificate_password|ci_deploy_password|client_secret|client_zpk_secret_key|clojars_password|cloud_api_key|cloud_watch_aws_access_key|cloudant_password|cloudflare_api_key|cloudflare_auth_key|cloudinary_api_secret|cloudinary_name|codecov_token|config|conn.login|connectionstring|consumer_key|consumer_secret|credentials|cypress_record_key|database_password|database_schema_test|datadog_api_key|datadog_app_key|db_password|db_server|db_username|dbpasswd|dbpassword|dbuser|deploy_password|digitalocean_ssh_key_body|digitalocean_ssh_key_ids|docker_hub_password|docker_key|docker_pass|docker_passwd|docker_password|dockerhub_password|dockerhubpassword|dot-files|dotfiles|droplet_travis_password|dynamoaccesskeyid|dynamosecretaccesskey|elastica_host|elastica_port|elasticsearch_password|encryption_key|encryption_password|env.heroku_api_key|env.sonatype_password|eureka.awssecretkey)[a-z0-9_.]{0,25})(=|>|:=|:|<=|=>|:).{0,5}['\\\"\\ ]([0-9a-zA-Z-_=]{12,64})['\\\"\\ ])",
+  "color": "red",
   "state": true
 }]

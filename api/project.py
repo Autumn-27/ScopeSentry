@@ -116,23 +116,23 @@ async def get_projects_all(db=Depends(get_mongo_db), _: dict = Depends(verify_to
 
 
 async def update_project_count():
-    db = await get_mongo_db()
-    cursor = db.project.find({}, {"_id": 0, "id": {"$toString": "$_id"}})
-    results = await cursor.to_list(length=None)
+    async for db in get_mongo_db():
+        cursor = db.project.find({}, {"_id": 0, "id": {"$toString": "$_id"}})
+        results = await cursor.to_list(length=None)
 
-    async def update_count(id):
-        query = {"project": {"$eq": id}}
-        total_count = await db.asset.count_documents(query)
-        update_document = {
-            "$set": {
-                "AssetCount": total_count
+        async def update_count(id):
+            query = {"project": {"$eq": id}}
+            total_count = await db.asset.count_documents(query)
+            update_document = {
+                "$set": {
+                    "AssetCount": total_count
+                }
             }
-        }
-        await db.project.update_one({"_id": ObjectId(id)}, update_document)
+            await db.project.update_one({"_id": ObjectId(id)}, update_document)
 
-    fetch_tasks = [update_count(r['id']) for r in results]
+        fetch_tasks = [update_count(r['id']) for r in results]
 
-    await asyncio.gather(*fetch_tasks)
+        await asyncio.gather(*fetch_tasks)
 
 
 @router.post("/project/content")

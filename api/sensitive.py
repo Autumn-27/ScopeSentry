@@ -256,7 +256,8 @@ async def get_sensitive_result_data2(request_data: dict, db=Depends(get_mongo_db
                     "time": 1,
                     "sid": 1,
                     "match": 1,
-                    "color": 1
+                    "color": 1,
+                    "md5": 1
                 }
             },
             {
@@ -267,7 +268,7 @@ async def get_sensitive_result_data2(request_data: dict, db=Depends(get_mongo_db
                     "_id": "$url",
                     "time": {"$first": "$time"},  # 记录相同url下最早插入数据的时间
                     "url": {"$first": "$url"},
-                    "body_id": {"$last": {"$toString": "$_id"}},  # 记录相同url下最早插入数据的_id
+                    "body_id": {"$last": {"$toString": "$md5"}},  # 记录相同url下最早插入数据的_id
                     "children": {
                         "$push": {
                             "id": {"$toString": "$_id"},
@@ -316,7 +317,7 @@ async def get_sensitive_result_body_rules(request_data: dict, db=Depends(get_mon
             return {"message": "ID is missing in the request data", "code": 400}
 
         # Query the database for content based on ID
-        query = {"_id": ObjectId(sensitive_result_id)}
+        query = {"md5": sensitive_result_id}
         doc = await db.SensitiveResult.find_one(query)
 
         if not doc:
