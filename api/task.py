@@ -4,6 +4,8 @@
 # @version:
 import asyncio
 import json
+import traceback
+
 from loguru import logger
 from bson import ObjectId
 from fastapi import APIRouter, Depends, BackgroundTasks
@@ -305,9 +307,13 @@ async def update_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict
                 await db.ScheduledTasks.update_one({"id": task_id}, {"$set": {'state': False}})
         if newScheduledTasks:
             if hour != old_hour:
+                await db.ScheduledTasks.update_one({"id": task_id}, {"$set": {'hour': hour}})
                 job = scheduler.get_job(task_id)
                 if job is not None:
-                    scheduler.remove_job(job)
+                    scheduler.remove_job(task_id)
+                    scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[task_id],
+                                      id=str(task_id), jobstore='mongo')
+                else:
                     scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[task_id],
                                       id=str(task_id), jobstore='mongo')
 
@@ -324,7 +330,7 @@ async def update_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict
 
     except Exception as e:
         logger.error(str(e))
-        # Handle exceptions as needed
+        logger.error(traceback.format_exc())
         return {"message": "error", "code": 500}
 
 

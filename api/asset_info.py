@@ -5,6 +5,7 @@
 # @time      : 2024/4/14 17:14
 # -------------------------------------------
 import json
+import traceback
 
 from bson import ObjectId
 from fastapi import APIRouter, Depends
@@ -74,7 +75,7 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
                                        .skip((page_index - 1) * page_size)
                                        .limit(page_size))
                                       .sort([("timestamp", DESCENDING)]))
-        result = await cursor.to_list(length=None)
+        result = cursor.to_list(length=None)
         result_list = []
         for r in result:
             tmp = {}
@@ -127,6 +128,7 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
         }
     except Exception as e:
         logger.error(str(e))
+        logger.error(traceback.format_exc())
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
 

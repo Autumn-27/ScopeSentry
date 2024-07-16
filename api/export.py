@@ -5,6 +5,7 @@
 # @time      : 2024/6/16 16:11
 # -------------------------------------------
 import os
+import traceback
 
 from bson import ObjectId
 from fastapi import APIRouter, Depends, BackgroundTasks
@@ -150,7 +151,7 @@ async def fetch_data(db, collection, query, quantity, project_list):
         {"$project": {"_id": 0, "vulnid": 0}}
     ]
 
-    cursor = db[collection].aggregate(pipeline)
+    cursor = await db[collection].aggregate(pipeline)
     return cursor
 
 
@@ -300,6 +301,7 @@ async def export_data_from_mongodb(quantity, query, file_name, index):
             await db.export.update_one({"file_name": file_name}, update_document)
         except Exception as e:
             logger.error(str(e))
+            logger.error(traceback.format_exc())
             update_document = {
                 "$set": {
                     "state": 2,
