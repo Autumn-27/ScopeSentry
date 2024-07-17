@@ -87,11 +87,15 @@ async def update():
                     logger.error("No DomainDic content to upload.")
 
             # 更新敏感信息
-            await db.SensitiveRule.delete_many({})
             sensitive_data = get_sensitive()
             collection = db["SensitiveRule"]
             if sensitive_data:
-                await collection.insert_many(sensitive_data)
+                for s in sensitive_data:
+                    await collection.update_one(
+                        {"name": s['name']},
+                        {"$set": s},
+                        upsert=True
+                    )
             await db.config.update_one({"name": "version"}, {"$set": {"update": True, "version": float(VERSION)}})
 
 
@@ -256,4 +260,5 @@ def banner():
 
 if __name__ == "__main__":
     banner()
-    uvicorn.run("main:app", host="0.0.0.0", port=8082, reload=True)
+    file_path = os.path.join(os.getcwd(), "file")
+    uvicorn.run("main:app", host="0.0.0.0", port=8082, reload=True, reload_excludes=[file_path])

@@ -2,8 +2,11 @@
 # @name: poc_manage
 # @auth: rainy-autumn@outlook.com
 # @version:
+import os
+
+import yaml
 from bson import ObjectId
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, UploadFile
 from motor.motor_asyncio import AsyncIOMotorCursor
 from api.users import verify_token
 from core.db import get_mongo_db
@@ -11,6 +14,7 @@ from pymongo import ASCENDING, DESCENDING
 from loguru import logger
 from core.redis_handler import refresh_config
 from core.util import *
+import zipfile
 router = APIRouter()
 
 
@@ -39,6 +43,49 @@ async def poc_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
+
+
+def is_safe_path(base_path, target_path):
+    # 计算规范化路径
+    abs_base_path = os.path.abspath(base_path)
+    abs_target_path = os.path.abspath(target_path)
+    return abs_target_path.startswith(abs_base_path)
+
+
+@router.post("/poc/data/import")
+async def poc_import(file: UploadFile = File(...), db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    if not file.filename.endswith('.zip'):
+        return {"message": "not zip", "code": 500}
+    file_name = generate_random_string(5)
+    relative_path = f'file\\{file_name}.zip'
+    zip_file_path = os.path.join(os.getcwd(), relative_path)
+    with open(zip_file_path, "wb") as f:
+        f.write(await file.read())
+
+    yaml_files = []
+    unzip_path = f'file\\{file_name}'
+    file_path = os.path.join(os.getcwd(), unzip_path)
+    extract_path = file_path
+    os.makedirs(extract_path, exist_ok=True)
+    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+        for member in zip_ref.namelist():
+            member_path = os.path.join(extract_path, member)
+            if not is_safe_path(extract_path, member_path):
+                return {"message": "Unsafe file path detected in ZIP file", "code": 500}
+        zip_ref.extractall(extract_path)
+
+        for root, dirs, files in os.walk(extract_path):
+            for filename in files:
+                if filename.endswith('.yaml') or filename.endswith('.yml'):
+                    file_path = os.path.join(root, filename)
+                    yaml_files.append(file_path)
+    for yaml_file in yaml_files:
+        with open(yaml_file, 'r') as stream:
+            try:
+                data = yaml.safe_load(stream)
+                print(data["id"])
+            except:
+                pass
 
 
 @router.get("/poc/data/all")

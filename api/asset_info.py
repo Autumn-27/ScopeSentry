@@ -44,7 +44,7 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
     try:
         if len(APP) == 0:
             collection = db["FingerprintRules"]
-            cursor = await collection.find({}, {"_id": 1, "name": 1})
+            cursor = collection.find({}, {"_id": 1, "name": 1})
             async for document in cursor:
                 document['id'] = str(document['_id'])
                 del document['_id']
@@ -114,7 +114,10 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
                     tmp['products'] = tmp['products'] + technologies
                 if r['webfinger'] is not None:
                     for w in r['webfinger']:
-                        tmp['products'].append(APP[w])
+                        if w in APP:
+                            tmp['products'].append(APP[w])
+                        else:
+                            tmp['products'].append(w)
             result_list.append(tmp)
         return {
             "code": 200,

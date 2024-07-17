@@ -12,7 +12,8 @@ from loguru import logger
 
 
 async def get_mongo_db():
-    client = AsyncIOMotorClient(f"mongodb://{DATABASE_USER}:{DATABASE_PASSWORD}@{MONGODB_IP}:{str(MONGODB_PORT)}",
+
+    client = AsyncIOMotorClient(f"mongodb://{DATABASE_USER}:{quote_plus(DATABASE_PASSWORD)}@{MONGODB_IP}:{str(MONGODB_PORT)}",
                                 serverSelectionTimeoutMS=10000, unicode_decode_error_handler='ignore')
     db = client[DATABASE_NAME]
     try:

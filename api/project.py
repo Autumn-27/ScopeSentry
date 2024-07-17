@@ -123,12 +123,13 @@ async def update_project_count():
         async def update_count(id):
             query = {"project": {"$eq": id}}
             total_count = await db.asset.count_documents(query)
-            update_document = {
-                "$set": {
-                    "AssetCount": total_count
+            if total_count != 0:
+                update_document = {
+                    "$set": {
+                        "AssetCount": total_count
+                    }
                 }
-            }
-            await db.project.update_one({"_id": ObjectId(id)}, update_document)
+                await db.project.update_one({"_id": ObjectId(id)}, update_document)
 
         fetch_tasks = [update_count(r['id']) for r in results]
 

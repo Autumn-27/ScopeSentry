@@ -133,7 +133,7 @@ async def export_data(request_data: dict, db=Depends(get_mongo_db), _: dict = De
 
 async def fetch_data(db, collection, query, quantity, project_list):
     # 构造替换字段值的pipeline
-    branches = []
+    branches = [{"case": {"$eq": ["$project", ""]}, "then": ""}]
     for new_value, original_value in project_list.items():
         branches.append({"case": {"$eq": ["$project", original_value]}, "then": new_value})
 
