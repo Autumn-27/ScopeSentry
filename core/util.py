@@ -18,7 +18,7 @@ from core.db import get_mongo_db
 
 def calculate_md5_from_content(content):
     md5 = hashlib.md5()
-    md5.update(content.encode("utf-8"))  # 将内容编码为 utf-8 后更新 MD5
+    md5.update(content.encode("utf-8"))
     return md5.hexdigest()
 
 

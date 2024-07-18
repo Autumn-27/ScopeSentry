@@ -261,4 +261,4 @@ def banner():
 if __name__ == "__main__":
     banner()
     file_path = os.path.join(os.getcwd(), "file")
-    uvicorn.run("main:app", host="0.0.0.0", port=8082, reload=True, reload_excludes=[file_path])
+    uvicorn.run("main:app", host="0.0.0.0", port=8082, reload=False, reload_excludes=[file_path])
