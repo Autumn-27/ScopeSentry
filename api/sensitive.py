@@ -4,7 +4,7 @@
 # @version:
 from datetime import datetime
 
-from bson import ObjectId
+from bson import ObjectId, SON
 from fastapi import APIRouter, Depends
 from pymongo import DESCENDING
 
@@ -304,6 +304,35 @@ async def get_sensitive_result_data2(request_data: dict, db=Depends(get_mongo_db
         # Handle exceptions as needed
         return {"message": "error","code":500}
 
+
+@router.post("/sensitive/result/names")
+async def get_sensitive_result_names(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    query = await get_search_query("sens", request_data)
+    if query == "":
+        return {"message": "Search condition parsing error", "code": 500}
+
+    pipeline = [
+        {
+            "$match": query
+        },
+        {"$group": {"_id": "$sid", "count": {"$sum": 1}, "color": {"$first": "$color"}}},
+        {"$sort": SON([("count", -1)])},
+        {
+            "$project": {
+                "name": "$_id",
+                "count": 1,
+                "_id": 0,
+                "color": 1
+            }
+        }
+    ]
+    result = await db['SensitiveResult'].aggregate(pipeline).to_list(None)
+    return {
+            "code": 200,
+            "data": {
+                'list': result
+            }
+        }
 
 
 @router.post("/sensitive/result/body")

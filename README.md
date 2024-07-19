@@ -98,6 +98,17 @@ WX:
 
 ![](docs/images/project-cn.png)
 
+
+## 项目资产聚合
+### 面板-概况
+![](docs/images/project-dsh.png)
+### 子域名
+![](docs/images/project-subdomain.png)
+### 端口
+![](docs/images/project-port.png)
+### 服务
+![](docs/images/project-server.png)
+
 ## 任务
 
 ![](docs/images/task-cn.png)

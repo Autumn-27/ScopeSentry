@@ -147,7 +147,8 @@ async def get_page_monitoring_time():
     async for db in get_mongo_db():
         result = await db.ScheduledTasks.find_one({"id": "page_monitoring"})
         time = result['hour']
-        return time
+        flag = result['state']
+        return time, flag
 
 
 async def create_page_monitoring_task():
