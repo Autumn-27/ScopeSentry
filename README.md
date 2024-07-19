@@ -71,7 +71,7 @@ WX:
 ![alt text](docs/images/asset-cn.png)
 
 ### 快捷语法搜索：
-![alt text](/images/search.gif)
+![alt text](docs/images/search.gif)
 ### 子域名
 ![alt text](docs/images/subdomain-cn.png)
 
