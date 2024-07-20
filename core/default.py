@@ -69,7 +69,7 @@ def get_project_data():
         project_id = d['_id']['$oid']
         tmp = []
         for t in d['target'].split('\n'):
-            root_domain = get_root_domain(t)
+            root_domain = get_root_domain(t).replace("\n", "").replace("\r", "").strip()
             if root_domain is not None and root_domain != "":
                 if root_domain not in tmp:
                     tmp.append(root_domain)
