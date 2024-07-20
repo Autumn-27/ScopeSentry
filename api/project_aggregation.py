@@ -115,7 +115,7 @@ async def get_projects_subdomain_data(request_data: dict, db=Depends(get_mongo_d
             if r['ip'] is None:
                 r['ip'] = []
             result_list.append(r)
-        results.append({"host": root_domain, "type": "", "value": [], "ip": [], "id": generate_random_string(5), "children": result_list})
+        results.append({"host": root_domain, "type": "", "value": [], "ip": [], "id": generate_random_string(5), "children": result_list, "count": len(result_list)})
     return {
         "code": 200,
         "data": {
