@@ -4,7 +4,7 @@
 # @version:
 import time
 from urllib.parse import quote_plus
-
+from motor.motor_asyncio import AsyncIOMotorGridFSBucket
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCursor
 from core.default import *
 from core.config import *
@@ -82,6 +82,19 @@ async def create_database():
             # dirDict = get_dirDict()
             # await collection.insert_one(
             #     {"name": "DirDic", 'value': dirDict, 'type': 'dirDict'})
+            # 目录扫描字典
+            fs = AsyncIOMotorGridFSBucket(client)
+            content = get_dirDict()
+            if content:
+                byte_content = content.encode('utf-8')
+                await fs.upload_from_stream('dirdict', byte_content)
+            # 子域名字典
+            content = get_domainDict()
+            if content:
+                byte_content = content.encode('utf-8')
+                await fs.upload_from_stream('DomainDic', byte_content)
+                logger.info("Document DomainDic uploaded to GridFS.")
+
             await collection.insert_one(
                 {"name": "notification", 'dirScanNotification': True,
                  'portScanNotification': True, 'sensitiveNotification': True,
