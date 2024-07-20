@@ -4,7 +4,7 @@
 # @version:
 import asyncio
 import json
-from loguru import logger
+from urllib.parse import quote_plus
 import redis.asyncio as redis
 
 from core.db import *
@@ -33,7 +33,7 @@ async def get_redis_pool():
                 socket.TCP_KEEPINTVL: 10,
             }
         }
-    redis_con = await redis.from_url(f"redis://:{REDIS_PASSWORD}@{REDIS_IP}:{REDIS_PORT}", encoding="utf-8",
+    redis_con = await redis.from_url(f"redis://:{quote_plus(REDIS_PASSWORD)}@{REDIS_IP}:{REDIS_PORT}", encoding="utf-8",
                                      decode_responses=True, **keep_alive_config)
     try:
         yield redis_con
