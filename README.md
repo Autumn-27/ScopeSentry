@@ -55,6 +55,7 @@ QQ:
 
 WX:
 
+<img src="docs/images/wx-2.jpg" alt="WX" width="200"/>
 <img src="docs/images/wx.png" alt="WX" width="200"/>
 
 ## 截图
