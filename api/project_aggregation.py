@@ -5,6 +5,7 @@
 # @time      : 2024/7/8 21:02
 # -------------------------------------------
 import asyncio
+import copy
 import time
 import traceback
 
@@ -89,6 +90,39 @@ async def get_projects_vul_data(request_data: dict, db=Depends(get_mongo_db), _:
     }
 
 
+async def process_domains(root_domains, query, db):
+    cursor: AsyncIOMotorCursor = db['subdomain'].find(query, {
+        "_id": 0, "id": {"$toString": "$_id"}, "host": 1, "type": 1, "value": 1, "ip": 1, "time": 1
+    }).sort([("time", -1)])
+    result = await cursor.to_list(length=None)
+
+    domain_results = {root_domain: [] for root_domain in root_domains}
+    for r in result:
+        host = r.get('host', '')
+        for root_domain in root_domains:
+            if host.endswith(root_domain):
+                domain_results[root_domain].append(r)
+                break
+
+    processed_results = []
+    for root_domain, result_list in domain_results.items():
+        for r in result_list:
+            if r['value'] is None:
+                r['value'] = []
+            if r['ip'] is None:
+                r['ip'] = []
+        processed_results.append({
+            "host": root_domain,
+            "type": "",
+            "value": [],
+            "ip": [],
+            "id": generate_random_string(5),
+            "children": result_list,
+            "count": len(result_list)
+        })
+
+    return processed_results
+
 @router.post("/project/subdomain/data")
 async def get_projects_subdomain_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     filter = request_data.get("filter", {})
@@ -101,21 +135,8 @@ async def get_projects_subdomain_data(request_data: dict, db=Depends(get_mongo_d
     query = await get_search_query("subdomain", request_data)
     if query == "":
         return {"message": "Search condition parsing error", "code": 500}
-    results = []
-    for root_domain in doc["root_domains"]:
-        query["$and"].append({"host": {"$regex": f"{root_domain}$"}})
-        cursor: AsyncIOMotorCursor = db['subdomain'].find(query, {
-            "_id": 0, "id": {"$toString": "$_id"}, "host": 1, "type": 1, "value": 1, "ip": 1, "time": 1
-        }).sort([("time", -1)])
-        result = await cursor.to_list(length=None)
-        result_list = []
-        for r in result:
-            if r['value'] is None:
-                r['value'] = []
-            if r['ip'] is None:
-                r['ip'] = []
-            result_list.append(r)
-        results.append({"host": root_domain, "type": "", "value": [], "ip": [], "id": generate_random_string(5), "children": result_list, "count": len(result_list)})
+    root_domains = doc["root_domains"]
+    results = await process_domains(root_domains, query, db)
     return {
         "code": 200,
         "data": {
