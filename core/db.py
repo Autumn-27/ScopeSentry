@@ -51,27 +51,10 @@ async def create_database():
                                          'password': 'b0ce71fcbed8a6ca579d52800145119cc7d999dc8651b62dfc1ced9a984e6e64'})
 
             collection = db["config"]
-            # 系统配置
+            # 扫描模块配置
             await collection.insert_one(
-                {"name": "timezone", 'value': 'Asia/Shanghai', 'type': 'system'})
-            await collection.insert_one(
-                {"name": "MaxTaskNum", 'value': '7', 'type': 'system'})
-            await collection.insert_one(
-                {"name": "DirscanThread", 'value': '15', 'type': 'system'})
-            await collection.insert_one(
-                {"name": "PortscanThread", 'value': '5', 'type': 'system'})
-            await collection.insert_one(
-                {"name": "CrawlerThread", 'value': '2', 'type': 'system'})
-            await collection.insert_one(
-                {"name": "UrlMaxNum", 'value': '500', 'type': 'system'})
-            await collection.insert_one(
-                {"name": "UrlThread", 'value': '5', 'type': 'system'})
-            # 设置时区为Asia/Shanghai
-            # SHA_TZ = timezone(TIMEZONE)
-            # timezone('Asia/Shanghai')
-            # utc_now = datetime.utcnow().replace(tzinfo=timezone.utc)
-            # time_now = utc_now.astimezone(SHA_TZ)
-            # formatted_time = time_now.strftime("%Y-%m-%d %H:%M:%S")
+                {"name": "Modules", 'value': ModulesConfig, 'type': 'system'})
+
             # subfinder配置
             collection = db["config"]
             # 插入一条数据
