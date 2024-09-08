@@ -67,94 +67,7 @@ async def save_subdomain_data(file: UploadFile = File(...), db=Depends(get_mongo
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
-# @router.post("/subdomain/save")
-# async def save_subdomain_data(data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-#     try:
-#         # Update the document with name equal to "DomainDic"
-#         result = await db.config.update_one({"name": "DomainDic"}, {"$set": {"value": data.get('dict','')}}, upsert=True)
-#         if result.modified_count > 0:
-#             await refresh_config('all', 'subdomain')
-#             return {"code": 200, "message": "Successfully updated DomainDic value"}
-#         else:
-#             return {"code": 404, "message": "DomainDic not found"}
-#
-#     except Exception as e:
-#         logger.error(str(e))
-#         # Handle exceptions as needed
-#         return {"message": "error", "code": 500}
 
-# @router.get("/dir/data")
-# async def get_dir_data(db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-#     try:
-#         # Find document with name equal to "DomainDic"
-#         result = await db.config.find_one({"name": "DirDic"})
-#         return {
-#             "code": 200,
-#             "data": {
-#                 "dict": result.get("value", '')
-#             }
-#         }
-#
-#     except Exception as e:
-#         logger.error(str(e))
-#         # Handle exceptions as needed
-#         return {"message": "error","code":500}
-
-
-@router.get("/dir/data")
-async def get_dir_data(db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    try:
-        fs = AsyncIOMotorGridFSBucket(db)
-
-        # 查找文件
-        file_doc = await fs.find({"filename": "dirdict"}).to_list(1)
-
-        if not file_doc:
-            return {'code': 404, 'message': 'file is not found'}
-
-        file_id = file_doc[0]['_id']
-        grid_out = await fs.open_download_stream(file_id)
-
-        # 返回文件流
-        return StreamingResponse(grid_out, media_type="application/octet-stream",
-                                 headers={"Content-Disposition": f"attachment; filename=dirdict"})
-    except Exception as e:
-        logger.error(str(e))
-
-# @router.post("/dir/save")
-# async def save_subdomain_data(data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-#     try:
-#         # Update the document with name equal to "DomainDic"
-#         result = await db.config.update_one({"name": "DirDic"}, {"$set": {"value": data.get('dict','')}}, upsert=True)
-#         if result.modified_count > 0:
-#             await refresh_config('all', 'dir')
-#             return {"code": 200, "message": "Successfully updated DirDic value"}
-#         else:
-#             return {"code": 404, "message": "DirDic not found"}
-#
-#     except Exception as e:
-#         logger.error(str(e))
-#         # Handle exceptions as needed
-#         return {"message": "error", "code": 500}
-
-
-@router.post("/dir/save")
-async def save_dir_data(file: UploadFile = File(...), db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    try:
-        content = await file.read()
-        fs = AsyncIOMotorGridFSBucket(db)
-
-        old_file = await fs.find({'filename': 'dirdict'}).to_list(1)
-        if old_file:
-            await fs.delete(old_file[0]['_id'])
-
-        await fs.upload_from_stream('dirdict', content)
-        await refresh_config('all', 'dir')
-        return {"code": 200, "message": "upload successful"}
-    except Exception as e:
-        logger.error(str(e))
-        # Handle exceptions as needed
-        return {"message": "error", "code": 500}
 
 @router.post("/port/data")
 async def get_port_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
@@ -242,6 +155,7 @@ async def add_port_dict(request_data: dict, db=Depends(get_mongo_db), _: dict = 
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
+
 
 @router.post("/port/delete")
 async def delete_port_dict(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):

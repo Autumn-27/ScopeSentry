@@ -9,6 +9,7 @@ from starlette.staticfiles import StaticFiles
 
 from core.config import *
 from core.default import get_dirDict, get_domainDict, get_sensitive
+from core.update import update14, update15
 
 set_config()
 
@@ -37,7 +38,6 @@ async def update():
     async for db in get_mongo_db():
         # 判断版本
         result = await db.config.find_one({"name": "version"})
-        version = 0
         update = False
         if result is not None:
             version = result["version"]
@@ -47,56 +47,11 @@ async def update():
         else:
             await db.config.insert_one({"name": "version", "version": float(VERSION), "update": False})
             version = float(VERSION)
-        if version <= 1.4 and update is False:
-            # 默认项目有个root_domain为空导致匹配上所有资产
-            cursor = db.project.find({"root_domains": ""}, {"_id": 1, "root_domains": 1})
-            async for document in cursor:
-                logger.info("Update found empty root_domains")
-                root_domain = []
-                for root in document["root_domains"]:
-                    if root != "":
-                        root_domain.append(root)
-                update_document = {
-                    "$set": {
-                        "root_domains": root_domain,
-                    }
-                }
-                await db.project.update_one({"_id": document['_id']}, update_document)
-            # 修改目录字典存储方式
-            fs = AsyncIOMotorGridFSBucket(db)
-            result = await db.config.find_one({"name": "DirDic"})
-            if result:
-                await db.config.delete_one({"name": "DirDic"})
-                content = get_dirDict()
-                if content:
-                    byte_content = content.encode('utf-8')
-                    await fs.upload_from_stream('dirdict', byte_content)
-                    logger.info("Document DirDict uploaded to GridFS.")
-                else:
-                    logger.error("No dirdict content to upload.")
-            # 修改子域名字典存储方式
-            result = await db.config.find_one({"name": "DomainDic"})
-            if result:
-                await db.config.delete_one({"name": "DomainDic"})
-                content = get_domainDict()
-                if content:
-                    byte_content = content.encode('utf-8')
-                    await fs.upload_from_stream('DomainDic', byte_content)
-                    logger.info("Document DomainDic uploaded to GridFS.")
-                else:
-                    logger.error("No DomainDic content to upload.")
-
-            # 更新敏感信息
-            sensitive_data = get_sensitive()
-            collection = db["SensitiveRule"]
-            if sensitive_data:
-                for s in sensitive_data:
-                    await collection.update_one(
-                        {"name": s['name']},
-                        {"$set": s},
-                        upsert=True
-                    )
-            await db.config.update_one({"name": "version"}, {"$set": {"update": True, "version": float(VERSION)}})
+        if update is False:
+            if version < 1.4:
+                await update14(db)
+            if version < 1.5:
+                await update15(db)
 
 
 @app.on_event("startup")
@@ -116,7 +71,8 @@ async def startup_db_client():
         from api.scheduled_tasks import get_page_monitoring_time, create_page_monitoring_task
         pat, flag = await get_page_monitoring_time()
         if flag:
-            scheduler.add_job(create_page_monitoring_task, 'interval', hours=pat, id='page_monitoring', jobstore='mongo')
+            scheduler.add_job(create_page_monitoring_task, 'interval', hours=pat, id='page_monitoring',
+                              jobstore='mongo')
     asyncio.create_task(subscribe_log_channel())
 
 
@@ -132,9 +88,12 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 from api import users, sensitive, dictionary, poc, configuration, fingerprint, node, project, task, asset_info, \
     page_monitoring, vulnerability, SubdoaminTaker, scheduled_tasks, notification, system, export, project_aggregation
 
+from api.dictionary import router as dictionary_router
+
 app.include_router(users.router, prefix='/api')
 app.include_router(sensitive.router, prefix='/api')
 app.include_router(dictionary.router, prefix='/api/dictionary')
+app.include_router(dictionary_router, prefix='/api/dictionary')
 app.include_router(poc.router, prefix='/api')
 app.include_router(configuration.router, prefix='/api/configuration')
 app.include_router(fingerprint.router, prefix='/api')
@@ -152,6 +111,8 @@ app.include_router(system.router, prefix='/api')
 app.include_router(export.router, prefix='/api')
 app.include_router(project_aggregation.router, prefix='/api/project_aggregation')
 app.mount("/assets", StaticFiles(directory="static/assets"), name="assets")
+
+
 @app.get("/logo.png", response_class=FileResponse)
 async def get_logo(request: Request):
     return FileResponse("static/logo.png")
@@ -160,6 +121,8 @@ async def get_logo(request: Request):
 @app.get("/favicon.ico", response_class=FileResponse)
 async def get_favicon(request: Request):
     return FileResponse("static/favicon.ico")
+
+
 # @app.middleware("http")
 # async def process_http_requests(request, call_next):
 #     url = str(request.url)

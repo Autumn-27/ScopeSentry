@@ -53,8 +53,9 @@ async def create_database():
             collection = db["config"]
             # 扫描模块配置
             await collection.insert_one(
-                {"name": "Modules", 'value': ModulesConfig, 'type': 'system'})
-
+                {"name": "ModulesConfig", 'value': ModulesConfig, 'type': 'system'})
+            await collection.insert_one(
+                {"name": "timezone", 'value': 'Asia/Shanghai', 'type': 'system'})
             # subfinder配置
             collection = db["config"]
             # 插入一条数据
@@ -70,12 +71,12 @@ async def create_database():
             content = get_dirDict()
             if content:
                 byte_content = content.encode('utf-8')
-                await fs.upload_from_stream('dirdict', byte_content)
+                await fs.upload_from_stream('dir_default', byte_content)
             # 子域名字典
             content = get_domainDict()
             if content:
                 byte_content = content.encode('utf-8')
-                await fs.upload_from_stream('DomainDic', byte_content)
+                await fs.upload_from_stream('domain_default', byte_content)
                 logger.info("Document DomainDic uploaded to GridFS.")
 
             await collection.insert_one(

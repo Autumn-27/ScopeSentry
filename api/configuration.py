@@ -19,6 +19,7 @@ from core.util import generate_random_string
 
 router = APIRouter()
 
+
 @router.get("/subfinder/data")
 async def get_subfinder_data(db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
