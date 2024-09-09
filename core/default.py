@@ -256,23 +256,23 @@ def get_root_domain(url):
     return root_domain
 
 
-ModulesConfig = '''maxGoroutineCount: 0 # 根据需要设置最大协程数量
+ModulesConfig = '''maxGoroutineCount: 7 # 根据需要设置最大协程数量
 subdomainScan:
-  goroutineCount: 0  # 设置"子域名扫描"模块最大并发
-subdomainResultHandl:
-  goroutineCount: 0  # 设置"子域名结果处理"模块最大并发
+  goroutineCount: 7  # 设置"子域名扫描"模块最大并发
+subdomainResultHandle:
+  goroutineCount: 7  # 设置"子域名结果处理"模块最大并发
 assetMapping:
-  goroutineCount: 0  # 设置"资产测绘"模块最大并发
-assetResultHandl:
-  goroutineCount: 0  # 设置"资产结果处理"模块最大并发
+  goroutineCount: 7  # 设置"资产测绘"模块最大并发
+assetResultHandle:
+  goroutineCount: 7  # 设置"资产结果处理"模块最大并发
 portScan:
-  goroutineCount: 0  # 设置"端口扫描"模块最大并发
+  goroutineCount: 7  # 设置"端口扫描"模块最大并发
 URLScan:
-  goroutineCount: 0  # 设置"URL扫描"模块最大并发
-URLScanResultHandl:
-  goroutineCount: 0  # 设置"URL扫描结果处理"模块最大并发
+  goroutineCount: 7  # 设置"URL扫描"模块最大并发
+URLScanResultHandle:
+  goroutineCount: 7  # 设置"URL扫描结果处理"模块最大并发
 webCrawler:
-  goroutineCount: 0  # 设置"爬虫扫描"模块最大并发
+  goroutineCount: 3  # 设置"爬虫扫描"模块最大并发
 vulnerabilityScan:
-  goroutineCount: 0  # 设置"漏洞扫描"模块最大并发
+  goroutineCount: 3  # 设置"漏洞扫描"模块最大并发
 '''
