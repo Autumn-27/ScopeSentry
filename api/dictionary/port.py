@@ -1,75 +1,22 @@
-# -*- coding:utf-8 -*-　　
-# @name: dictionary
-# @auth: rainy-autumn@outlook.com
-# @version:
+# -------------------------------------
+# @file      : port.py
+# @author    : Autumn
+# @contact   : rainy-autumn@outlook.com
+# @time      : 2024/10/17 22:44
+# -------------------------------------------
+
 from bson import ObjectId
-from fastapi import APIRouter, Depends, File, UploadFile
-from starlette.responses import StreamingResponse
+from fastapi import APIRouter, Depends
 
 from api.users import verify_token
-from motor.motor_asyncio import AsyncIOMotorCursor, AsyncIOMotorGridFSBucket
+from motor.motor_asyncio import AsyncIOMotorCursor
 from core.db import get_mongo_db
 from core.redis_handler import refresh_config
 from loguru import logger
 router = APIRouter()
 
-# @router.get("/subdomain/data")
-# async def get_subdomain_data(db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-#     try:
-#         # Find document with name equal to "DomainDic"
-#         result = await db.config.find_one({"name": "DomainDic"})
-#         return {
-#             "code": 200,
-#             "data": {
-#                 "dict": result.get("value", '')
-#             }
-#         }
-#
-#     except Exception as e:
-#         logger.error(str(e))
-#         # Handle exceptions as needed
-#         return {"message": "error","code":500}
-@router.get("/subdomain/data")
-async def get_subdomain_data(db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    try:
-        fs = AsyncIOMotorGridFSBucket(db)
 
-        # 查找文件
-        file_doc = await fs.find({"filename": "DomainDic"}).to_list(1)
-
-        if not file_doc:
-            return {'code': 404, 'message': 'file is not found'}
-
-        file_id = file_doc[0]['_id']
-        grid_out = await fs.open_download_stream(file_id)
-
-        # 返回文件流
-        return StreamingResponse(grid_out, media_type="application/octet-stream",
-                                 headers={"Content-Disposition": f"attachment; filename=DomainDic"})
-    except Exception as e:
-        logger.error(str(e))
-
-
-@router.post("/subdomain/save")
-async def save_subdomain_data(file: UploadFile = File(...), db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    try:
-        content = await file.read()
-        fs = AsyncIOMotorGridFSBucket(db)
-
-        old_file = await fs.find({'filename': 'DomainDic'}).to_list(1)
-        if old_file:
-            await fs.delete(old_file[0]['_id'])
-
-        await fs.upload_from_stream('DomainDic', content)
-        await refresh_config('all', 'subdomain')
-        return {"code": 200, "message": "upload successful"}
-    except Exception as e:
-        logger.error(str(e))
-        # Handle exceptions as needed
-        return {"message": "error", "code": 500}
-
-
-@router.post("/port/data")
+@router.post("/data")
 async def get_port_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         page_index = request_data.get("pageIndex", 1)
@@ -101,7 +48,8 @@ async def get_port_data(request_data: dict, db=Depends(get_mongo_db), _: dict = 
         # Handle exceptions as needed
         return {"message": "error","code":500}
 
-@router.post("/port/upgrade")
+
+@router.post("/upgrade")
 async def upgrade_port_dict(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         # Extract values from request data
@@ -128,7 +76,7 @@ async def upgrade_port_dict(request_data: dict, db=Depends(get_mongo_db), _: dic
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
 
-@router.post("/port/add")
+@router.post("/add")
 async def add_port_dict(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         # Extract values from request data
@@ -157,7 +105,7 @@ async def add_port_dict(request_data: dict, db=Depends(get_mongo_db), _: dict = 
         return {"message": "error", "code": 500}
 
 
-@router.post("/port/delete")
+@router.post("/delete")
 async def delete_port_dict(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         # Extract the list of IDs from the request_data dictionary

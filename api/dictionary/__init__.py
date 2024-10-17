@@ -7,6 +7,8 @@
 from fastapi import APIRouter
 
 from .manage import router as manage_routeer
+from .port import router as port_router
 router = APIRouter()
 
 router.include_router(manage_routeer, prefix="/manage")
+router.include_router(port_router, prefix="/port")
