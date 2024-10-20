@@ -208,7 +208,7 @@ def string_to_postfix(expression):
 
 async def search_to_mongodb(expression_raw, keyword):
     try:
-        keyword["task"] = "taskId"
+        keyword["task"] = "taskName"
         if expression_raw == "":
             return [{}]
         if len(APP) == 0:
@@ -234,16 +234,6 @@ async def search_to_mongodb(expression_raw, keyword):
                     if key == 'project':
                         if value.lower() in Project_List:
                             value = Project_List[value.lower()]
-                    if key == 'app':
-                        finger_id = []
-                        for ap_key in APP:
-                            if value.lower() in APP[ap_key].lower():
-                                finger_id.append(ap_key)
-                        tmp_nor = {"$nor": []}
-                        for f_i in finger_id:
-                            tmp_nor['$nor'].append({"webfinger": {"$in": [f_i]}})
-                        tmp_nor['$nor'].append({"technologies": {"$regex": value, "$options": "i"}})
-                        stack.append(tmp_nor)
                     if type(keyword[key]) is list:
                         tmp_nor = {"$nor": []}
                         for v in keyword[key]:
@@ -261,28 +251,11 @@ async def search_to_mongodb(expression_raw, keyword):
                 key = key.strip()
                 if key in keyword:
                     value = value.strip("\"")
-                    if key == "task":
-                        async for db in get_mongo_db():
-                            query = {"name": {"$eq": value}}
-                            doc = await db.task.find_one(query)
-                            if doc is not None:
-                                taskid = str(doc.get("_id"))
-                                value = taskid
                     if key == 'statuscode' or key == 'length':
                         value = int(value)
                     if key == 'project':
                         if value.lower() in Project_List:
                             value = Project_List[value.lower()]
-                    if key == 'app':
-                        finger_id = []
-                        for ap_key in APP:
-                            if value.lower() == APP[ap_key].lower():
-                                finger_id.append(ap_key)
-                        tmp_or = {"$or": []}
-                        for f_i in finger_id:
-                            tmp_or['$or'].append({"webfinger": {"$in": [f_i]}})
-                        tmp_or['$or'].append({"technologies": {"$eq": value}})
-                        stack.append(tmp_or)
                     if type(keyword[key]) is list:
                         tmp_or = {"$or": []}
                         for v in keyword[key]:
@@ -299,16 +272,6 @@ async def search_to_mongodb(expression_raw, keyword):
                     if key == 'project':
                         if value.lower() in Project_List:
                             value = Project_List[value.lower()]
-                    if key == 'app':
-                        finger_id = []
-                        for ap_key in APP:
-                            if value.lower() in APP[ap_key].lower():
-                                finger_id.append(ap_key)
-                        tmp_or = {"$or": []}
-                        for f_i in finger_id:
-                            tmp_or['$or'].append({"webfinger": {"$in": [f_i]}})
-                        tmp_or['$or'].append({"technologies": {"$regex": value, "$options": "i"}})
-                        stack.append(tmp_or)
                     if type(keyword[key]) is list:
                         tmp_or = {"$or": []}
                         for v in keyword[key]:
@@ -358,17 +321,17 @@ async def get_search_query(name, request_data):
             'value': 'value'
         },
         'asset': {
-            'app': '',
+            'app': 'technologies',
             'body': 'responsebody',
             'header': 'rawheaders',
             'project': 'project',
             'title': 'title',
             'statuscode': 'statuscode',
             'icon': 'faviconmmh3',
-            'ip': ['host', 'ip'],
-            'domain': ['host', 'url', 'domain'],
+            'ip': "ip",
+            'domain': "host",
             'port': 'port',
-            'protocol': ['protocol', 'type'],
+            'service': "service",
             'banner': 'raw',
         },
         'subdomainTaker': {
@@ -404,7 +367,7 @@ async def get_search_query(name, request_data):
     if query == "" or query is None:
         return ""
     query = query[0]
-    filter_key = {'app':'app','color': 'color', 'status': 'status', 'level': 'level', 'type': 'type', 'project': 'project', 'port': 'port', 'protocol': ['protocol', 'type'], 'icon': 'faviconmmh3', "statuscode": "statuscode", "sname": "sid"}
+    filter_key = {'app': 'technologies', 'color': 'color', 'status': 'status', 'level': 'level', 'type': 'type', 'project': 'project', 'port': 'port', 'protocol': ['protocol', 'type'], 'icon': 'faviconmmh3', "statuscode": "statuscode", "sname": "sid"}
     filter = request_data.get("filter", {})
     if filter:
         query["$and"] = []
@@ -413,21 +376,15 @@ async def get_search_query(name, request_data):
                 tmp_or = []
                 for v in filter[f]:
                     if v != "":
-                        if f == 'app':
-                            for ap_key in APP:
-                                if v == APP[ap_key]:
-                                    tmp_or.append({'webfinger': ap_key})
-                            tmp_or.append({'technologies': v})
+                        if type(filter_key[f]) is list:
+                            for li in filter_key[f]:
+                                tmp_or.append({li: v})
                         else:
-                            if type(filter_key[f]) is list:
-                                for li in filter_key[f]:
-                                    tmp_or.append({li: v})
-                            else:
-                                tmp_or.append({filter_key[f]: v})
+                            tmp_or.append({filter_key[f]: v})
                 if len(tmp_or) != 0:
                     query["$and"].append({"$or": tmp_or})
     fuzzy_query = request_data.get("fq", {})
-    fuzzy_query_key = {"sub_host": 'host', "sub_value": "value", "sub_ip": "ip", "port_port": "port", "port_domain":['domain', 'host'], 'port_ip': ['ip', 'host'], 'port_protocol': ['type', 'protocol'],
+    fuzzy_query_key = {"sub_host": 'host', "sub_value": "value", "sub_ip": "ip", "port_port": "port", "port_domain":['domain', 'host'], 'port_ip': ['ip', 'host'], 'port_protocol': "service",
                        "service_service": ['type', 'webServer', 'protocol'], "service_domain": ['domain', 'host'], "service_port": "port", "service_ip": ['ip', 'host']}
     if fuzzy_query:
         if "$and" not in query:

@@ -66,18 +66,28 @@ async def create_database():
             # dirDict = get_dirDict()
             # await collection.insert_one(
             #     {"name": "DirDic", 'value': dirDict, 'type': 'dirDict'})
-            # 目录扫描字典
             fs = AsyncIOMotorGridFSBucket(db)
+            # 更新目录扫描默认字典
             content = get_dirDict()
-            if content:
-                byte_content = content.encode('utf-8')
-                await fs.upload_from_stream('dir_default', byte_content)
-            # 子域名字典
+            size = len(content) / (1024 * 1024)
+            result = await db["dictionary"].insert_one(
+                {"name": "default", "category": "dir", "size": "{:.2f}".format(size)})
+            if result.inserted_id:
+                await fs.upload_from_stream(
+                    str(result.inserted_id),  # 使用id作为文件名存储
+                    content  # 文件内容
+                )
+
+            # 更新子域名默认字典
             content = get_domainDict()
-            if content:
-                byte_content = content.encode('utf-8')
-                await fs.upload_from_stream('domain_default', byte_content)
-                logger.info("Document DomainDic uploaded to GridFS.")
+            size = len(content) / (1024 * 1024)
+            result = await db["dictionary"].insert_one(
+                {"name": "default", "category": "subdomain", "size": "{:.2f}".format(size)})
+            if result.inserted_id:
+                await fs.upload_from_stream(
+                    str(result.inserted_id),  # 使用id作为文件名存储
+                    content  # 文件内容
+                )
 
             await collection.insert_one(
                 {"name": "notification", 'dirScanNotification': True,

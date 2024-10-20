@@ -4,9 +4,11 @@
 # @contact   : rainy-autumn@outlook.com
 # @time      : 2024/6/16 14:14
 # -------------------------------------------
+from urllib.parse import urlparse
+
 from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorGridFSBucket
-
+import tldextract
 from core.config import VERSION
 from core.default import get_dirDict, get_domainDict, get_sensitive, ModulesConfig
 
@@ -67,27 +69,49 @@ async def update15(db):
     await db.config.insert_one(
         {"name": "ModulesConfig", 'value': ModulesConfig, 'type': 'system'})
     fs = AsyncIOMotorGridFSBucket(db)
-    # 更新目录扫描字典
-    file_docs = await fs.files.find({"filename": "dirdict"}).to_list(1)
-    if not file_docs:
-        logger.error("File dirdict not found")
-        return
-    file_doc = file_docs[0]
-    new_filename = "dir_default"
-    # 更新文件名
-    await fs.files.update_one(
-        {"_id": file_doc["_id"]},
-        {"$set": {"filename": new_filename}}
-    )
 
-    # 更新子域名字典
-    file_docs = await fs.files.find({"filename": "DomainDic"}).to_list(1)
-    if not file_docs:
-        logger.error("File DomainDic not found")
-    file_doc = file_docs[0]
-    new_filename = "domain_default"
-    # 更新文件名
-    await fs.files.update_one(
-        {"_id": file_doc["_id"]},
-        {"$set": {"filename": new_filename}}
-    )
+    # 更新目录扫描默认字典
+    content = get_dirDict()
+    size = len(content) / (1024 * 1024)
+    result = await db["dictionary"].insert_one({"name": "default", "category": "dir", "size": "{:.2f}".format(size)})
+    if result.inserted_id:
+        await fs.upload_from_stream(
+            str(result.inserted_id),  # 使用id作为文件名存储
+            content  # 文件内容
+        )
+
+    # 更新子域名默认字典
+    content = get_domainDict()
+    size = len(content) / (1024 * 1024)
+    result = await db["dictionary"].insert_one({"name": "default", "category": "subdomain", "size": "{:.2f}".format(size)})
+    if result.inserted_id:
+        await fs.upload_from_stream(
+            str(result.inserted_id),  # 使用id作为文件名存储
+            content  # 文件内容
+        )
+    # 获取任务名称
+    cursor = db['task'].find({"type": {"$ne": "other"}})
+    task_list = {}
+    result = await cursor.to_list(length=None)
+    for item in result:
+        task_list[str(item["id"])] = item['name']
+    # 修改资产字段
+    cursor = db['asset'].find({})
+    result = await cursor.to_list(length=None)
+    for item in result:
+        taskName = ""
+        time = item["timestamp"]
+        if item["taskId"] in task_list:
+            taskName = task_list[item["taskId"]]
+        if item["type"] != "other":
+            ip = item["host"]
+            parsed_url = urlparse(item['url'])
+            host = parsed_url.netloc
+            extracted = tldextract.extract(item['url'])
+            root_domain = f"{extracted.domain}.{extracted.suffix}"
+            await db['asset'].update_many({"_id": item["_id"]}, [{'$set': {'host': host, "ip": ip, "taskName": taskName, "rootDomain": root_domain, "time": time, "service": item["type"], "tag": []}}, {'$unset': 'timestamp'}])
+        else:
+            service = item["protocol"]
+            extracted = tldextract.extract("https://" + item['host'])
+            root_domain = f"{extracted.domain}.{extracted.suffix}"
+            await db['asset'].update_many({"_id": item["_id"]}, [{'$set': {"taskName": taskName, "rootDomain": root_domain, "time": time, "service": service, "tag": []}}, {'$unset': 'timestamp'}, {'$unset': 'protocol'}])

@@ -1,8 +1,8 @@
 # -------------------------------------
-# @file      : assetinfo.py
+# @file      : asset.py
 # @author    : Autumn
 # @contact   : rainy-autumn@outlook.com
-# @time      : 2024/4/14 17:14
+# @time      : 2024/10/20 20:52
 # -------------------------------------------
 import json
 import traceback
@@ -11,16 +11,14 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends
 from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor
-from core.db import get_mongo_db
-from core.redis_handler import get_redis_pool
 from core.util import *
-from pymongo import ASCENDING, DESCENDING
+from pymongo import DESCENDING
 from loguru import logger
 
 router = APIRouter()
 
 
-@router.get("/asset/statistics/data")
+@router.get("/statistics/data")
 async def asset_statistics_data(db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     aset_count = await db['asset'].count_documents({})
     subdomain_count = await db['subdomain'].count_documents({})
@@ -39,16 +37,9 @@ async def asset_statistics_data(db=Depends(get_mongo_db), _: dict = Depends(veri
     }
 
 
-@router.post("/asset/data")
+@router.post("/data")
 async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
-        if len(APP) == 0:
-            collection = db["FingerprintRules"]
-            cursor = collection.find({}, {"_id": 1, "name": 1})
-            async for document in cursor:
-                document['id'] = str(document['_id'])
-                del document['_id']
-                APP[document['id']] = document['name']
         page_index = request_data.get("pageIndex", 1)
         page_size = request_data.get("pageSize", 10)
         query = await get_search_query("asset", request_data)
@@ -56,34 +47,41 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
             return {"message": "Search condition parsing error", "code": 500}
         total_count = await db['asset'].count_documents(query)
         cursor = db['asset'].find(query, {"_id": 0,
-                                            "id": {"$toString": "$_id"},
-                                            "host": 1,
-                                            "url": 1,
-                                            "ip": 1,
-                                            "port": 1,
-                                            "protocol": 1,
-                                            "type": 1,
-                                            "title": 1,
-                                            "statuscode": 1,
-                                            "rawheaders": 1,
-                                            "webfinger": 1,
-                                            "technologies": 1,
-                                            "raw": 1,
-                                            "timestamp": 1,
-                                            "iconcontent": 1
-                                            }).skip((page_index - 1) * page_size).limit(page_size).sort([("timestamp", DESCENDING)])
+                                          "id": {"$toString": "$_id"},
+                                          "host": 1,
+                                          "url": 1,
+                                          "ip": 1,
+                                          "port": 1,
+                                          "service": 1,
+                                          "type": 1,
+                                          "title": 1,
+                                          "statuscode": 1,
+                                          "rawheaders": 1,
+                                          "technologies": 1,
+                                          "raw": 1,
+                                          "time": 1,
+                                          "iconcontent": 1,
+                                          "tag": 1
+                                          }).skip((page_index - 1) * page_size).limit(page_size).sort(
+            [("time", DESCENDING)])
         result = await cursor.to_list(length=None)
         result_list = []
         for r in result:
-            tmp = {}
-            tmp['port'] = r['port']
-            tmp['time'] = r['time']
-            tmp['id'] = r['id']
-            tmp['type'] = r['type']
+
+            if r['tag'] is None:
+                r['tag'] = []
+            tmp = {
+                'port': r['port'],
+                'time': r['time'],
+                'id': r['id'],
+                'type': r['type'],
+                'domain': r['host'],
+                'ip': r['ip'],
+                'service': r['service'],
+                'tags': r['tag']
+            }
+
             if r['type'] == 'other':
-                tmp['domain'] = r['host']
-                tmp['ip'] = r['ip']
-                tmp['service'] = r['protocol']
                 tmp['title'] = ""
                 tmp['status'] = None
                 tmp['banner'] = ""
@@ -100,24 +98,14 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
                         tmp['banner'] = ""
                 tmp['products'] = []
             else:
-                tmp['domain'] = r['url'].replace(f'{r["type"]}://', '')
-                tmp['ip'] = r['host']
-                tmp['service'] = r['type']
                 tmp['title'] = r['title']
                 tmp['status'] = r['statuscode']
                 tmp['url'] = r['url']
                 tmp['banner'] = r['rawheaders']
-                tmp['products'] = []
+                if r['technologies'] is None:
+                    r['technologies'] = []
+                tmp['products'] = r['technologies']
                 tmp['icon'] = r['iconcontent']
-                technologies = r['technologies']
-                if technologies is not None:
-                    tmp['products'] = tmp['products'] + technologies
-                if r['webfinger'] is not None:
-                    for w in r['webfinger']:
-                        if w in APP:
-                            tmp['products'].append(APP[w])
-                        else:
-                            tmp['products'].append(w)
             result_list.append(tmp)
         return {
             "code": 200,
@@ -133,7 +121,7 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
         return {"message": "error", "code": 500}
 
 
-@router.post("/asset/detail")
+@router.post("/detail")
 async def asset_detail(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         # Get the ID from the request data
@@ -213,7 +201,7 @@ async def asset_detail(request_data: dict, db=Depends(get_mongo_db), _: dict = D
         return {"message": "error", "code": 500}
 
 
-@router.post("/asset/statistics")
+@router.post("/statistics")
 async def asset_data_statistics(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     query = await get_search_query("asset", request_data)
     if query == "":
@@ -289,128 +277,7 @@ async def asset_data_statistics(request_data: dict, db=Depends(get_mongo_db), _:
     }
 
 
-@router.post("/subdomain/data")
-async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    try:
-        page_index = request_data.get("pageIndex", 1)
-        page_size = request_data.get("pageSize", 10)
-        query = await get_search_query("subdomain", request_data)
-        if query == "":
-            return {"message": "Search condition parsing error", "code": 500}
-        total_count = await db['subdomain'].count_documents(query)
-        cursor: AsyncIOMotorCursor = ((db['subdomain'].find(query, {"_id": 0,
-                                                                    "id": {"$toString": "$_id"},
-                                                                    "host": 1,
-                                                                    "type": 1,
-                                                                    "value": 1,
-                                                                    "ip": 1,
-                                                                    "time": 1,
-                                                                    })
-                                       .skip((page_index - 1) * page_size)
-                                       .limit(page_size))
-                                      .sort([("time", DESCENDING)]))
-        result = await cursor.to_list(length=None)
-        result_list = []
-        for r in result:
-            if r['value'] is None:
-                r['value'] = []
-            if r['ip'] is None:
-                r['ip'] = []
-            result_list.append(r)
-        return {
-            "code": 200,
-            "data": {
-                'list': result_list,
-                'total': total_count
-            }
-        }
-    except Exception as e:
-        logger.error(str(e))
-        # Handle exceptions as needed
-        return {"message": "error", "code": 500}
-
-
-@router.post("/url/data")
-async def url_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    try:
-        page_index = request_data.get("pageIndex", 1)
-        page_size = request_data.get("pageSize", 10)
-        query = await get_search_query("url", request_data)
-        if query == "":
-            return {"message": "Search condition parsing error", "code": 500}
-        sort = request_data.get("sort", {})
-        sort_by = [('_id', -1)]
-        if sort != {}:
-            if 'length' in sort:
-                sort_value = sort['length']
-                if sort_value is not None:
-                    if sort_value == "ascending":
-                        sort_value = 1
-                    else:
-                        sort_value = -1
-                    sort_by = [('length', sort_value)]
-        total_count = await db['UrlScan'].count_documents(query)
-        cursor: AsyncIOMotorCursor = ((db['UrlScan'].find(query, {"_id": 0,
-                                                                  "id": {"$toString": "$_id"},
-                                                                  "input": 1,
-                                                                  "source": 1,
-                                                                  "status": 1,
-                                                                  "length": 1,
-                                                                  "type": "$outputtype",
-                                                                  "url": "$output",
-                                                                  "time": 1,
-                                                                  })
-                                       .sort(sort_by)
-                                       .skip((page_index - 1) * page_size)
-                                       .limit(page_size)))
-        result = await cursor.to_list(length=None)
-        return {
-            "code": 200,
-            "data": {
-                'list': result,
-                'total': total_count
-            }
-        }
-    except Exception as e:
-        logger.error(str(e))
-        # Handle exceptions as needed
-        return {"message": "error", "code": 500}
-
-
-@router.post("/crawler/data")
-async def crawler_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    try:
-        page_index = request_data.get("pageIndex", 1)
-        page_size = request_data.get("pageSize", 10)
-        query = await get_search_query("crawler", request_data)
-        if query == "":
-            return {"message": "Search condition parsing error", "code": 500}
-        total_count = await db['crawler'].count_documents(query)
-        cursor: AsyncIOMotorCursor = ((db['crawler'].find(query, {"_id": 0,
-                                                                  "id": {"$toString": "$_id"},
-                                                                  "method": 1,
-                                                                  "body": 1,
-                                                                  "url": 1
-                                                                  })
-                                       .sort([('_id', -1)])
-                                       .skip((page_index - 1) * page_size)
-                                       .limit(page_size))
-        )
-        result = await cursor.to_list(length=None)
-        return {
-            "code": 200,
-            "data": {
-                'list': result,
-                'total': total_count
-            }
-        }
-    except Exception as e:
-        logger.error(str(e))
-        # Handle exceptions as needed
-        return {"message": "error", "code": 500}
-
-
-@router.post("/asset/statistics2")
+@router.post("/statistics2")
 async def asset_data_statistics2(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     query = await get_search_query("asset", request_data)
     if query == "":
@@ -495,7 +362,7 @@ async def asset_data_statistics2(request_data: dict, db=Depends(get_mongo_db), _
     }
 
 
-@router.post("/asset/statistics/port")
+@router.post("/statistics/port")
 async def asset_data_statistics_port(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     query = await get_search_query("asset", request_data)
     if query == "":
@@ -529,7 +396,8 @@ async def asset_data_statistics_port(request_data: dict, db=Depends(get_mongo_db
         "data": result_list
     }
 
-@router.post("/asset/statistics/title")
+
+@router.post("/statistics/title")
 async def asset_data_statistics_title(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     request_data['filter']['type'] = ['https', 'http']
     query = await get_search_query("asset", request_data)
@@ -564,7 +432,8 @@ async def asset_data_statistics_title(request_data: dict, db=Depends(get_mongo_d
         "data": result_list
     }
 
-@router.post("/asset/statistics/type")
+
+@router.post("/statistics/type")
 async def asset_data_statistics_type(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     query = await get_search_query("asset", request_data)
     if query == "":
@@ -604,7 +473,7 @@ async def asset_data_statistics_type(request_data: dict, db=Depends(get_mongo_db
     }
 
 
-@router.post("/asset/statistics/icon")
+@router.post("/statistics/icon")
 async def asset_data_statistics_icon(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     query = await get_search_query("asset", request_data)
     if query == "":
@@ -614,11 +483,11 @@ async def asset_data_statistics_icon(request_data: dict, db=Depends(get_mongo_db
             "$match": query  # 添加搜索条件
         },
         {
-        "$project": {
-            "faviconmmh3": 1,
-            "iconcontent": 1
-        }
-    },
+            "$project": {
+                "faviconmmh3": 1,
+                "iconcontent": 1
+            }
+        },
         {
             "$facet": {
                 "by_icon": [
@@ -651,53 +520,7 @@ async def asset_data_statistics_icon(request_data: dict, db=Depends(get_mongo_db
     }
 
 
-# @router.post("/asset/statistics/icon2")
-# async def asset_data_statistics_icon2(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-#     search_query = request_data.get("search", "")
-#     keyword = {
-#         'app': '',
-#         'body': 'responsebody',
-#         'header': 'rawheaders',
-#         'project': 'project',
-#         'title': 'title',
-#         'statuscode': 'statuscode',
-#         'icon': 'faviconmmh3',
-#         'ip': ['host', 'ip'],
-#         'domain': ['host', 'url', 'domain'],
-#         'port': 'port',
-#         'protocol': ['protocol', 'type'],
-#         'banner': 'raw',
-#     }
-#     query = await search_to_mongodb(search_query, keyword)
-#     if query == "" or query is None:
-#         return {"message": "Search condition parsing error", "code": 500}
-#     query = query[0]
-#     query["faviconmmh3"] = {"$ne": ""}
-#     cursor = db.asset.find(query, {"_id": 0,
-#                                    "faviconmmh3": 1,
-#                                    "iconcontent": 1
-#                                    })
-#     results = await cursor.to_list(length=None)
-#     result_list = {"Icon": []}
-#     icon_list = {}
-#     icon_tmp = {}
-#     for r in results:
-#         if r['faviconmmh3'] not in icon_list:
-#             r['faviconmmh3'] = 1
-#             icon_tmp[r['faviconmmh3']] = r['iconcontent']
-#         else:
-#             r['faviconmmh3'] += 1
-#     icon_list = dict(sorted(icon_list.items(), key=lambda item: -item[1]))
-#     for ic in icon_list:
-#         result_list['Icon'].append({"value": icon_tmp[ic], "number": icon_list[ic], "icon_hash": ic})
-#
-#     return {
-#         "code": 200,
-#         "data": result_list
-#     }
-
-
-@router.post("/asset/statistics/app")
+@router.post("/statistics/app")
 async def asset_data_statistics_app(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     query = await get_search_query("asset", request_data)
     if query == "":
@@ -742,25 +565,3 @@ async def asset_data_statistics_app(request_data: dict, db=Depends(get_mongo_db)
         "code": 200,
         "data": result_list
     }
-
-
-@router.post("/data/delete")
-async def delete_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    try:
-        data_ids = request_data.get("ids", [])
-        index = request_data.get("index", "")
-        obj_ids = []
-        for data_id in data_ids:
-            if data_id != "" and len(data_id) > 6:
-                obj_ids.append(ObjectId(data_id))
-        result = await db[index].delete_many({"_id": {"$in": obj_ids}})
-
-        if result.deleted_count > 0:
-            return {"code": 200, "message": "Data deleted successfully"}
-        else:
-            return {"code": 404, "message": "Data not found"}
-
-    except Exception as e:
-        logger.error(str(e))
-        # Handle exceptions as needed
-        return {"message": "error", "code": 500}

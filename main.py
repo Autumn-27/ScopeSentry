@@ -89,7 +89,7 @@ from api import users, sensitive, poc, configuration, fingerprint, node, project
     page_monitoring, vulnerability, SubdoaminTaker, scheduled_tasks, notification, system, export, project_aggregation
 
 from api.dictionary import router as dictionary_router
-
+from api.asset import router as asset_route
 app.include_router(users.router, prefix='/api')
 app.include_router(sensitive.router, prefix='/api')
 app.include_router(dictionary_router, prefix='/api/dictionary')
@@ -99,7 +99,8 @@ app.include_router(fingerprint.router, prefix='/api')
 app.include_router(node.router, prefix='/api')
 app.include_router(project.router, prefix='/api')
 app.include_router(task.router, prefix='/api')
-app.include_router(asset_info.router, prefix='/api')
+# app.include_router(asset_info.router, prefix='/api')
+app.include_router(asset_route, prefix='/api')
 app.include_router(page_monitoring.router, prefix='/api')
 app.include_router(vulnerability.router, prefix='/api')
 app.include_router(SubdoaminTaker.router, prefix='/api')
