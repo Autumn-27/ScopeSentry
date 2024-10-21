@@ -141,11 +141,11 @@ async def asset_detail(request_data: dict, db=Depends(get_mongo_db), _: dict = D
         tlsdata = ""
         hashes = ""
         banner = ""
+        domain = doc.get('host', "")
+        service = doc.get("service", "")
+        IP = doc.get("ip", "")
         if doc['type'] == 'other':
-            domain = doc.get('host', "")
-            IP = doc.get("ip", "")
             URL = ""
-            service = doc.get("protocol", "")
             try:
                 if doc['raw'] is not None:
                     raw_data = json.loads(doc['raw'].decode('utf-8'))
@@ -154,16 +154,10 @@ async def asset_detail(request_data: dict, db=Depends(get_mongo_db), _: dict = D
             except:
                 banner = ""
         else:
-            domain = doc.get('url', "").replace("http://", "").replace("https://", "").split(":")[0]
-            IP = doc.get("host", "")
             URL = doc.get("url", "")
-            service = doc.get("type", "")
             products = doc.get('technologies')
             if products == None:
                 products = []
-            if doc['webfinger'] is not None:
-                for w in doc['webfinger']:
-                    products.append(APP[w])
             if doc['tlsdata'] is not None:
                 for h in doc['tlsdata']:
                     tlsdata += h + ": " + str(doc['tlsdata'][h]) + '\n'
@@ -444,12 +438,8 @@ async def asset_data_statistics_type(request_data: dict, db=Depends(get_mongo_db
         },
         {
             "$facet": {
-                "by_type": [
-                    {"$group": {"_id": "$type", "num_tutorial": {"$sum": 1}}},
-                    {"$match": {"_id": {"$ne": None}}}
-                ],
-                "by_protocol": [
-                    {"$group": {"_id": "$protocol", "num_tutorial": {"$sum": 1}}},
+                "by_service": [
+                    {"$group": {"_id": "$service", "num_tutorial": {"$sum": 1}}},
                     {"$match": {"_id": {"$ne": None}}}
                 ]
             }
@@ -459,10 +449,7 @@ async def asset_data_statistics_type(request_data: dict, db=Depends(get_mongo_db
     result_list = {"Service": []}
     service_list = {}
     for r in result:
-        for t in r['by_type']:
-            if t['_id'] != 'other':
-                service_list[t['_id']] = t['num_tutorial']
-        for p in r['by_protocol']:
+        for p in r['by_service']:
             service_list[p['_id']] = p['num_tutorial']
     service_list = dict(sorted(service_list.items(), key=lambda item: -item[1]))
     for service in service_list:

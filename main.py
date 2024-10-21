@@ -85,7 +85,7 @@ async def http_exception_handler(request, exc):
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-from api import users, sensitive, poc, configuration, fingerprint, node, project, task, asset_info, \
+from api import users, sensitive, poc, configuration, fingerprint, node, project, task, \
     page_monitoring, vulnerability, SubdoaminTaker, scheduled_tasks, notification, system, export, project_aggregation
 
 from api.dictionary import router as dictionary_router
