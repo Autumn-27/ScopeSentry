@@ -9,6 +9,8 @@ from urllib.parse import urlparse
 from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorGridFSBucket
 import tldextract
+from pymongo import UpdateOne
+
 from core.config import VERSION
 from core.default import get_dirDict, get_domainDict, get_sensitive, ModulesConfig
 
@@ -138,15 +140,16 @@ async def update15(db):
                  "crawler",
                  "subdomain"]
     for doc_name in doc_names:
-        for task in task_list:
-            query = {
-                "taskId": task
-            }
-            update_query = {
-                "$set": {
-                    "taskName": task_list[task]
-                }
-            }
-            await db[doc_name].update_many(query, update_query)
+        bulk_operations = []
+
+        # 为每个 taskId 创建相应的更新操作
+        for task_id, task_name in task_list.items():
+            query = {"taskId": task_id}
+            update_query = {"$set": {"taskName": task_name}}
+            bulk_operations.append(UpdateOne(query, update_query))
+
+        # 如果有更新操作，执行批量更新
+        if bulk_operations:
+            await db[doc_name].bulk_write(bulk_operations)
 
     # 修改全局线程配置、节点配置
