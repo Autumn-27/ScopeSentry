@@ -22,8 +22,9 @@ async def delete_data(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         index = request_data.get("index", "")
         obj_ids = []
         for data_id in data_ids:
-            if data_id != "" and len(data_id) > 6:
-                obj_ids.append(ObjectId(data_id))
+            if data_id is not None and data_id != "":
+                if len(data_id) > 6:
+                    obj_ids.append(ObjectId(data_id))
         result = await db[index].delete_many({"_id": {"$in": obj_ids}})
 
         if result.deleted_count > 0:

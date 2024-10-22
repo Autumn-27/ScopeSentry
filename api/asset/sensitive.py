@@ -20,7 +20,7 @@ from core.util import search_to_mongodb, get_search_query
 router = APIRouter()
 
 
-@router.post("/sensitive/data")
+@router.post("/data")
 async def get_sensitive_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         search_query = request_data.get("search", "")
@@ -59,7 +59,7 @@ async def get_sensitive_data(request_data: dict, db=Depends(get_mongo_db), _: di
         return {"message": "error","code":500}
 
 
-@router.post("/sensitive/update")
+@router.post("/update")
 async def upgrade_sensitive_rule(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         # Extract values from request data
@@ -88,7 +88,7 @@ async def upgrade_sensitive_rule(request_data: dict, db=Depends(get_mongo_db), _
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
 
-@router.post("/sensitive/add")
+@router.post("/add")
 async def add_sensitive_rule(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         # Extract values from request data
@@ -122,7 +122,7 @@ async def add_sensitive_rule(request_data: dict, db=Depends(get_mongo_db), _: di
         return {"message": "error", "code": 500}
 
 
-@router.post("/sensitive/update/state")
+@router.post("/update/state")
 async def update_state_sensitive_rule(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         rule_ids = request_data.get("ids", [])
@@ -146,7 +146,8 @@ async def update_state_sensitive_rule(request_data: dict, db=Depends(get_mongo_d
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
 
-@router.post("/sensitive/delete")
+
+@router.post("/delete")
 async def delete_sensitive_rules(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         # Extract the list of IDs from the request_data dictionary
@@ -155,7 +156,7 @@ async def delete_sensitive_rules(request_data: dict, db=Depends(get_mongo_db), _
         # Convert the provided rule_ids to ObjectId
         obj_ids = []
         for rule_id in rule_ids:
-            if rule_id != None and rule_id != "":
+            if rule_id is not None and rule_id != "":
                 obj_ids.append(ObjectId(rule_id))
         # Delete the SensitiveRule documents based on the provided IDs
         result = await db.SensitiveRule.delete_many({"_id": {"$in": obj_ids}})
@@ -173,7 +174,7 @@ async def delete_sensitive_rules(request_data: dict, db=Depends(get_mongo_db), _
         return {"message": "error", "code": 500}
 
 
-@router.post("/sensitive/result/data")
+@router.post("/result/data")
 async def get_sensitive_result_rules(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         search_query = request_data.get("search", "")
@@ -236,7 +237,7 @@ async def get_sensitive_result_rules(request_data: dict, db=Depends(get_mongo_db
         return {"message": "error","code":500}
 
 
-@router.post("/sensitive/result/data2")
+@router.post("/result/data2")
 async def get_sensitive_result_data2(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         page_index = request_data.get("pageIndex", 1)
@@ -305,7 +306,7 @@ async def get_sensitive_result_data2(request_data: dict, db=Depends(get_mongo_db
         return {"message": "error","code":500}
 
 
-@router.post("/sensitive/result/names")
+@router.post("/result/names")
 async def get_sensitive_result_names(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     query = await get_search_query("sens", request_data)
     if query == "":
@@ -335,7 +336,7 @@ async def get_sensitive_result_names(request_data: dict, db=Depends(get_mongo_db
         }
 
 
-@router.post("/sensitive/result/body")
+@router.post("/result/body")
 async def get_sensitive_result_body_rules(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         # Get the ID from the request data
@@ -347,7 +348,7 @@ async def get_sensitive_result_body_rules(request_data: dict, db=Depends(get_mon
 
         # Query the database for content based on ID
         query = {"md5": sensitive_result_id}
-        doc = await db.SensitiveResult.find_one(query)
+        doc = await db.SensitiveBody.find_one(query)
 
         if not doc:
             return {"message": "Content not found for the provided ID", "code": 404}

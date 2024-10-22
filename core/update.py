@@ -115,3 +115,38 @@ async def update15(db):
             extracted = tldextract.extract("https://" + item['host'])
             root_domain = f"{extracted.domain}.{extracted.suffix}"
             await db['asset'].update_many({"_id": item["_id"]}, [{'$set': {"taskName": taskName, "rootDomain": root_domain, "time": time, "service": service, "tag": []}}, {'$unset': 'timestamp'}, {'$unset': 'protocol'}])
+
+    # 修改敏感信息字段
+    cursor = db['SensitiveResult'].find({})
+    update_list =[]
+    result = await cursor.to_list(length=None)
+    for item in result:
+        taskName = task_list[item["taskId"]]
+        extracted = tldextract.extract(item['url'])
+        root_domain = f"{extracted.domain}.{extracted.suffix}"
+        if item["body"] is not None or item["body"] != "":
+            if item['md5'] not in update_list:
+                await db['SensitiveBody'].update_one({"md5": item['md5']}, {"body": item['body']}, upsert=True)
+                update_list.append(item['md5'])
+            await db['SensitiveResult'].update_one({"_id": item['_id']}, {"taskName": taskName, "rootDomain": root_domain}, {'$unset': 'body'})
+        else:
+            await db['SensitiveResult'].update_one({"_id": item['_id']}, {'$set': {"md5": item['md5'].replace("md5==", ""), "taskName": taskName, "rootDomain": root_domain}}, {'$unset': 'body'})
+    # 修改任务字段
+    doc_names = ["DirScanResult", "PageMonitoring",
+                 "SubdoaminTakerResult",
+                 "UrlScan",
+                 "crawler",
+                 "subdomain"]
+    for doc_name in doc_names:
+        for task in task_list:
+            query = {
+                "taskId": task
+            }
+            update_query = {
+                "$set": {
+                    "taskName": task_list[task]
+                }
+            }
+            await db[doc_name].update_many(query, update_query)
+
+    # 修改全局线程配置、节点配置
