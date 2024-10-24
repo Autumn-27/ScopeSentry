@@ -12,7 +12,7 @@ import tldextract
 from pymongo import UpdateOne
 
 from core.config import VERSION
-from core.default import get_dirDict, get_domainDict, get_sensitive, ModulesConfig
+from core.default import get_dirDict, get_domainDict, get_sensitive, ModulesConfig, PLUGINS
 
 
 async def update14(db):
@@ -151,5 +151,9 @@ async def update15(db):
         # 如果有更新操作，执行批量更新
         if bulk_operations:
             await db[doc_name].bulk_write(bulk_operations)
+
+    # 增加默认插件
+    await db["plugins"].insert_many(PLUGINS)
+
 
     # 修改全局线程配置、节点配置

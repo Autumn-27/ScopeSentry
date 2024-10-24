@@ -90,6 +90,9 @@ from api import users, poc, configuration, fingerprint, node, project, task, \
 
 from api.dictionary import router as dictionary_router
 from api.asset import router as asset_route
+from api.plugins import router as plugin_route
+
+app.include_router(plugin_route, prefix='/api')
 app.include_router(users.router, prefix='/api')
 app.include_router(dictionary_router, prefix='/api/dictionary')
 app.include_router(poc.router, prefix='/api')

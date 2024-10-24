@@ -280,3 +280,160 @@ dirScan:
 vulnerabilityScan:
   goroutineCount: 3  # 设置"漏洞扫描"模块最大并发
 '''
+
+PLUGINS = [
+    {
+        "module": "AssetHandle",
+        "name": "WebFingerprint",
+        "hash": "80718cc3fcb4827d942e6300184707e2",
+        "parameter": "",
+        "help":"",
+        "introduction": "web指纹识别",
+        "isSystem": True,
+        "version": "1.0",
+        "source":""
+    },
+    {
+        "module": "AssetMapping",
+        "name": "httpx",
+        "hash": "3a0d994a12305cb15a5cb7104d819623",
+        "parameter": "-cdncheck true",
+        "help": "-cdncheck 是否开启cdn检测",
+        "introduction": "资产测绘",
+        "isSystem": True,
+        "version": "1.0",
+        "source": ""
+    },
+    {
+        "module": "DirScan",
+        "name": "SentryDir",
+        "hash": "920546788addc6d29ea63e4a314a1b85",
+        "parameter": "-d {dict.dir.default} -t 10",
+        "help": "-d 目录扫描字典 -t 扫描并发限制",
+        "introduction": "目录扫描",
+        "isSystem": True,
+        "version": "1.0",
+        "source": ""
+    },
+    {
+        "module": "PortFingerprint",
+        "name": "fingerprintx",
+        "hash": "648a6f49eed57b1737ac702e02985b00",
+        "parameter": "",
+        "help": "",
+        "introduction": "端口指纹识别",
+        "isSystem": True,
+        "version": "1.0",
+        "source": ""
+    },
+    {
+        "module": "PortScan",
+        "name": "RustScan",
+        "hash": "66b4ddeb983387df2b7ee7726653874d",
+        "parameter": "-port {port.top1000} -b 600 -t 3000",
+        "help": "-port 端口扫描范围 -b 端口扫描并发数量  -t 超时时间",
+        "introduction": "端口存活扫描",
+        "isSystem": True,
+        "version": "1.0",
+        "source": ""
+    },
+    {
+        "module": "PortScanPreparation",
+        "name": "SkipCdn",
+        "hash": "9b91e0f18ac9043ec9fe250a39b4a2d9",
+        "parameter": "",
+        "help": "",
+        "introduction": "检测是否cdn，跳过cdn的端口扫描",
+        "isSystem": True,
+        "version": "1.0",
+        "source": ""
+    },
+    {
+        "module": "SubdomainScan",
+        "name": "subfinder",
+        "hash": "d60ba73c70aac430a0a54e796e7e19b8",
+        "parameter": "-t 10 -timeout 20 -max-time 10",
+        "help": "-t 扫描线程  -timeout 超时时间 -max-time 最大等待时间",
+        "introduction": "子域名扫描",
+        "isSystem": True,
+        "version": "1.0",
+        "source": ""
+    },
+    {
+        "module": "SubdomainScan",
+        "name": "ksubdomain",
+        "hash": "e8f55f5e0e9f4af1ca40eb19048b8c82",
+        "parameter": "-subfile {dict.subdomain.default} -et 60",
+        "help": "-subfile 子域名字典 -et 最长运行时间(分钟)",
+        "introduction": "子域名爆破",
+        "isSystem": True,
+        "version": "1.0",
+        "source": ""
+    },
+    {
+        "module": "SubdomainSecurity",
+        "name": "SubdomainTakeover",
+        "hash": "c0c71c101271f38b8be1767f3626d291",
+        "parameter": "",
+        "help": "",
+        "introduction": "子域名接管检测",
+        "isSystem": True,
+        "version": "1.0",
+        "source": ""
+    },
+    {
+        "module": "URLScan",
+        "name": "wayback",
+        "hash": "ef244b3462744dad3040f9dcf3194eb1",
+        "parameter": "",
+        "help": "",
+        "introduction": "url扫描从Waybackarchive、Alienvault、Commoncrawl获取历史url",
+        "isSystem": True,
+        "version": "1.0",
+        "source": ""
+    },
+    {
+        "module": "URLScan",
+        "name": "katana",
+        "hash": "9669d0dcc52a5ca6dbbe580ffc99c364",
+        "parameter": "-t 10 -timeout 5 -depth 5 -et 60",
+        "help": "-t 并发数 -timeout 超时时间 -et 最长运行时间(分钟)",
+        "introduction": "url爬取",
+        "isSystem": True,
+        "version": "1.0",
+        "source": ""
+    },
+    {
+        "module": "URLSecurity",
+        "name": "sensitive",
+        "hash": "2949994c04a4e124b9c98383489510f0",
+        "parameter": "",
+        "help": "",
+        "introduction": "敏感信息泄露检测",
+        "isSystem": True,
+        "version": "1.0",
+        "source": ""
+    },
+    {
+        "module": "VulnerabilityScan",
+        "name": "nuclei",
+        "hash": "ed93b8af6b72fe54a60efdb932cf6fbc",
+        "parameter": "-s high, critical",
+        "help": "参考官方支持t, s, es, tags, etags, rl, rld, bs, c, hbs, headc, jsc, pc, prc参数",
+        "introduction": "漏洞扫描",
+        "isSystem": True,
+        "version": "1.0",
+        "source": ""
+    },
+    {
+        "module": "WebCrawler",
+        "name": "rad",
+        "hash": "4b292861d3228af0e4da8e7ef979497c",
+        "parameter": "",
+        "help": "",
+        "introduction": "爬虫",
+        "isSystem": True,
+        "version": "1.0",
+        "source": ""
+    }
+]

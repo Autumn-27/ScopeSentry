@@ -128,6 +128,9 @@ async def create_database():
             collection = db["FingerprintRules"]
             fingerprint = get_finger()
             await collection.insert_many(fingerprint)
+            # 创建默认插件
+            collection = db["plugins"]
+            await collection.insert_many(PLUGINS)
         else:
             collection = db["config"]
             result = await collection.find_one({"name": "timezone"})
