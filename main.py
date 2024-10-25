@@ -8,7 +8,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.staticfiles import StaticFiles
 
 from core.config import *
-from core.default import get_dirDict, get_domainDict, get_sensitive
+from core.default import get_dirDict, get_domainDict, get_sensitive, PLUGINS
 from core.update import update14, update15
 
 set_config()

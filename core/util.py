@@ -41,6 +41,7 @@ def is_valid_string(s):
     pattern = f"^[{re.escape(valid_chars)}]+$"
     return bool(re.match(pattern, s))
 
+
 def parse_expression(express, eval_expression):
     parts = []
     part = ""
@@ -289,7 +290,7 @@ async def get_search_query(name, request_data):
     global tmp_f_q
     search_query = request_data.get("search", "")
     search_key_v = {
-        'sens':{
+        'sens': {
             'url': 'url',
             'sname': 'sid',
             "body": "body",
@@ -367,7 +368,9 @@ async def get_search_query(name, request_data):
     if query == "" or query is None:
         return ""
     query = query[0]
-    filter_key = {'app': 'technologies', 'color': 'color', 'status': 'status', 'level': 'level', 'type': 'type', 'project': 'project', 'port': 'port', 'protocol': ['protocol', 'type'], 'icon': 'faviconmmh3', "statuscode": "statuscode", "sname": "sid"}
+    filter_key = {'app': 'technologies', 'color': 'color', 'status': 'status', 'level': 'level', 'type': 'type',
+                  'project': 'project', 'port': 'port', 'protocol': ['protocol', 'type'], 'icon': 'faviconmmh3',
+                  "statuscode": "statuscode", "sname": "sid"}
     filter = request_data.get("filter", {})
     if filter:
         query["$and"] = []
@@ -384,8 +387,10 @@ async def get_search_query(name, request_data):
                 if len(tmp_or) != 0:
                     query["$and"].append({"$or": tmp_or})
     fuzzy_query = request_data.get("fq", {})
-    fuzzy_query_key = {"sub_host": 'host', "sub_value": "value", "sub_ip": "ip", "port_port": "port", "port_domain":['domain', 'host'], 'port_ip': ['ip', 'host'], 'port_protocol': "service",
-                       "service_service": ['type', 'webServer', 'protocol'], "service_domain": ['domain', 'host'], "service_port": "port", "service_ip": ['ip', 'host']}
+    fuzzy_query_key = {"sub_host": 'host', "sub_value": "value", "sub_ip": "ip", "port_port": "port",
+                       "port_domain": ['domain', 'host'], 'port_ip': ['ip', 'host'], 'port_protocol': "service",
+                       "service_service": ['type', 'webServer', 'protocol'], "service_domain": ['domain', 'host'],
+                       "service_port": "port", "service_ip": ['ip', 'host']}
     if fuzzy_query:
         if "$and" not in query:
             query["$and"] = []
@@ -427,17 +432,17 @@ def get_root_domain(url):
 
     # 复合域名列表
     compound_domains = [
-    'com.cn', 'net.cn', 'org.cn', 'gov.cn', 'edu.cn', 'ac.cn', 'mil.cn',
-    'co.uk', 'org.uk', 'net.uk', 'gov.uk', 'ac.uk', 'sch.uk',
-    'co.jp', 'ne.jp', 'or.jp', 'go.jp', 'ac.jp', 'ad.jp',
-    'com.de', 'org.de', 'net.de', 'gov.de',
-    'com.ca', 'net.ca', 'org.ca', 'gov.ca',
-    'com.au', 'net.au', 'org.au', 'gov.au', 'edu.au',
-    'com.fr', 'net.fr', 'org.fr', 'gov.fr',
-    'com.br', 'com.mx', 'com.ar', 'com.ru',
-    'co.in', 'co.za',
-    'co.kr', 'com.tw'
-]
+        'com.cn', 'net.cn', 'org.cn', 'gov.cn', 'edu.cn', 'ac.cn', 'mil.cn',
+        'co.uk', 'org.uk', 'net.uk', 'gov.uk', 'ac.uk', 'sch.uk',
+        'co.jp', 'ne.jp', 'or.jp', 'go.jp', 'ac.jp', 'ad.jp',
+        'com.de', 'org.de', 'net.de', 'gov.de',
+        'com.ca', 'net.ca', 'org.ca', 'gov.ca',
+        'com.au', 'net.au', 'org.au', 'gov.au', 'edu.au',
+        'com.fr', 'net.fr', 'org.fr', 'gov.fr',
+        'com.br', 'com.mx', 'com.ar', 'com.ru',
+        'co.in', 'co.za',
+        'co.kr', 'com.tw'
+    ]
 
     # 检查是否为复合域名
     is_compound_domain = False
@@ -451,3 +456,21 @@ def get_root_domain(url):
         root_domain = '.'.join(domain_parts[-2:])
 
     return root_domain
+
+
+def generate_plugin_hash(length=32):
+    """生成随机字符串，并使用 ScopeSentry 作为盐值计算 MD5"""
+    # 生成基础的随机字符串
+    characters = string.ascii_letters + string.digits
+    random_string = ''.join(random.choice(characters) for _ in range(length))
+
+    # 使用固定的盐值 ScopeSentry
+    salt = "ScopeSentry"
+
+    # 将盐值添加到随机字符串后面
+    salted_string = random_string + salt
+
+    # 使用 MD5 计算哈希值
+    md5_hash = hashlib.md5(salted_string.encode()).hexdigest()
+
+    return md5_hash

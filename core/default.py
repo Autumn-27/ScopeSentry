@@ -287,11 +287,11 @@ PLUGINS = [
         "name": "WebFingerprint",
         "hash": "80718cc3fcb4827d942e6300184707e2",
         "parameter": "",
-        "help":"",
+        "help": "",
         "introduction": "web指纹识别",
         "isSystem": True,
         "version": "1.0",
-        "source":""
+        "source": ""
     },
     {
         "module": "AssetMapping",

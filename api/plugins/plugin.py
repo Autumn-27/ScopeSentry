@@ -13,8 +13,11 @@ from starlette.responses import StreamingResponse
 from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor, AsyncIOMotorGridFSBucket
 from core.db import get_mongo_db
+from core.default import PLUGINS
 from core.redis_handler import refresh_config
 from loguru import logger
+
+from core.util import generate_plugin_hash
 
 router = APIRouter()
 
@@ -36,6 +39,8 @@ async def get_all_plugin(request_data: dict, db=Depends(get_mongo_db), _: dict =
                                         "parameter": 1,
                                         "help": 1,
                                         "introduction": 1,
+                                        "isSystem": 1,
+                                        "version": 1,
                                         }).skip((page_index - 1) * page_size).limit(page_size)
     result = await cursor.to_list(length=None)
     return {
@@ -69,9 +74,63 @@ async def get_plugin_detail(request_data: dict, db=Depends(get_mongo_db), _: dic
             "parameter": doc.get("parameter", ""),
             "help": doc.get("help", ""),
             "introduction": doc.get("introduction", ""),
-            "source": doc.get("source", "")
+            "source": doc.get("source", ""),
+            "isSystem": doc.get("isSystem", False)
         }
         return {"code": 200, "data": result}
+
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
+        return {"message": "error", "code": 500}
+
+
+@router.post("/save")
+async def save_plugin(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    id = request_data.get("id", "")
+    request_data.pop("id")
+    if id is None or id == "":
+        # 新建
+        request_data["isSystem"] = False
+        request_data["hash"] = generate_plugin_hash()
+        result = await db.plugins.insert_one(request_data)
+
+        if result.inserted_id:
+            return {"code": 200, "message": "plugin added successfully"}
+        else:
+            return {"code": 400, "message": "Failed to add plugin"}
+    else:
+        update_query = {"_id": ObjectId(id)}
+
+        # Values to be updated
+        update_values = {"$set": request_data}
+
+        # Perform the update
+        result = await db.plugins.update_one(update_query, update_values)
+        if result:
+            return {"code": 200, "message": "plugin updated successfully"}
+        else:
+            return {"code": 404, "message": "plugin not found"}
+
+@router.post("/delete")
+async def delete_plugin(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    try:
+        # Extract the list of IDs from the request_data dictionary
+        plugin_hashs = request_data.get("ids", [])
+
+        # Convert the provided rule_ids to ObjectId
+        hash_ids = []
+        for plugin_hash in plugin_hashs:
+            if plugin_hash not in str(PLUGINS):
+                hash_ids.append(plugin_hash)
+        # Delete the SensitiveRule documents based on the provided IDs
+        result = await db.plugins.delete_many({"hash": {"$in": hash_ids}})
+
+        # Check if the deletion was successful
+        if result.deleted_count > 0:
+            return {"code": 200, "message": "plugin deleted successfully"}
+        else:
+            return {"code": 404, "message": "plugin not found"}
 
     except Exception as e:
         logger.error(str(e))
