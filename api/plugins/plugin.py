@@ -112,6 +112,7 @@ async def save_plugin(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         else:
             return {"code": 404, "message": "plugin not found"}
 
+
 @router.post("/delete")
 async def delete_plugin(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
