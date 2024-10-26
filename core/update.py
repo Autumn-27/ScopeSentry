@@ -155,5 +155,6 @@ async def update15(db):
     # 增加默认插件
     await db["plugins"].insert_many(PLUGINS)
 
+    # 更新POC严重等级
 
     # 修改全局线程配置、节点配置

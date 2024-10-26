@@ -14,7 +14,7 @@ from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor, AsyncIOMotorGridFSBucket
 from core.db import get_mongo_db
 from core.default import PLUGINS
-from core.redis_handler import refresh_config
+from core.redis_handler import refresh_config, get_redis_pool
 from loguru import logger
 
 from core.util import generate_plugin_hash
@@ -48,6 +48,32 @@ async def get_all_plugin(request_data: dict, db=Depends(get_mongo_db), _: dict =
         "data": {
             'list': result,
             'total': total_count
+        }
+    }
+
+
+@router.post("/list/bymodule")
+async def get_all_plugin_by_module(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    query = request_data.get("module", "")
+    if query == "":
+        return {"code": 400, "message": "No query provided"}
+    query = {
+        "module": query
+    }
+    cursor = db['plugins'].find(query, {"_id": 0,
+                                        "id": {"$toString": "$_id"},
+                                        "module": 1,
+                                        "name": 1,
+                                        "hash": 1,
+                                        "parameter": 1,
+                                        "help": 1,
+                                        "introduction": 1,
+                                        })
+    result = await cursor.to_list(length=None)
+    return {
+        "code": 200,
+        "data": {
+            'list': result
         }
     }
 
@@ -137,3 +163,42 @@ async def delete_plugin(request_data: dict, db=Depends(get_mongo_db), _: dict = 
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
+
+
+@router.post("/log")
+async def get_plugin_logs(request_data: dict, _: dict = Depends(verify_token), redis_con=Depends(get_redis_pool)):
+    try:
+        module = request_data.get("module")
+        hash = request_data.get("hash")
+        if module is None or hash is None:
+            return {"message": "Node name is required", "code": 400}
+        # 构建日志键
+        log_key = f"logs:plugins:{module}:{hash}"
+        # 从 Redis 中获取日志列表
+        logs = await redis_con.smembers(log_key)
+        log_data = ""
+        for log in logs:
+            log_data += log + "\n"
+        return {"code": 200, "logs": log_data}
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
+        return {"message": "Error retrieving logs", "code": 500}
+
+
+@router.post("/log/clean")
+async def clean_plugin_logs(request_data: dict, _: dict = Depends(verify_token), redis_con=Depends(get_redis_pool)):
+    try:
+        module = request_data.get("module")
+        hash = request_data.get("hash")
+        if module is None or hash is None:
+            return {"message": "Node name is required", "code": 400}
+        # 构建日志键
+        log_key = f"logs:plugins:{module}:{hash}"
+        # 从 Redis 中获取日志列表
+        logs = await redis_con.delete(log_key)
+        return {"code": 200, "message": "success"}
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
+        return {"message": "Error retrieving logs", "code": 500}

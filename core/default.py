@@ -330,7 +330,7 @@ PLUGINS = [
         "module": "PortScan",
         "name": "RustScan",
         "hash": "66b4ddeb983387df2b7ee7726653874d",
-        "parameter": "-port {port.top1000} -b 600 -t 3000",
+        "parameter": "-port {port.nmap top 1000} -b 600 -t 3000",
         "help": "-port 端口扫描范围 -b 端口扫描并发数量  -t 超时时间",
         "introduction": "端口存活扫描",
         "isSystem": True,
