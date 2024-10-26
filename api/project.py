@@ -4,7 +4,7 @@ import asyncio
 from bson import ObjectId
 from fastapi import APIRouter, Depends, BackgroundTasks
 
-from api.task import create_scan_task, delete_asset
+from api.task.util import delete_asset, create_scan_task
 from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor
 

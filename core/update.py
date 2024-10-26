@@ -12,7 +12,7 @@ import tldextract
 from pymongo import UpdateOne
 
 from core.config import VERSION
-from core.default import get_dirDict, get_domainDict, get_sensitive, ModulesConfig, PLUGINS
+from core.default import get_dirDict, get_domainDict, get_sensitive, ModulesConfig, PLUGINS, SCANTEMPLATE
 
 
 async def update14(db):
@@ -156,5 +156,22 @@ async def update15(db):
     await db["plugins"].insert_many(PLUGINS)
 
     # 更新POC严重等级
+    level_map = {
+        6: 'critical',
+        5: 'high',
+        4: 'medium',
+        3: 'low',
+        2: 'info',
+        1: 'unknown'
+    }
+    for value, label in level_map.items():
+        db['PocList'].update_many(
+            {"level": value},
+            {"$set": {"level": label, "type": 'nuclei'}}
+        )
+
+    # 创建默认扫描模板
+    collection = db["ScanTemplates"]
+    await collection.insert_one(SCANTEMPLATE)
 
     # 修改全局线程配置、节点配置

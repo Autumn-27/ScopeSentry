@@ -131,6 +131,10 @@ async def create_database():
             # 创建默认插件
             collection = db["plugins"]
             await collection.insert_many(PLUGINS)
+
+            # 创建默认扫描模板
+            collection = db["ScanTemplates"]
+            await collection.insert_one(SCANTEMPLATE)
         else:
             collection = db["config"]
             result = await collection.find_one({"name": "timezone"})

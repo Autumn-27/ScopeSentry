@@ -287,7 +287,7 @@ PLUGINS = [
         "name": "WebFingerprint",
         "hash": "80718cc3fcb4827d942e6300184707e2",
         "parameter": "",
-        "help": "",
+        "help": "无需参数",
         "introduction": "web指纹识别",
         "isSystem": True,
         "version": "1.0",
@@ -320,7 +320,7 @@ PLUGINS = [
         "name": "fingerprintx",
         "hash": "648a6f49eed57b1737ac702e02985b00",
         "parameter": "",
-        "help": "",
+        "help": "无需参数",
         "introduction": "端口指纹识别",
         "isSystem": True,
         "version": "1.0",
@@ -330,7 +330,7 @@ PLUGINS = [
         "module": "PortScan",
         "name": "RustScan",
         "hash": "66b4ddeb983387df2b7ee7726653874d",
-        "parameter": "-port {port.nmap top 1000} -b 600 -t 3000",
+        "parameter": "-port {port.top1000} -b 600 -t 3000",
         "help": "-port 端口扫描范围 -b 端口扫描并发数量  -t 超时时间",
         "introduction": "端口存活扫描",
         "isSystem": True,
@@ -342,7 +342,7 @@ PLUGINS = [
         "name": "SkipCdn",
         "hash": "9b91e0f18ac9043ec9fe250a39b4a2d9",
         "parameter": "",
-        "help": "",
+        "help": "无需参数",
         "introduction": "检测是否cdn，跳过cdn的端口扫描",
         "isSystem": True,
         "version": "1.0",
@@ -375,7 +375,7 @@ PLUGINS = [
         "name": "SubdomainTakeover",
         "hash": "c0c71c101271f38b8be1767f3626d291",
         "parameter": "",
-        "help": "",
+        "help": "无需参数",
         "introduction": "子域名接管检测",
         "isSystem": True,
         "version": "1.0",
@@ -386,7 +386,7 @@ PLUGINS = [
         "name": "wayback",
         "hash": "ef244b3462744dad3040f9dcf3194eb1",
         "parameter": "",
-        "help": "",
+        "help": "无需参数",
         "introduction": "url扫描从Waybackarchive、Alienvault、Commoncrawl获取历史url",
         "isSystem": True,
         "version": "1.0",
@@ -408,7 +408,7 @@ PLUGINS = [
         "name": "sensitive",
         "hash": "2949994c04a4e124b9c98383489510f0",
         "parameter": "",
-        "help": "",
+        "help": "无需参数",
         "introduction": "敏感信息泄露检测",
         "isSystem": True,
         "version": "1.0",
@@ -430,10 +430,75 @@ PLUGINS = [
         "name": "rad",
         "hash": "4b292861d3228af0e4da8e7ef979497c",
         "parameter": "",
-        "help": "",
+        "help": "无需参数",
         "introduction": "爬虫",
         "isSystem": True,
         "version": "1.0",
         "source": ""
     }
 ]
+
+SCANTEMPLATE = {
+    "name": "default",
+    "TargetHandler": [],
+    "Parameters": {
+        "TargetHandler": {},
+        "SubdomainScan": {
+            "d60ba73c70aac430a0a54e796e7e19b8": "-t 10 -timeout 20 -max-time 10",
+            "e8f55f5e0e9f4af1ca40eb19048b8c82": "-subfile {dict.subdomain.default} -et 60"
+        },
+        "SubdomainSecurity": {},
+        "PortScanPreparation": {},
+        "PortScan": {
+            "66b4ddeb983387df2b7ee7726653874d": "-port {port.top1000} -b 600 -t 3000"
+        },
+        "PortFingerprint": {},
+        "AssetMapping": {
+            "3a0d994a12305cb15a5cb7104d819623": "-cdncheck true"
+        },
+        "AssetHandle": {},
+        "URLScan": {
+            "9669d0dcc52a5ca6dbbe580ffc99c364": "-t 10 -timeout 5 -depth 5 -et 60"
+        },
+        "WebCrawler": {},
+        "URLSecurity": {},
+        "DirScan": {
+            "920546788addc6d29ea63e4a314a1b85": "-d {dict.dir.default} -t 10"
+        },
+        "VulnerabilityScan": {}
+    },
+    "SubdomainScan": [
+        "d60ba73c70aac430a0a54e796e7e19b8",
+        "e8f55f5e0e9f4af1ca40eb19048b8c82"
+    ],
+    "SubdomainSecurity": [
+        "c0c71c101271f38b8be1767f3626d291"
+    ],
+    "PortScanPreparation": [],
+    "PortScan": [
+        "66b4ddeb983387df2b7ee7726653874d"
+    ],
+    "PortFingerprint": [
+        "648a6f49eed57b1737ac702e02985b00"
+    ],
+    "AssetMapping": [
+        "3a0d994a12305cb15a5cb7104d819623"
+    ],
+    "AssetHandle": [
+        "80718cc3fcb4827d942e6300184707e2"
+    ],
+    "URLScan": [
+        "ef244b3462744dad3040f9dcf3194eb1",
+        "9669d0dcc52a5ca6dbbe580ffc99c364"
+    ],
+    "WebCrawler": [
+        "4b292861d3228af0e4da8e7ef979497c"
+    ],
+    "URLSecurity": [
+        "2949994c04a4e124b9c98383489510f0"
+    ],
+    "DirScan": [
+        "920546788addc6d29ea63e4a314a1b85"
+    ],
+    "VulnerabilityScan": []
+}

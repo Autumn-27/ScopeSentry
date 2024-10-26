@@ -13,7 +13,6 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends, BackgroundTasks
 from pymongo import DESCENDING
 
-from api.task import create_scan_task, delete_asset
 from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor
 

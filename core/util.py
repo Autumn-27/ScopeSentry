@@ -5,7 +5,6 @@
 import hashlib, random
 import re
 import string
-import sys
 from loguru import logger
 from core.config import TIMEZONE, APP, Project_List
 from datetime import timezone

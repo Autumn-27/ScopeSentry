@@ -4,6 +4,7 @@
 # @version:
 import asyncio
 import json
+import sys
 from urllib.parse import quote_plus
 import redis.asyncio as redis
 
