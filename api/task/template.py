@@ -82,7 +82,7 @@ async def template_detail(request_data: dict, _: dict = Depends(verify_token), d
                                                         'URLSecurity': 1,
                                                         'DirScan': 1,
                                                         'VulnerabilityScan': 1,
-                                                        'parameters': 1
+                                                        'Parameters': 1
                                                         })
     if not result:
         return {"message": "template not found for the provided ID", "code": 400}
