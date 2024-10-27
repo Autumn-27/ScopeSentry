@@ -6,6 +6,8 @@ import time
 from urllib.parse import quote_plus
 from motor.motor_asyncio import AsyncIOMotorGridFSBucket
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCursor
+from pymongo import ASCENDING
+
 from core.default import *
 from core.config import *
 from loguru import logger
@@ -135,7 +137,14 @@ async def create_database():
             # 创建默认扫描模板
             collection = db["ScanTemplates"]
             await collection.insert_one(SCANTEMPLATE)
+
+            # 创建页面监控文档，url不重复
+            db['PageMonitoring'].create_index([('url', ASCENDING)], unique=True)
+            db['PageMonitoringBody'].create_index([('md5', ASCENDING)], unique=True)
         else:
+            # 创建默认插件
+            collection = db["plugins"]
+            await collection.insert_many(PLUGINS)
             collection = db["config"]
             result = await collection.find_one({"name": "timezone"})
             set_timezone(result.get('value', 'Asia/Shanghai'))

@@ -415,6 +415,17 @@ PLUGINS = [
         "source": ""
     },
     {
+        "module": "URLSecurity",
+        "name": "PageMonitoring",
+        "hash": "e52b8b16d49912ca564c22319c495403",
+        "parameter": "",
+        "help": "无需参数",
+        "introduction": "页面监控，将所有url放入页面监控的计划任务中",
+        "isSystem": True,
+        "version": "1.0",
+        "source": ""
+    },
+    {
         "module": "VulnerabilityScan",
         "name": "nuclei",
         "hash": "ed93b8af6b72fe54a60efdb932cf6fbc",

@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorGridFSBucket
 import tldextract
-from pymongo import UpdateOne
+from pymongo import UpdateOne, ASCENDING
 
 from core.config import VERSION
 from core.default import get_dirDict, get_domainDict, get_sensitive, ModulesConfig, PLUGINS, SCANTEMPLATE
@@ -173,5 +173,12 @@ async def update15(db):
     # 创建默认扫描模板
     collection = db["ScanTemplates"]
     await collection.insert_one(SCANTEMPLATE)
+
+    # 修改页面监控数据
+    # 创建页面监控文档，url不重复
+    await db['PageMonitoring'].rename('PageMonitoring_bak')
+    await db['PageMonitoring'].create_index([('url', ASCENDING)], unique=True)
+    await db['PageMonitoringBody'].create_index([('md5', ASCENDING)], unique=True)
+
 
     # 修改全局线程配置、节点配置
