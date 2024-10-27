@@ -82,7 +82,8 @@ async def template_detail(request_data: dict, _: dict = Depends(verify_token), d
                                                         'URLSecurity': 1,
                                                         'DirScan': 1,
                                                         'VulnerabilityScan': 1,
-                                                        'Parameters': 1
+                                                        'Parameters': 1,
+                                                        'vullist': 1,
                                                         })
     if not result:
         return {"message": "template not found for the provided ID", "code": 400}
@@ -90,3 +91,43 @@ async def template_detail(request_data: dict, _: dict = Depends(verify_token), d
         "code": 200,
         "data": result
     }
+
+
+@router.post("/save")
+async def template_save(request_data: dict, _: dict = Depends(verify_token), db=Depends(get_mongo_db)):
+    result = request_data.get("result", "")
+    id = request_data.get("id", "")
+    if result == "":
+        return {"message": "template not found", "code": 400}
+    if id == "":
+        # 插入
+        await db['ScanTemplates'].insert_one(result)
+        return {"code": 200, "message": "save template success"}
+    else:
+        update_query = {"_id": ObjectId(id)}
+
+        await db['ScanTemplates'].update_one(update_query, {"$set": result})
+        return {"code": 200, "message": "update template success"}
+
+
+@router.post("/delete")
+async def template_save(request_data: dict, _: dict = Depends(verify_token), db=Depends(get_mongo_db)):
+    try:
+        # Extract the list of IDs from the request_data dictionary
+        template_ids = request_data.get("ids", [])
+
+        # Convert the provided rule_ids to ObjectId
+        obj_ids = [ObjectId(template_id) for template_id in template_ids]
+
+        # Delete the SensitiveRule documents based on the provided IDs
+        result = await db.ScanTemplates.delete_many({"_id": {"$in": obj_ids}})
+        # Check if the deletion was successful
+        if result.deleted_count > 0:
+            return {"code": 200, "message": "template deleted successfully"}
+        else:
+            return {"code": 404, "message": "template not found"}
+
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
+        return {"message": "error", "code": 500}
