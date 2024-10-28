@@ -220,11 +220,17 @@ async def delete_task(request_data: dict, db=Depends(get_mongo_db), _: dict = De
             job = scheduler.get_job(task_id)
             if job:
                 scheduler.remove_job(task_id)
+        # 删除redis中的任务
+        await redis_con.delete(*redis_key)
+
+        # 删除计划任务
         await db.ScheduledTasks.delete_many({"id": {"$in": task_ids}})
         if delA:
-            background_tasks.add_task(delete_asset, task_ids)
-        await redis_con.delete(*redis_key)
-        # Delete the SensitiveRule documents based on the provided IDs
+            # 如果选择了删除资产，则删除资产
+            task_name = await db.task.find({"_id": {"$in": obj_ids}}, {"name": 1})
+            background_tasks.add_task(delete_asset, task_name, False)
+
+        # 删除mongdob中的任务
         result = await db.task.delete_many({"_id": {"$in": obj_ids}})
 
         # Check if the deletion was successful
@@ -344,94 +350,6 @@ async def update_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict
         logger.error(traceback.format_exc())
         return {"message": "error", "code": 500}
 
-
-
-
-
-# @router.post("/task/progress/info")
-# async def progress_info(request_data: dict,  _: dict = Depends(verify_token), redis_con=Depends(get_redis_pool), db=Depends(get_mongo_db)):
-#     task_id = request_data.get("id")
-#     type = request_data.get("type")
-#     runner = request_data.get("runner")
-#     # Check if ID is provided
-#     if not task_id:
-#         return {"message": "ID is missing in the request data", "code": 400}
-#     query = {"_id": ObjectId(task_id)}
-#     if type == "scan":
-#         doc = await db.task.find_one(query)
-#     else:
-#         doc = await db.project.find_one(query)
-#         target_data = await db.ProjectTargetData.find_one({"id": task_id})
-#         doc["target"] = target_data["target"]
-#     if not doc:
-#         return {"message": "Content not found for the provided ID", "code": 404}
-#     target = doc['target']
-#     result_list = []
-#     for t in target.split("\n"):
-#         progress_result = {
-#             "subdomain": ["", ""],
-#             "subdomainTakeover": ["", ""],
-#             "portScan": ["", ""],
-#             "assetMapping": ["", ""],
-#             "urlScan": ["", ""],
-#             "sensitive": ["", ""],
-#             "crawler": ["", ""],
-#             "dirScan": ["", ""],
-#             "vulnerability": ["", ""],
-#             "all": ["", ""],
-#             "target": ""
-#         }
-#         if not doc['subdomainScan']:
-#             progress_result['subdomain'] = ['', '', '']
-#         if not doc['portScan']:
-#             progress_result['portScan'] = ['', '', '']
-#         if not doc['urlScan']:
-#             progress_result['urlScan'] = ['', '', '']
-#         if not doc['sensitiveInfoScan']:
-#             progress_result['sensitive'] = ['', '', '']
-#         if not doc['crawlerScan']:
-#             progress_result['crawler'] = ['', '', '']
-#         if not doc['dirScan']:
-#             progress_result['dirScan'] = ['', '', '']
-#         if not doc['vulScan']:
-#             progress_result['vulnerability'] = ['', '', '']
-#         if runner != "":
-#             key = "TaskInfo:progress:" + runner + ":" + t
-#         else:
-#             key = "TaskInfo:progress:" + task_id + ":" + t
-#         data = await redis_con.hgetall(key)
-#         progress_result["target"] = t
-#         if not data:
-#             result_list.append(progress_result)
-#         else:
-#             progress_result['subdomain'][0] = data.get("subdomain_start","")
-#             progress_result['subdomain'][1] = data.get("subdomain_end", "")
-#             progress_result['subdomainTakeover'][0] = data.get("subdomainTakeover_start", "")
-#             progress_result['subdomainTakeover'][1] = data.get("subdomainTakeover_end", "")
-#             progress_result['portScan'][0] = data.get("portScan_start", "")
-#             progress_result['portScan'][1] = data.get("portScan_end", "")
-#             progress_result['assetMapping'][0] = data.get("assetMapping_start", "")
-#             progress_result['assetMapping'][1] = data.get("assetMapping_end", "")
-#             progress_result['urlScan'][0] = data.get("urlScan_start", "")
-#             progress_result['urlScan'][1] = data.get("urlScan_end", "")
-#             progress_result['sensitive'][0] = data.get("sensitive_start", "")
-#             progress_result['sensitive'][1] = data.get("sensitive_end", "")
-#             progress_result['crawler'][0] = data.get("crawler_start", "")
-#             progress_result['crawler'][1] = data.get("crawler_end", "")
-#             progress_result['dirScan'][0] = data.get("dirScan_start", "")
-#             progress_result['dirScan'][1] = data.get("dirScan_end", "")
-#             progress_result['vulnerability'][0] = data.get("vulnerability_start", "")
-#             progress_result['vulnerability'][1] = data.get("vulnerability_end", "")
-#             progress_result['all'][0] = data.get("scan_start", "")
-#             progress_result['all'][1] = data.get("scan_end", "")
-#             result_list.append(progress_result)
-#     return {
-#         "code": 200,
-#         "data": {
-#             'list': result_list,
-#             "total": len(result_list)
-#         }
-#     }
 
 @router.post("/progress/info")
 async def progress_info(request_data: dict, _: dict = Depends(verify_token), redis_con=Depends(get_redis_pool),

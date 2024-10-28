@@ -6,12 +6,10 @@
 # -------------------------------------------
 import json
 
+from api.task.util import get_target_list
 from core.util import generate_random_string, get_now_time
 from loguru import logger
 from api.node import get_node_all
-
-
-
 
 
 async def create_scan_task(request_data, id, targetList, redis_con):
@@ -32,6 +30,8 @@ async def create_scan_task(request_data, id, targetList, redis_con):
         if keys_to_delete:
             await redis_con.delete(*keys_to_delete)
 
+        # 原始的target生成targetlist
+        target_list = await get_target_list(request_data['target'])
         add_redis_task_data = transform_db_redis(request_data)
         async with redis_con as redis:
             await redis.lpush(f"TaskInfo:{id}", *targetList)
