@@ -142,9 +142,6 @@ async def create_database():
             db['PageMonitoring'].create_index([('url', ASCENDING)], unique=True)
             db['PageMonitoringBody'].create_index([('md5', ASCENDING)], unique=True)
         else:
-            # 创建默认插件
-            collection = db["plugins"]
-            await collection.insert_many(PLUGINS)
             collection = db["config"]
             result = await collection.find_one({"name": "timezone"})
             set_timezone(result.get('value', 'Asia/Shanghai'))

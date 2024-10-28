@@ -13,39 +13,20 @@ from api.node import get_node_all
 from core.apscheduler_handler import scheduler
 from core.db import get_mongo_db
 from core.redis_handler import get_redis_pool
-from core.util import transform_db_redis, generate_random_string, get_now_time
+from core.util import generate_random_string, get_now_time
 from loguru import logger
 
 
-async def create_scan_task(request_data, id, targetList, redis_con):
-    try:
-        request_data["id"] = str(id)
-        if request_data['allNode']:
-            request_data["node"] = await get_node_all(redis_con)
+async def generate_target(target):
+    print("d")
 
-        keys_to_delete = [
-            f"TaskInfo:tmp:{id}",
-            f"TaskInfo:{id}",
-            f"TaskInfo:time:{id}",
-            f"duplicates:url:{id}",
-            f"duplicates:domain:{id}",
-            f"duplicates:sensresp:{id}",
-            f"duplicates:craw:{id}"
-        ]
-        progresskeys = await redis_con.keys(f"TaskInfo:progress:{id}:*")
-        keys_to_delete.extend(progresskeys)
-        if keys_to_delete:
-            await redis_con.delete(*keys_to_delete)
-        add_redis_task_data = transform_db_redis(request_data)
-        async with redis_con as redis:
-            await redis.lpush(f"TaskInfo:{id}", *targetList)
-            for name in request_data["node"]:
-                await redis.rpush(f"NodeTask:{name}", json.dumps(add_redis_task_data))
-        return True
-    except Exception as e:
-        logger.error(str(e))
-        # Handle exceptions as needed
-        return False
+# 根据原始target生成目标列表
+async def get_target_list(raw_target):
+    for t in raw_target.split("\n"):
+        t.replace("http://", "").replace("https://", "")
+        t = t.strip("\n").strip("\r").strip()
+        await generate_target(t)
+
 
 
 async def task_progress():

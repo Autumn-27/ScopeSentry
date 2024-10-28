@@ -108,32 +108,7 @@ def read_json_file(file_path):
     return data
 
 
-def transform_db_redis(request_data):
-    Subfinder = False
-    Ksubdomain = False
-    if "Subfinder" in request_data["subdomainConfig"]:
-        Subfinder = True
-    if "Ksubdomain" in request_data["subdomainConfig"]:
-        Ksubdomain = True
-    add_redis_task_data = {
-        "TaskId": request_data["id"],
-        "SubdomainScan": request_data["subdomainScan"],
-        "Subfinder": Subfinder,
-        "Ksubdomain": Ksubdomain,
-        "UrlScan": request_data["urlScan"],
-        "Duplicates": request_data["duplicates"],
-        "SensitiveInfoScan": request_data["sensitiveInfoScan"],
-        "PageMonitoring": request_data["pageMonitoring"],
-        "CrawlerScan": request_data["crawlerScan"],
-        "VulScan": request_data["vulScan"],
-        "VulList": request_data["vulList"],
-        "PortScan": request_data["portScan"],
-        "Ports": request_data["ports"],
-        "Waybackurl": request_data["waybackurl"],
-        "DirScan": request_data["dirScan"],
-        "type": 'scan'
-    }
-    return add_redis_task_data
+
 
 
 def string_to_postfix(expression):

@@ -102,7 +102,7 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
                                   id=str(result.inserted_id), jobstore='mongo')
                 next_time = scheduler.get_job(str(result.inserted_id)).next_run_time
                 formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
-                db.ScheduledTasks.insert_one(
+                await db.ScheduledTasks.insert_one(
                     {"id": str(result.inserted_id), "name": name, 'hour': hour, 'type': 'Scan', 'state': True, 'lastTime': get_now_time(), 'nextTime': formatted_time, 'runner_id': str(result.inserted_id)})
             f = await create_scan_task(request_data, result.inserted_id, targetList, redis_con)
             if f:
@@ -117,8 +117,61 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         return {"message": "error", "code": 500}
 
 
-@router.post("/content")
-async def task_content(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+@router.post("/add2")
+async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token), redis_con=Depends(get_redis_pool)):
+    try:
+        name = request_data.get("name")
+        cursor = db.task.find({"name": {"$eq": name}}, {"_id": 1})
+        results = await cursor.to_list(length=None)
+        if len(results) != 0:
+            return {"code": 400, "message": "name already exists"}
+        target = request_data.get("target", "")
+        node = request_data.get("node")
+        template = request_data.get("template", "")
+        if name == "" or target == "" or node == [] or template == "":
+            return {"message": "Null", "code": 500}
+
+        scheduledTasks = request_data.get("scheduledTasks", False)
+        hour = request_data.get("hour", 24)
+        targetList = []
+        targetTmp = ""
+        for t in target.split("\n"):
+            t.replace("http://", "").replace("https://", "")
+            t = t.strip("\n").strip("\r").strip()
+            if t != "" and t not in targetList:
+                targetList.append(t)
+                targetTmp += t + "\n"
+        taskNum = len(targetList)
+        request_data['taskNum'] = taskNum
+        request_data['target'] = targetTmp.strip("\n")
+        request_data['progress'] = 0
+        request_data["creatTime"] = get_now_time()
+        request_data["endTime"] = ""
+        result = await db.task.insert_one(request_data)
+        # Check if the insertion was successful
+        if result.inserted_id:
+            if scheduledTasks:
+                scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[str(result.inserted_id)],
+                                  id=str(result.inserted_id), jobstore='mongo')
+                next_time = scheduler.get_job(str(result.inserted_id)).next_run_time
+                formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
+                await db.ScheduledTasks.insert_one(
+                    {"id": str(result.inserted_id), "name": name, 'hour': hour, 'type': 'Scan', 'state': True,
+                     'lastTime': "", 'nextTime': formatted_time, 'runner_id': str(result.inserted_id)})
+            f = await create_scan_task(request_data, result.inserted_id, redis_con)
+            if f:
+                return {"code": 200, "message": "Task added successfully"}
+            else:
+                return {"code": 400, "message": "Failed to add Task"}
+        else:
+            return {"code": 400, "message": "Failed to add Task"}
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
+        return {"message": "error", "code": 500}
+
+@router.post("/detail")
+async def task_detail(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         # Get the ID from the request data
         task_id = request_data.get("id")
@@ -135,24 +188,14 @@ async def task_content(request_data: dict, db=Depends(get_mongo_db), _: dict = D
         result = {
             "name": doc.get("name", ""),
             "target": doc.get("target", ""),
+            "ignore": doc.get("ignore", ""),
             "node": doc.get("node", []),
-            "subdomainScan": doc.get("subdomainScan", False),
-            "subdomainConfig": doc.get("subdomainConfig", []),
-            "urlScan": doc.get("urlScan", False),
-            "sensitiveInfoScan": doc.get("sensitiveInfoScan", False),
-            "pageMonitoring": doc.get("pageMonitoring", ""),
-            "crawlerScan": doc.get("crawlerScan", False),
-            "vulScan": doc.get("vulScan", False),
-            "vulList": doc.get("vulList", []),
-            "portScan": doc.get("portScan"),
-            "ports": doc.get("ports"),
-            "waybackurl": doc.get("waybackurl"),
-            "dirScan": doc.get("dirScan"),
+            "allNode": doc.get("allNode"),
             "scheduledTasks": doc.get("scheduledTasks"),
             "hour": doc.get("hour"),
-            "duplicates": doc.get("duplicates")
+            "duplicates": doc.get("duplicates"),
+            "template": doc.get("template", "")
         }
-
         return {"code": 200, "data": result}
 
     except Exception as e:
