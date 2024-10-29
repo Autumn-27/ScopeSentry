@@ -87,36 +87,7 @@ async def task_progress():
             return
 
 
-# async def scheduler_scan_task(id):
-#     logger.info(f"Scheduler scan {id}")
-#     async for db in get_mongo_db():
-#         async for redis in get_redis_pool():
-#             next_time = scheduler.get_job(id).next_run_time
-#             formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
-#             doc = await db.ScheduledTasks.find_one({"id": id})
-#             run_id_last = doc.get("runner_id", "")
-#             if run_id_last != "" and id != run_id_last:
-#                 progresskeys = await redis.keys(f"TaskInfo:progress:{run_id_last}:*")
-#                 for pgk in progresskeys:
-#                     await redis.delete(pgk)
-#             task_id = generate_random_string(15)
-#             update_document = {
-#                 "$set": {
-#                     "lastTime": get_now_time(),
-#                     "nextTime": formatted_time,
-#                     "runner_id": task_id
-#                 }
-#             }
-#             await db.ScheduledTasks.update_one({"id": id}, update_document)
-#             query = {"_id": ObjectId(id)}
-#             doc = await db.task.find_one(query)
-#             targetList = []
-#             for t in doc['target'].split("\n"):
-#                 t.replace("http://", "").replace("https://", "")
-#                 t = t.strip("\n").strip("\r").strip()
-#                 if t != "" and t not in targetList:
-#                     targetList.append(t)
-#             await create_scan_task(doc, task_id, targetList, redis)
+
 
 
 async def delete_asset(task_ids, is_project=False):

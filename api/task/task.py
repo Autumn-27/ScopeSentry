@@ -9,7 +9,8 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends, BackgroundTasks
 from pymongo import DESCENDING
 
-from api.task.util import create_scan_task, task_progress, scheduler_scan_task, delete_asset
+from api.task.handler import insert_task, scheduler_scan_task
+from api.task.util import task_progress, delete_asset
 from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor
 
@@ -37,19 +38,7 @@ async def get_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict = 
         result = await cursor.to_list(length=None)
         # Process the result as needed
         response_data = [{"id": str(doc["_id"]), "name": doc["name"], "taskNum": doc["taskNum"], "progress": doc["progress"], "creatTime": doc["creatTime"], "endTime": doc["endTime"]} for doc in result]
-        # response_data = []
-        # for doc in result:
-        #     transformed_doc = {
-        #         "id": str(doc["_id"]),
-        #         "name": doc["name"],
-        #         "taskNum": doc["taskNum"],
-        #         "progress": doc["progress"],
-        #         "creatTime": doc["creatTime"],
-        #         "endTime": doc["endTime"]
-        #     }
-        #     # if doc["progress"] != 100:
-        #     #     background_tasks.add_task(check_redis_task_target_is_null, str(doc["_id"]), "", redis_con)
-        #     response_data.append(transformed_doc)
+
         return {
             "code": 200,
             "data": {
@@ -77,98 +66,29 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         if name == "" or target == "" or node == []:
             return {"message": "Null", "code": 500}
         scheduledTasks = request_data.get("scheduledTasks", False)
-        hour = request_data.get("hour", 1)
-        targetList = []
-        targetTmp = ""
-        for t in target.split("\n"):
-            t.replace("http://","").replace("https://","")
-            t = t.strip("\n").strip("\r").strip()
-            if t != "" and t not in targetList:
-                targetList.append(t)
-                targetTmp += t + "\n"
-        taskNum = len(targetList)
-        request_data['taskNum'] = taskNum
-        request_data['target'] = targetTmp.strip("\n")
-        request_data['progress'] = 0
-        request_data["creatTime"] = get_now_time()
-        request_data["endTime"] = ""
-        if "All Poc" in request_data['vulList']:
-            request_data['vulList'] = ["All Poc"]
-        result = await db.task.insert_one(request_data)
-        # Check if the insertion was successful
-        if result.inserted_id:
-            if scheduledTasks:
-                scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[str(result.inserted_id)],
-                                  id=str(result.inserted_id), jobstore='mongo')
-                next_time = scheduler.get_job(str(result.inserted_id)).next_run_time
-                formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
-                await db.ScheduledTasks.insert_one(
-                    {"id": str(result.inserted_id), "name": name, 'hour': hour, 'type': 'Scan', 'state': True, 'lastTime': get_now_time(), 'nextTime': formatted_time, 'runner_id': str(result.inserted_id)})
-            f = await create_scan_task(request_data, result.inserted_id, targetList, redis_con)
-            if f:
-                return {"code": 200, "message": "Task added successfully"}
-            else:
-                return {"code": 400, "message": "Failed to add Task"}
-        else:
-            return {"code": 400, "message": "Failed to add Task"}
-    except Exception as e:
-        logger.error(str(e))
-        # Handle exceptions as needed
-        return {"message": "error", "code": 500}
-
-
-@router.post("/add2")
-async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token), redis_con=Depends(get_redis_pool)):
-    try:
-        name = request_data.get("name")
-        cursor = db.task.find({"name": {"$eq": name}}, {"_id": 1})
-        results = await cursor.to_list(length=None)
-        if len(results) != 0:
-            return {"code": 400, "message": "name already exists"}
-        target = request_data.get("target", "")
-        node = request_data.get("node")
-        template = request_data.get("template", "")
-        if name == "" or target == "" or node == [] or template == "":
-            return {"message": "Null", "code": 500}
-
-        scheduledTasks = request_data.get("scheduledTasks", False)
         hour = request_data.get("hour", 24)
-        targetList = []
-        targetTmp = ""
-        for t in target.split("\n"):
-            t.replace("http://", "").replace("https://", "")
-            t = t.strip("\n").strip("\r").strip()
-            if t != "" and t not in targetList:
-                targetList.append(t)
-                targetTmp += t + "\n"
-        taskNum = len(targetList)
-        request_data['taskNum'] = taskNum
-        request_data['target'] = targetTmp.strip("\n")
-        request_data['progress'] = 0
-        request_data["creatTime"] = get_now_time()
-        request_data["endTime"] = ""
-        result = await db.task.insert_one(request_data)
-        # Check if the insertion was successful
-        if result.inserted_id:
+        task_id = await insert_task(request_data)
+        if task_id:
             if scheduledTasks:
-                scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[str(result.inserted_id)],
-                                  id=str(result.inserted_id), jobstore='mongo')
-                next_time = scheduler.get_job(str(result.inserted_id)).next_run_time
+                scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[str(task_id)],
+                                  id=str(task_id), jobstore='mongo')
+                next_time = scheduler.get_job(str(task_id)).next_run_time
                 formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
-                await db.ScheduledTasks.insert_one(
-                    {"id": str(result.inserted_id), "name": name, 'hour': hour, 'type': 'Scan', 'state': True,
-                     'lastTime': "", 'nextTime': formatted_time, 'runner_id': str(result.inserted_id)})
-            f = await create_scan_task(request_data, result.inserted_id, redis_con)
-            if f:
-                return {"code": 200, "message": "Task added successfully"}
-            else:
-                return {"code": 400, "message": "Failed to add Task"}
+                # 插入计划任务管理
+                request_data["type"] = "scan"
+                request_data["state"] = True
+                request_data["lastTime"] = ""
+                request_data["nextTime"] = formatted_time
+                request_data["id"] = str(task_id)
+                await db.ScheduledTasks.insert_one(request_data)
+            return {"code": 200, "message": "Task added successfully"}
         else:
             return {"code": 400, "message": "Failed to add Task"}
     except Exception as e:
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
+
 
 @router.post("/detail")
 async def task_detail(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
@@ -299,56 +219,6 @@ async def retest_task(request_data: dict, db=Depends(get_mongo_db), _: dict = De
 
 
 
-
-@router.post("/update")
-async def update_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    try:
-        # Get the ID from the request data
-        task_id = request_data.get("id")
-        hour = request_data.get("hour")
-        # Check if ID is provided
-        if not task_id:
-            return {"message": "ID is missing in the request data", "code": 400}
-        query = {"id": task_id}
-        doc = await db.ScheduledTasks.find_one(query)
-        oldScheduledTasks = doc["state"]
-        old_hour = doc["hour"]
-        newScheduledTasks = request_data.get("scheduledTasks")
-        if oldScheduledTasks != newScheduledTasks:
-            if newScheduledTasks:
-                scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[task_id],
-                                  id=str(task_id), jobstore='mongo')
-                await db.ScheduledTasks.update_one({"id": task_id}, {"$set": {'state': True}})
-            else:
-                scheduler.remove_job(task_id)
-                await db.ScheduledTasks.update_one({"id": task_id}, {"$set": {'state': False}})
-        if newScheduledTasks:
-            if hour != old_hour:
-                await db.ScheduledTasks.update_one({"id": task_id}, {"$set": {'hour': hour}})
-                job = scheduler.get_job(task_id)
-                if job is not None:
-                    scheduler.remove_job(task_id)
-                    scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[task_id],
-                                      id=str(task_id), jobstore='mongo')
-                else:
-                    scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[task_id],
-                                      id=str(task_id), jobstore='mongo')
-
-        request_data.pop("id")
-        update_document = {
-            "$set": request_data
-        }
-        result = await db.task.update_one({"_id": ObjectId(task_id)}, update_document)
-        # Check if the update was successful
-        if result:
-            return {"message": "Task updated successfully", "code": 200}
-        else:
-            return {"message": "Failed to update data", "code": 404}
-
-    except Exception as e:
-        logger.error(str(e))
-        logger.error(traceback.format_exc())
-        return {"message": "error", "code": 500}
 
 
 @router.post("/progress/info")

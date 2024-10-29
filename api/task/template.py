@@ -8,15 +8,8 @@ import asyncio
 import traceback
 
 from bson import ObjectId
-from fastapi import APIRouter, Depends, BackgroundTasks
-from pymongo import DESCENDING
-
-from api.task.util import create_scan_task, task_progress, scheduler_scan_task, delete_asset
+from fastapi import APIRouter, Depends
 from api.users import verify_token
-from motor.motor_asyncio import AsyncIOMotorCursor
-
-from core.apscheduler_handler import scheduler
-from core.redis_handler import get_redis_pool
 from core.util import *
 
 router = APIRouter()
