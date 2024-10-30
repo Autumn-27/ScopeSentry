@@ -312,7 +312,7 @@ async def add_scheduled_task_pagemonit_data(request_data: dict, db=Depends(get_m
 
 
 @router.post("/update")
-async def update_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+async def update_scheduled_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         # Get the ID from the request data
         task_id = request_data.get("id")
@@ -320,7 +320,7 @@ async def update_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict
         # Check if ID is provided
         if not task_id:
             return {"message": "ID is missing in the request data", "code": 400}
-        query = {"id": ObjectId(task_id)}
+        query = {"id": task_id}
         doc = await db.ScheduledTasks.find_one(query)
         oldScheduledTasks = doc["state"]
         old_hour = doc["hour"]
@@ -337,7 +337,7 @@ async def update_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict
             # 原本是开启的
             # 如果重新提交的是开启的
             if newScheduledTasks:
-                # 如果旧的时间间隔和新的时间剑客不同删除旧的然后按照新的时间重新提交，否则无需改变
+                # 如果旧的时间间隔和新的时间间隔不同删除旧的然后按照新的时间重新提交，否则无需改变
                 if old_hour != hour:
                     scheduler.remove_job(task_id)
                     scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[task_id], id=str(task_id),
@@ -345,6 +345,7 @@ async def update_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict
             else:
                 # 重新提交的是关闭的，则移除计划任务
                 scheduler.remove_job(task_id)
+                await db.ScheduledTasks.update_one({"id": task_id}, {"$set": {'state': False}})
         request_data.pop("id")
         update_document = {
             "$set": request_data
@@ -358,4 +359,38 @@ async def update_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict
     except Exception as e:
         logger.error(str(e))
         logger.error(traceback.format_exc())
+        return {"message": "error", "code": 500}
+
+
+@router.post("/detail")
+async def scheduled_detail(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    try:
+        # Get the ID from the request data
+        task_id = request_data.get("id")
+
+        # Check if ID is provided
+        if not task_id:
+            return {"message": "ID is missing in the request data", "code": 400}
+
+        # Query the database for content based on ID
+        query = {"_id": ObjectId(task_id)}
+        doc = await db.ScheduledTasks.find_one(query)
+        if not doc:
+            return {"message": "Content not found for the provided ID", "code": 404}
+        result = {
+            "name": doc.get("name", ""),
+            "target": doc.get("target", ""),
+            "ignore": doc.get("ignore", ""),
+            "node": doc.get("node", []),
+            "allNode": doc.get("allNode"),
+            "scheduledTasks": doc.get("scheduledTasks"),
+            "hour": doc.get("hour"),
+            "duplicates": doc.get("duplicates"),
+            "template": doc.get("template", "")
+        }
+        return {"code": 200, "data": result}
+
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
         return {"message": "error", "code": 500}

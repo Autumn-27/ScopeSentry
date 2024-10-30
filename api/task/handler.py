@@ -18,18 +18,10 @@ from api.node import get_node_all
 
 async def insert_task(request_data):
     async for db in get_mongo_db():
-        target = request_data.get("target", "")
-        targetList = []
-        targetTmp = ""
-        for t in target.split("\n"):
-            t.replace("http://", "").replace("https://", "")
-            t = t.strip("\n").strip("\r").strip()
-            if t != "" and t not in targetList:
-                targetList.append(t)
-                targetTmp += t + "\n"
+        targetList = await get_target_list(request_data['target'])
         taskNum = len(targetList)
         request_data['taskNum'] = taskNum
-        request_data['target'] = targetTmp.strip("\n")
+        request_data['target'] = request_data['target'].strip("\n").strip("\r").strip()
         request_data['progress'] = 0
         request_data["creatTime"] = get_now_time()
         request_data["endTime"] = ""
@@ -58,45 +50,48 @@ async def create_scan_task(request_data, id):
                 keys_to_delete.extend(progresskeys)
                 progresskeys = await redis_con.keys(f"duplicates:{id}:")
                 keys_to_delete.extend(progresskeys)
-                if keys_to_delete:
-                    await redis_con.delete(*keys_to_delete)
-                    template_data = await db.ScanTemplates.find_one({"_id": ObjectId(request_data["template"])})
-                    # 如果选择了poc 将poc参数拼接到nuclei的参数中
-                    if len(template_data['vullist']) != 0:
-                        vul_tmp = ""
-                        if "All Poc" in template_data['vullist']:
-                            vul_tmp = "*"
-                        else:
-                            for vul in template_data['vullist']:
-                                vul_tmp += vul + ","
-                        vul_tmp = vul_tmp.strip(",")
-                        if "VulnerabilityScan" in template_data["Parameters"]:
-                            if "ed93b8af6b72fe54a60efdb932cf6fbc" in template_data["Parameters"]["VulnerabilityScan"]:
-                                template_data["Parameters"]["VulnerabilityScan"]["ed93b8af6b72fe54a60efdb932cf6fbc"] = \
-                                template_data["Parameters"]["VulnerabilityScan"][
-                                    "ed93b8af6b72fe54a60efdb932cf6fbc"] + " -t " + vul_tmp
-                    # 删除原始的vullist
-                    del template_data["vullist"]
-                    del template_data["_id"]
-                    # 设置任务名称
-                    template_data["TaskName"] = request_data["name"]
-                    # 设置忽略目标
-                    template_data["ignore"] = request_data["ignore"]
-                    # 设置去重
-                    template_data["duplicates"] = request_data["duplicates"]
-                    # 任务id
-                    template_data["TaskId"] = str(id)
-                    # 任务类型
-                    template_data["type"] = "scan"
-                    # 原始的target生成target list
-                    target_list = await get_target_list(request_data['target'])
-                    async with redis_con as redis:
-                        # 将任务目标插入redis中
-                        await redis.lpush(f"TaskInfo:{id}", *target_list)
-                        # 分发任务
-                        for name in request_data["node"]:
-                            await redis.rpush(f"NodeTask:{name}", json.dumps(template_data))
-                    return True
+                await redis_con.delete(*keys_to_delete)
+
+                # 获取模板数据
+                template_data = await db.ScanTemplates.find_one({"_id": ObjectId(request_data["template"])})
+                # 如果选择了poc 将poc参数拼接到nuclei的参数中
+                if len(template_data['vullist']) != 0:
+                    vul_tmp = ""
+                    if "All Poc" in template_data['vullist']:
+                        vul_tmp = "*"
+                    else:
+                        for vul in template_data['vullist']:
+                            vul_tmp += vul + ","
+                    vul_tmp = vul_tmp.strip(",")
+                    if "VulnerabilityScan" in template_data["Parameters"]:
+                        if "ed93b8af6b72fe54a60efdb932cf6fbc" in template_data["Parameters"]["VulnerabilityScan"]:
+                            template_data["Parameters"]["VulnerabilityScan"]["ed93b8af6b72fe54a60efdb932cf6fbc"] = \
+                            template_data["Parameters"]["VulnerabilityScan"][
+                                "ed93b8af6b72fe54a60efdb932cf6fbc"] + " -t " + vul_tmp
+                # 删除原始的vullist
+                del template_data["vullist"]
+                del template_data["_id"]
+                # 设置任务名称
+                template_data["TaskName"] = request_data["name"]
+                # 设置忽略目标
+                template_data["ignore"] = request_data["ignore"]
+                # 设置去重
+                template_data["duplicates"] = request_data["duplicates"]
+                # 任务id
+                template_data["TaskId"] = str(id)
+                # 任务类型
+                template_data["type"] = "scan"
+                # 原始的target生成target list
+                target_list = await get_target_list(request_data['target'])
+                # 更新任务数量
+
+                async with redis_con as redis:
+                    # 将任务目标插入redis中
+                    await redis.lpush(f"TaskInfo:{id}", *target_list)
+                    # 分发任务
+                    for name in request_data["node"]:
+                        await redis.rpush(f"NodeTask:{name}", json.dumps(template_data))
+                return True
     except Exception as e:
         logger.error(str(e))
         # Handle exceptions as needed

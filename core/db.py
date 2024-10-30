@@ -68,6 +68,16 @@ async def create_database():
             # dirDict = get_dirDict()
             # await collection.insert_one(
             #     {"name": "DirDic", 'value': dirDict, 'type': 'dirDict'})
+
+            await collection.insert_one(
+                {"name": "notification", 'dirScanNotification': True,
+                 'portScanNotification': True, 'sensitiveNotification': True,
+                 'subdomainTakeoverNotification': True,
+                 'pageMonNotification': True,
+                 'subdomainNotification': True,
+                 'vulNotification': True,
+                 'type': 'notification'})
+
             fs = AsyncIOMotorGridFSBucket(db)
             # 更新目录扫描默认字典
             content = get_dirDict()
@@ -91,17 +101,6 @@ async def create_database():
                     content  # 文件内容
                 )
 
-            await collection.insert_one(
-                {"name": "notification", 'dirScanNotification': True,
-                 'portScanNotification': True, 'sensitiveNotification': True,
-                 'subdomainTakeoverNotification': True,
-                 'pageMonNotification': True,
-                 'subdomainNotification': True,
-                 'vulNotification': True,
-                 'type': 'notification'})
-            # domainDict = get_domainDict()
-            # await collection.insert_one(
-            #     {"name": "DomainDic", 'value': domainDict, 'type': 'domainDict'})
             sensitive_data = get_sensitive()
             collection = db["SensitiveRule"]
             if sensitive_data:
@@ -119,13 +118,13 @@ async def create_database():
             collection = db["PocList"]
             pocData = get_poc()
             await collection.insert_many(pocData)
-
-            collection = db["project"]
-            project_data, target_data = get_project_data()
-            await collection.insert_many(project_data)
-
-            collection = db["ProjectTargetData"]
-            await collection.insert_many(target_data)
+            # 新版本不内置项目
+            # collection = db["project"]
+            # project_data, target_data = get_project_data()
+            # await collection.insert_many(project_data)
+            #
+            # collection = db["ProjectTargetData"]
+            # await collection.insert_many(target_data)
 
             collection = db["FingerprintRules"]
             fingerprint = get_finger()

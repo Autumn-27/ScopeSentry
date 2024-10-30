@@ -9,7 +9,7 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends, BackgroundTasks
 from pymongo import DESCENDING
 
-from api.task.handler import insert_task, scheduler_scan_task
+from api.task.handler import insert_task, scheduler_scan_task, create_scan_task
 from api.task.util import task_progress, delete_asset
 from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor
@@ -180,24 +180,8 @@ async def retest_task(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         doc = await db.task.find_one(query)
         if not doc:
             return {"message": "Content not found for the provided ID", "code": 404}
-        target = doc['target']
-        targetList = target.split("\n")
-        keys_to_delete = [
-            f"TaskInfo:tmp:{task_id}",
-            f"TaskInfo:{task_id}",
-            f"TaskInfo:time:{task_id}",
-            f"duplicates:url:{task_id}",
-            f"duplicates:domain:{task_id}",
-            f"duplicates:sensresp:{task_id}",
-            f"duplicates:craw:{task_id}"
-        ]
-        progresskeys = await redis_con.keys(f"TaskInfo:progress:{task_id}:*")
-        keys_to_delete.extend(progresskeys)
 
-        if keys_to_delete:
-            await redis_con.delete(*keys_to_delete)
-
-        f = await create_scan_task(doc, task_id, targetList, redis_con)
+        f = await create_scan_task(doc, task_id)
 
         if f:
             update_document = {
@@ -215,10 +199,6 @@ async def retest_task(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
-
-
-
-
 
 
 @router.post("/progress/info")
