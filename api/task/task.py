@@ -67,7 +67,7 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
             return {"message": "Null", "code": 500}
         scheduledTasks = request_data.get("scheduledTasks", False)
         hour = request_data.get("hour", 24)
-        task_id = await insert_task(request_data)
+        task_id = await insert_task(request_data, db)
         if task_id:
             if scheduledTasks:
                 scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[str(task_id)],

@@ -64,7 +64,7 @@ async def startup_db_client():
         if j.id == 'page_monitoring':
             find_page_m = True
     if not find_page_m:
-        from api.task.scheduled_tasks import get_page_monitoring_time, create_page_monitoring_task
+        from api.task.handler import get_page_monitoring_time, create_page_monitoring_task
         pat, flag = await get_page_monitoring_time()
         if flag:
             scheduler.add_job(create_page_monitoring_task, 'interval', hours=pat, id='page_monitoring',
@@ -83,8 +83,6 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 from api import users, poc, configuration, fingerprint, node, task, \
     page_monitoring, vulnerability, SubdoaminTaker, notification, system, export, project_aggregation
-from api.task import scheduled_tasks
-
 from api.dictionary import router as dictionary_router
 from api.asset import router as asset_route
 from api.plugins import router as plugin_route
@@ -103,7 +101,6 @@ app.include_router(asset_route, prefix='/api')
 app.include_router(page_monitoring.router, prefix='/api')
 app.include_router(vulnerability.router, prefix='/api')
 app.include_router(SubdoaminTaker.router, prefix='/api')
-app.include_router(scheduled_tasks.router, prefix='/api')
 app.include_router(dirscan.router, prefix='/api')
 app.include_router(notification.router, prefix='/api')
 app.include_router(system.router, prefix='/api')

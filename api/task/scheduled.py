@@ -12,7 +12,7 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends
 from pytz import utc
 
-from api.task.handler import scheduler_scan_task
+from api.task.handler import scheduler_scan_task, create_page_monitoring_task
 from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor
 
@@ -26,7 +26,7 @@ from api.page_monitoring import get_page_monitoring_data
 router = APIRouter()
 
 
-@router.post("/scheduled/task/data")
+@router.post("/data")
 async def get_scheduled_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         search_query = request_data.get("search", "")
@@ -107,6 +107,8 @@ async def get_scheduled_data(request_data: dict, db=Depends(get_mongo_db), _: di
 #             return {"message": "Not Found Task", "code": 500}
 #     except:
 #         return {"message": "error", "code": 500}
+
+
 @router.post("/scheduled/task/delete")
 async def delete_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token),
                       redis_con=Depends(get_redis_pool)):
@@ -144,47 +146,6 @@ async def delete_task(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
-
-
-async def get_page_monitoring_time():
-    async for db in get_mongo_db():
-        result = await db.ScheduledTasks.find_one({"id": "page_monitoring"})
-        time = result['hour']
-        flag = result['state']
-        return time, flag
-
-
-async def create_page_monitoring_task():
-    logger.info("create_page_monitoring_task")
-    async for db in get_mongo_db():
-        async for redis in get_redis_pool():
-            name_list = []
-            result = await db.ScheduledTasks.find_one({"id": "page_monitoring"})
-            next_time = scheduler.get_job("page_monitoring").next_run_time
-            formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
-            update_document = {
-                "$set": {
-                    "lastTime": get_now_time(),
-                    "nextTime": formatted_time
-                }
-            }
-            await db.ScheduledTasks.update_one({"_id": result['_id']}, update_document)
-            if result['allNode']:
-                tmp = await get_redis_online_data(redis)
-                name_list += tmp
-            else:
-                name_list += result['node']
-            targetList = await get_page_monitoring_data(db, False)
-            if len(targetList) == 0:
-                return
-            await redis.delete(f"TaskInfo:page_monitoring")
-            await redis.lpush(f"TaskInfo:page_monitoring", *targetList)
-            add_redis_task_data = {
-                "type": 'page_monitoring',
-                "TaskId": "page_monitoring"
-            }
-            for name in name_list:
-                await redis.rpush(f"NodeTask:{name}", json.dumps(add_redis_task_data))
 
 
 @router.post("/pagemonit/data")

@@ -6,6 +6,7 @@
 # -------------------------------------------
 import ipaddress
 import json
+import re
 
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorCursor
@@ -34,6 +35,8 @@ async def generate_ip_range(start_ip, end_ip):
 # 解析ip段
 async def generate_target(target):
     try:
+        if "http://" in target or "https://" in target:
+            return [target]
         if '-' in target:
             start_ip, end_ip = target.split('-')
             l = await generate_ip_range(start_ip, end_ip)
@@ -44,8 +47,7 @@ async def generate_target(target):
         else:
             return [target]
     except Exception as e:
-        logger.error(e)
-        return []
+        return [target]
 
 
 # 根据原始target生成目标列表
@@ -87,9 +89,6 @@ async def task_progress():
             return
 
 
-
-
-
 async def delete_asset(task_ids, is_project=False):
     async for db in get_mongo_db():
         key = ["asset", "subdomain", "SubdoaminTakerResult", "UrlScan", "crawler", "SensitiveResult", "DirScanResult",
@@ -108,3 +107,41 @@ async def delete_asset(task_ids, is_project=False):
                 logger.info("Deleted {} {} documents".format(k, result.deleted_count))
             else:
                 logger.info("Deleted {} None documents".format(k))
+
+
+async def parameter_parser(parameter, db):
+    dict_list = {}
+    port_list = {}
+    # 获取字典
+    cursor: AsyncIOMotorCursor = db["dictionary"].find({})
+    result = await cursor.to_list(length=None)
+    for doc in result:
+        dict_list[f'{doc["category"].lower()}.{doc["name"].lower()}'] = str(doc['_id'])
+    # 获取端口
+    cursor: AsyncIOMotorCursor = db.PortDict.find({})
+    result = await cursor.to_list(length=None)
+    for doc in result:
+        port_list[f'{doc["name"].lower()}'] = doc["value"]
+
+    for module_name in parameter:
+        for plugin in parameter[module_name]:
+            matches = re.findall(r'\{(.*?)\}', parameter[module_name][plugin])
+            for match in matches:
+                tp, value = match.split(".", 1)
+                if tp == "dict":
+                    if value.lower() in dict_list:
+                        real_param = dict_list[value.lower()]
+                    else:
+                        real_param = match
+                        logger.error(f"parameter error:module {module_name} plugin {plugin}  parameter {parameter[module_name][plugin]}")
+                    parameter[module_name][plugin] = parameter[module_name][plugin].replace("{" + match + "}", real_param)
+                elif tp == "port":
+                    if value.lower() in port_list:
+                        real_param = port_list[value.lower()]
+                    else:
+                        real_param = match
+                        logger.error(
+                            f"parameter error:module {module_name} plugin {plugin}  parameter {parameter[module_name][plugin]}")
+                    parameter[module_name][plugin] = parameter[module_name][plugin].replace("{" + match + "}", real_param)
+    return parameter
+
