@@ -7,6 +7,7 @@
 from core.db import get_mongo_db
 from loguru import logger
 
+
 async def update_project(root_domain, project_id, change=False):
     asset_collection_list = {
                         'asset': ["url", "host", "ip"],
@@ -23,22 +24,13 @@ async def update_project(root_domain, project_id, change=False):
             if change:
                 await asset_update_project(root_domain, asset_collection_list[a], a, db, project_id)
             else:
-                await asset_add_project(root_domain, asset_collection_list[a], a, db, project_id)
+                await asset_add_project(root_domain, a, db, project_id)
 
 
-async def asset_add_project(root_domain, db_key, doc_name, db, project_id):
-    regex_patterns = [f".*{domain}.*" for domain in root_domain]
-    pattern = "|".join(regex_patterns)
+async def asset_add_project(root_domain, doc_name, db, project_id):
     # 构建查询条件
     query = {
-        "$and": [
-            {
-                "$or": [
-                    {key: {"$regex": pattern, "$options": "i"}} for key in db_key
-                ]
-            },
-            {"project": {"$exists": True, "$eq": ""}}
-        ]
+        "rootDomain": {"$in": root_domain}
     }
     update_query = {
         "$set": {
@@ -51,19 +43,13 @@ async def asset_add_project(root_domain, db_key, doc_name, db, project_id):
 
 
 async def asset_update_project(root_domain, db_key, doc_name, db, project_id):
-    regex_patterns = [f".*{domain}.*" for domain in root_domain]
-    pattern = "|".join(regex_patterns)
     # 构建查询条件
     query = {
-        "$and": [
-            {"project": project_id},
-            {
-                "$nor": [
-                    {key: {"$regex": pattern, "$options": "i"}} for key in db_key
+                "$and": [
+                    {"project": project_id},
+                    {"rootDomain": {"$nin": root_domain}}
                 ]
             }
-        ]
-    }
     update_query = {
         "$set": {
             "project": ""
@@ -72,7 +58,7 @@ async def asset_update_project(root_domain, db_key, doc_name, db, project_id):
     result = await db[doc_name].update_many(query, update_query)
     # 打印更新的文档数量
     logger.info(f"Updated {doc_name} {result.modified_count} documents to null ")
-    await asset_add_project(root_domain, db_key, doc_name, db, project_id)
+    await asset_add_project(root_domain, doc_name, db, project_id)
 
 
 async def delete_asset_project(db, collection, project_id):

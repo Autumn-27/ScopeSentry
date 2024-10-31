@@ -6,7 +6,8 @@ from fastapi import APIRouter, Depends, BackgroundTasks
 
 from api.project.handler import update_project, delete_asset_project_handler
 from api.project.scan import scheduler_project
-from api.task.util import delete_asset
+from api.task.handler import scheduler_scan_task, insert_task
+from api.task.util import delete_asset, get_target_list
 from api.users import verify_token
 from core.redis_handler import refresh_config, get_redis_pool
 from core.util import *
@@ -149,22 +150,12 @@ async def get_project_content(request_data: dict, db=Depends(get_mongo_db), _: d
         "target": project_target_data.get("target", ""),
         "node": doc.get("node", []),
         "logo": doc.get("logo", ""),
-        "subdomainScan": doc.get("subdomainScan", False),
-        "subdomainConfig": doc.get("subdomainConfig", []),
-        "urlScan": doc.get("urlScan", False),
-        "sensitiveInfoScan": doc.get("sensitiveInfoScan", False),
-        "pageMonitoring": doc.get("pageMonitoring", ""),
-        "crawlerScan": doc.get("crawlerScan", False),
-        "vulScan": doc.get("vulScan", False),
-        "vulList": doc.get("vulList", []),
-        "portScan": doc.get("portScan"),
-        "ports": doc.get("ports"),
-        "waybackurl": doc.get("waybackurl"),
-        "dirScan": doc.get("dirScan"),
         "scheduledTasks": doc.get("scheduledTasks"),
         "hour": doc.get("hour"),
         "allNode": doc.get("allNode", False),
-        "duplicates": doc.get("duplicates")
+        "duplicates": doc.get("duplicates"),
+        "template": doc.get("template"),
+        "ignore": doc.get("ignore"),
     }
     return {"code": 200, "data": result}
 
@@ -175,49 +166,49 @@ async def add_project_rule(request_data: dict, db=Depends(get_mongo_db), _: dict
     try:
         # Extract values from request data
         name = request_data.get("name")
-        target = request_data.get("target")
-        runNow = request_data.get("runNow")
-        del request_data["runNow"]
-        scheduledTasks = request_data.get("scheduledTasks", False)
-        hour = request_data.get("hour", 1)
-        t_list = []
-        tmsg = ''
-        root_domains = []
-        for t in target.split('\n'):
-            if t not in t_list:
-                targetTmp = t.replace('http://', "").replace('https://', "").replace("\n", "").replace("\r", "").strip()
-                if targetTmp != "":
-                    root_domain = get_root_domain(targetTmp)
-                    if root_domain not in root_domains:
-                        root_domains.append(root_domain)
-                    tmsg += targetTmp + '\n'
-                # Create a new SensitiveRule document
-        tmsg = tmsg.strip().strip("\n")
-        request_data["root_domains"] = root_domains
-        del request_data['target']
-        if "All Poc" in request_data['vulList']:
-            request_data['vulList'] = ["All Poc"]
         cursor = db.project.find({"name": {"$eq": name}}, {"_id": 1})
         results = await cursor.to_list(length=None)
         if len(results) != 0:
             return {"code": 400, "message": "name already exists"}
+        target = request_data.get("target").strip("\n").strip("\r").strip()
+        runNow = request_data.get("runNow")
+        del request_data["runNow"]
+        scheduledTasks = request_data.get("scheduledTasks", False)
+        hour = request_data.get("hour", 24)
+        root_domains = []
+        target_list = await get_target_list(target)
+        for tg in target_list:
+            root_domain = get_root_domain(tg)
+            if root_domain not in root_domains:
+                root_domains.append(root_domain)
+        request_data["root_domains"] = root_domains
+        del request_data['target']
         # Insert the new document into the SensitiveRule collection
         result = await db.project.insert_one(request_data)
-        # Check if the insertion was successful
+        # Check if the insertion was successful6
         if result.inserted_id:
-            await db.ProjectTargetData.insert_one({"id": str(result.inserted_id), "target": tmsg})
+            await db.ProjectTargetData.insert_one({"id": str(result.inserted_id), "target": target})
             if scheduledTasks:
-                scheduler.add_job(scheduler_project, 'interval', hours=hour, args=[str(result.inserted_id)],
+                scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[str(result.inserted_id), "project"],
                                   id=str(result.inserted_id), jobstore='mongo')
                 next_time = scheduler.get_job(str(result.inserted_id)).next_run_time
                 formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
-                db.ScheduledTasks.insert_one(
-                    {"id": str(result.inserted_id), "name": name, 'hour': hour, 'type': 'Project', 'state': True,
-                     'lastTime': get_now_time(), 'nextTime': formatted_time, 'runner_id': str(result.inserted_id)})
-                if runNow:
-                    await scheduler_project(str(result.inserted_id))
-            background_tasks.add_task(update_project, root_domains, str(result.inserted_id))
-            await refresh_config('all', 'project')
+                request_data["type"] = "project"
+                request_data["state"] = True
+                request_data["lastTime"] = ""
+                request_data["nextTime"] = formatted_time
+                request_data["id"] = str(result.inserted_id)
+                request_data["target"] = target
+                del request_data["root_domains"]
+                await db.ScheduledTasks.insert_one(request_data)
+            if runNow:
+                time_now = get_now_time()
+                del request_data["scheduledTasks"]
+                request_data["target"] = target
+                request_data["name"] = request_data["name"] + "-project-" + time_now
+                await insert_task(request_data, db)
+            background_tasks.add_task(update_project, root_domains, str(result.inserted_id), False)
+            await refresh_config('all', 'project', result.inserted_id)
             Project_List[name] = str(result.inserted_id)
             return {"code": 200, "message": "Project added successfully"}
         else:
@@ -271,82 +262,55 @@ async def update_project_data(request_data: dict, db=Depends(get_mongo_db), _: d
         hour = request_data.get("hour")
         runNow = request_data.get("runNow")
         del request_data["runNow"]
-        # Check if ID is provided
         if not pro_id:
             return {"message": "ID is missing in the request data", "code": 400}
         query = {"id": pro_id}
-        doc = await db.ScheduledTasks.find_one(query)
-
-        newScheduledTasks = request_data.get("scheduledTasks")
-        if doc:
-            oldScheduledTasks = doc["state"]
-            old_hour = doc["hour"]
-            if oldScheduledTasks != newScheduledTasks:
-                if newScheduledTasks:
-                    scheduler.add_job(scheduler_project, 'interval', hours=hour, args=[pro_id],
-                                      id=str(pro_id), jobstore='mongo')
-                    await db.ScheduledTasks.update_one({"id": pro_id}, {"$set": {'state': True}})
-                else:
-                    job = scheduler.get_job(pro_id)
-                    if job is not None:
-                        scheduler.remove_job(pro_id)
-                    await db.ScheduledTasks.update_one({"id": pro_id}, {"$set": {'state': False}})
-            else:
-                if newScheduledTasks:
-                    if hour != old_hour:
-                        job = scheduler.get_job(pro_id)
-                        if job is not None:
-                            scheduler.remove_job(pro_id)
-                        scheduler.add_job(scheduler_project, 'interval', hours=hour, args=[pro_id],
-                                          id=str(pro_id), jobstore='mongo')
-        else:
-            if newScheduledTasks:
-                scheduler.add_job(scheduler_project, 'interval', hours=hour, args=[str(pro_id)],
-                                  id=str(pro_id), jobstore='mongo')
-                next_time = scheduler.get_job(str(pro_id)).next_run_time
-                formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
-                db.ScheduledTasks.insert_one(
-                    {"id": str(pro_id), "name": request_data['name'], 'hour': hour, 'type': 'Project', 'state': True,
-                     'lastTime': get_now_time(), 'nextTime': formatted_time})
-
-        result = await db.project.find_one({"_id": ObjectId(pro_id)})
-        project_target_data = await db.ProjectTargetData.find_one({"id": pro_id})
-        old_targets = project_target_data['target']
-        old_name = result['name']
-        new_name = request_data['name']
-        new_targets = request_data['target']
-        if old_targets != new_targets.strip().strip('\n'):
-            new_root_domain = []
-            update_document = {
-                "$set": {
-                    "target": new_targets.strip().strip('\n')
-                }
-            }
-            for n_t in new_targets.strip().strip('\n').split('\n'):
-                t_root_domain = get_root_domain(n_t)
-                if t_root_domain not in new_root_domain:
-                    new_root_domain.append(t_root_domain)
-            request_data["root_domains"] = new_root_domain
-            await db.ProjectTargetData.update_one({"id": pro_id}, update_document)
-            background_tasks.add_task(update_project, new_root_domain, pro_id, True)
-        if old_name != new_name:
-            del Project_List[old_name]
-            Project_List[new_name] = pro_id
-            await db.ScheduledTasks.update_one({"id": pro_id}, {"$set": {'name': new_name}})
+        # 删除计划任务管理记录
+        await db.ScheduledTasks.delete_many(query)
+        # 删除计划任务
+        job = scheduler.get_job(pro_id)
+        if job is not None:
+            scheduler.remove_job(pro_id)
+        scheduledTasks = request_data.get("scheduledTasks")
+        target = request_data.get("target").strip("\n").strip("\r").strip()
+        # 更新目标记录
+        await db.ProjectTargetData.update_one({"id": pro_id}, {"$set": {"target": target}})
+        root_domains = []
+        target_list = await get_target_list(target)
+        for tg in target_list:
+            root_domain = get_root_domain(tg)
+            if root_domain not in root_domains:
+                root_domains.append(root_domain)
+        request_data["root_domains"] = root_domains
         request_data.pop("id")
         del request_data['target']
         update_document = {
             "$set": request_data
         }
-        result = await db.project.update_one({"_id": ObjectId(pro_id)}, update_document)
-        # Check if the update was successful
-        if result:
-            if runNow:
-                await scheduler_project(str(pro_id))
-            return {"message": "Task updated successfully", "code": 200}
-        else:
-            return {"message": "Failed to update data", "code": 404}
-
+        await db.project.update_one({"_id": ObjectId(pro_id)}, update_document)
+        if scheduledTasks:
+            scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[pro_id, "project"],
+                              id=pro_id, jobstore='mongo')
+            next_time = scheduler.get_job(pro_id).next_run_time
+            formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
+            request_data["state"] = True
+            request_data["type"] = "project"
+            request_data["lastTime"] = ""
+            request_data["nextTime"] = formatted_time
+            request_data["id"] = pro_id
+            request_data["target"] = target
+            del request_data["root_domains"]
+            await db.ScheduledTasks.insert_one(request_data)
+        if runNow:
+            time_now = get_now_time()
+            del request_data["scheduledTasks"]
+            request_data["target"] = target
+            request_data["name"] = request_data["name"] + "-project-" + time_now
+            await insert_task(request_data, db)
+        background_tasks.add_task(update_project, root_domains, pro_id, False)
+        await refresh_config('all', 'project', pro_id)
+        Project_List[request_data.get("name")] = pro_id
+        return {"code": 200, "message": "successfully"}
     except Exception as e:
         logger.error(str(e))
         logger.error(traceback.format_exc())

@@ -290,7 +290,7 @@ async def update_scheduled_data(request_data: dict, db=Depends(get_mongo_db), _:
             # 原本是关闭的
             # 如果重新开启，则开启计划任务
             if newScheduledTasks:
-                scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[task_id], id=str(task_id),
+                scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[task_id, "scan"], id=str(task_id),
                                   jobstore='mongo')
                 await db.ScheduledTasks.update_one({"id": task_id}, {"$set": {'state': True}})
             # 如果新的还是关闭，则不用管
@@ -301,12 +301,15 @@ async def update_scheduled_data(request_data: dict, db=Depends(get_mongo_db), _:
                 # 如果旧的时间间隔和新的时间间隔不同删除旧的然后按照新的时间重新提交，否则无需改变
                 if old_hour != hour:
                     scheduler.remove_job(task_id)
-                    scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[task_id], id=str(task_id),
+                    scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[task_id, "scan"], id=str(task_id),
                                       jobstore='mongo')
             else:
                 # 重新提交的是关闭的，则移除计划任务
                 scheduler.remove_job(task_id)
                 await db.ScheduledTasks.update_one({"id": task_id}, {"$set": {'state': False}})
+        if doc["type"] == "project":
+            await db.ProjectTargetData.update_one({"id": task_id}, {"$set": {"target": request_data.get("target")}})
+            await db.project.update_one({"_id": ObjectId(task_id)}, {"$set": {"ignore": request_data.get("ignore")}})
         request_data.pop("id")
         update_document = {
             "$set": request_data
@@ -334,7 +337,7 @@ async def scheduled_detail(request_data: dict, db=Depends(get_mongo_db), _: dict
             return {"message": "ID is missing in the request data", "code": 400}
 
         # Query the database for content based on ID
-        query = {"_id": ObjectId(task_id)}
+        query = {"id": task_id}
         doc = await db.ScheduledTasks.find_one(query)
         if not doc:
             return {"message": "Content not found for the provided ID", "code": 404}

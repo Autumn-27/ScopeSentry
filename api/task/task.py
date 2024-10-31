@@ -70,7 +70,7 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         task_id = await insert_task(request_data, db)
         if task_id:
             if scheduledTasks:
-                scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[str(task_id)],
+                scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[str(task_id), "scan"],
                                   id=str(task_id), jobstore='mongo')
                 next_time = scheduler.get_job(str(task_id)).next_run_time
                 formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")

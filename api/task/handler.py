@@ -105,7 +105,7 @@ async def create_scan_task(request_data, id):
         return False
 
 
-async def scheduler_scan_task(id):
+async def scheduler_scan_task(id, tp):
     logger.info(f"Scheduler scan {id}")
     async for db in get_mongo_db():
         next_time = scheduler.get_job(id).next_run_time
@@ -119,7 +119,7 @@ async def scheduler_scan_task(id):
         }
         await db.ScheduledTasks.update_one({"id": id}, update_document)
         doc = await db.ScheduledTasks.find_one({"id": id})
-        doc["name"] = doc["name"] + "-scan-" + time_now
+        doc["name"] = doc["name"] + f"-{tp}-" + time_now
         await insert_task(doc, db)
 
 
