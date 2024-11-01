@@ -58,7 +58,6 @@ async def node_data(_: dict = Depends(verify_token), redis_con=Depends(get_redis
 @router.get("/node/data/online")
 async def node_data_online(_: dict = Depends(verify_token), redis_con=Depends(get_redis_pool)):
     result = await get_redis_online_data(redis_con)
-    result = ["node-test-199","node-test-107"]
     return {
         "code": 200,
         "data": {

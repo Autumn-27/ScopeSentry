@@ -131,9 +131,13 @@ async def save_system_data(data: dict, db=Depends(get_mongo_db), _: dict = Depen
 async def get_deduplication_config(_: dict = Depends(verify_token), db=Depends(get_mongo_db)):
     try:
         job = scheduler.get_job("deduplication")
-        next_rune_time = ""
         if job is not None:
             next_rune_time = scheduler.get_job("deduplication").next_run_time.strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            return {
+                "code": 200,
+                "data": {}
+        }
         result = await db.config.find_one({"name": "deduplication"})
         result["next_run_time"] = next_rune_time
         result.pop("_id")
