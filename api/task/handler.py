@@ -9,6 +9,7 @@ import json
 
 from bson import ObjectId
 
+from api.node.handler import get_node_all
 from api.page_monitoring import get_page_monitoring_data
 from core.apscheduler_handler import scheduler
 from api.task.util import get_target_list, parameter_parser
@@ -16,7 +17,6 @@ from core.db import get_mongo_db
 from core.redis_handler import get_redis_pool, get_redis_online_data
 from core.util import get_now_time
 from loguru import logger
-from api.node import get_node_all
 
 
 async def insert_task(request_data, db):

@@ -17,11 +17,8 @@ from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor
 
 from core.apscheduler_handler import scheduler
-from core.db import get_mongo_db
 from core.redis_handler import get_redis_pool
 from core.util import *
-from api.node import get_redis_online_data
-from api.page_monitoring import get_page_monitoring_data
 
 router = APIRouter()
 
@@ -109,7 +106,7 @@ async def get_scheduled_data(request_data: dict, db=Depends(get_mongo_db), _: di
 #         return {"message": "error", "code": 500}
 
 
-@router.post("/scheduled/task/delete")
+@router.post("/delete")
 async def delete_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token),
                       redis_con=Depends(get_redis_pool)):
     try:
