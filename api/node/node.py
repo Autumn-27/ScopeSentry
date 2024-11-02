@@ -74,21 +74,9 @@ async def node_config_update(config_data: dict, _: dict = Depends(verify_token),
         state = config_data.get("state")
         if name is None or modulesConfig is None or state is None:
             return {"code": 400, "message": "Invalid request, missing required parameters"}
-
-        async with redis_con as redis:
-            key = f"node:{name}"
-            if old_name != name:
-                await refresh_config(old_name, 'UpdateNodeName', name)
-            redis_state = await redis.hget(key, "state")
-            if state:
-                if redis_state == "2":
-                    await redis.hset(key, "state", "1")
-            else:
-                if redis_state == "1":
-                    await redis.hset(key, "state", "2")
-            await refresh_config(name, 'nodeConfig', modulesConfig)
+        msg = f"{name}[*]{state}[*]{modulesConfig}"
+        await refresh_config(old_name, 'nodeConfig', msg)
         return {"code": 200, "message": "Node configuration updated successfully"}
-
     except Exception as e:
         return {"code": 500, "message": f"Internal server error: {str(e)}"}
 

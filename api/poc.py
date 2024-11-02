@@ -144,7 +144,7 @@ async def import_poc_handle(file):
             result = await db.PocList.insert_many(poc_data_list)
             if result.inserted_ids:
                 success_num += len(result.inserted_ids)
-                await refresh_config('all', 'poc')
+                await refresh_config('all', 'poc', f"add:{','.join(result.inserted_ids)}")
         logger.info(f"POC更新成功: {success_num} 重复：{repeat_num} 失败: {error_num}")
         try:
             os.remove(zip_file_path)
@@ -237,7 +237,7 @@ async def update_poc_data(request_data: dict, db=Depends(get_mongo_db), _: dict 
         result = await db.PocList.update_one({"_id": ObjectId(poc_id)}, update_document)
         # Check if the update was successful
         if result:
-            await refresh_config('all', 'poc')
+            await refresh_config('all', 'poc', f"add:{poc_id}")
             return {"message": "Data updated successfully", "code": 200}
         else:
             return {"message": "Failed to update data", "code": 404}
@@ -275,7 +275,7 @@ async def add_poc_data(request_data: dict, db=Depends(get_mongo_db), _: dict = D
 
         # Check if the insertion was successful
         if result.inserted_id:
-            await refresh_config('all', 'poc')
+            await refresh_config('all', 'poc', f"add:{str(result.inserted_id)}")
             return {"message": "Data added successfully", "code": 200}
         else:
             return {"message": "Failed to add data", "code": 400}
@@ -293,13 +293,15 @@ async def delete_poc_rules(request_data: dict, db=Depends(get_mongo_db), _: dict
         poc_ids = request_data.get("ids", [])
 
         # Convert the provided rule_ids to ObjectId
-        obj_ids = [ObjectId(poc_id) for poc_id in poc_ids]
-
+        obj_ids = []
+        for poc_id in poc_ids:
+            obj_ids.append(ObjectId(poc_id))
         # Delete the SensitiveRule documents based on the provided IDs
         result = await db.PocList.delete_many({"_id": {"$in": obj_ids}})
 
         # Check if the deletion was successful
         if result.deleted_count > 0:
+            await refresh_config('all', 'poc', f"delete:{','.join(poc_ids)}")
             return {"code": 200, "message": "Poc deleted successfully"}
         else:
             return {"code": 404, "message": "Poc not found"}

@@ -20,7 +20,7 @@ from loguru import logger
 
 
 async def insert_task(request_data, db):
-    targetList = await get_target_list(request_data['target'])
+    targetList = await get_target_list(request_data['target'], request_data.get("ignore", ""))
     taskNum = len(targetList)
     request_data['taskNum'] = taskNum
     request_data['target'] = request_data['target'].strip("\n").strip("\r").strip()
@@ -52,7 +52,7 @@ async def create_scan_task(request_data, id):
                 ]
                 progresskeys = await redis_con.keys(f"TaskInfo:progress:{id}:*")
                 keys_to_delete.extend(progresskeys)
-                progresskeys = await redis_con.keys(f"duplicates:{id}:")
+                progresskeys = await redis_con.keys(f"duplicates:{id}:*")
                 keys_to_delete.extend(progresskeys)
                 await redis_con.delete(*keys_to_delete)
 
@@ -84,13 +84,11 @@ async def create_scan_task(request_data, id):
                 # 设置去重
                 template_data["duplicates"] = request_data["duplicates"]
                 # 任务id
-                template_data["TaskId"] = str(id)
+                template_data["ID"] = str(id)
                 # 任务类型
                 template_data["type"] = "scan"
                 # 原始的target生成target list
-                target_list = await get_target_list(request_data['target'])
-                # 更新任务数量
-
+                target_list = await get_target_list(request_data['target'], request_data.get("ignore", ""))
                 # 将任务目标插入redis中
                 await redis_con.lpush(f"TaskInfo:{id}", *target_list)
                 # 分发任务

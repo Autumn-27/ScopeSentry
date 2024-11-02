@@ -46,15 +46,36 @@ async def generate_target(target):
 
 
 # 根据原始target生成目标列表
-async def get_target_list(raw_target):
+async def get_target_list(raw_target, ignore):
+    ignore_list, regex_list = await generate_ignore(ignore)
     target_list= []
     for t in raw_target.split("\n"):
         t.replace("http://", "").replace("https://", "")
         t = t.strip("\n").strip("\r").strip()
         result = await generate_target(t)
-        target_list.extend(result)
+        for r in result:
+            if r not in ignore_list:
+                if len(regex_list) != 0 :
+                    for rege in regex_list:
+                        if not rege.match(r):
+                            target_list.append(r)
+                else:
+                    target_list.append(r)
     return target_list
 
+
+async def generate_ignore(ignore):
+    ignore_list = []
+    regex_list = []
+    for t in ignore.split("\n"):
+        t.replace("http://", "").replace("https://", "")
+        t = t.strip("\n").strip("\r").strip()
+        if "*" not in t:
+            result = await generate_target(t)
+            ignore_list.extend(result)
+        else:
+            regex_list.append(t.replace("*", ".*"))
+    return ignore, regex_list
 
 async def task_progress():
     async for db in get_mongo_db():

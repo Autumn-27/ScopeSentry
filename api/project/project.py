@@ -176,7 +176,7 @@ async def add_project_rule(request_data: dict, db=Depends(get_mongo_db), _: dict
         scheduledTasks = request_data.get("scheduledTasks", False)
         hour = request_data.get("hour", 24)
         root_domains = []
-        target_list = await get_target_list(target)
+        target_list = await get_target_list(target, request_data.get("ignore", ""))
         for tg in target_list:
             root_domain = get_root_domain(tg)
             if root_domain not in root_domains:
@@ -276,7 +276,7 @@ async def update_project_data(request_data: dict, db=Depends(get_mongo_db), _: d
         # 更新目标记录
         await db.ProjectTargetData.update_one({"id": pro_id}, {"$set": {"target": target}})
         root_domains = []
-        target_list = await get_target_list(target)
+        target_list = await get_target_list(target, request_data.get("ignore", ""))
         for tg in target_list:
             root_domain = get_root_domain(tg)
             if root_domain not in root_domains:

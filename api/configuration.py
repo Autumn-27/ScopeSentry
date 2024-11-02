@@ -108,6 +108,7 @@ async def get_system_data(db=Depends(get_mongo_db), _: dict = Depends(verify_tok
         # 根据需要处理异常
         return {"message": "error", "code": 500}
 
+
 @router.post("/system/save")
 async def save_system_data(data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
@@ -120,7 +121,10 @@ async def save_system_data(data: dict, db=Depends(get_mongo_db), _: dict = Depen
                 {"$set": {"value": value}},
                 upsert=True
             )
-        await refresh_config('all', 'system')
+        timezone = data["timezone"]
+        moduleConfig = data["ModulesConfig"]
+        msg = f"{timezone}[*]{moduleConfig}"
+        await refresh_config('all', 'system', msg)
         return {"message": "Data saved successfully", "code": 200}
 
     except Exception as e:
