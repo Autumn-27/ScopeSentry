@@ -56,8 +56,9 @@ async def get_target_list(raw_target, ignore):
         for r in result:
             if r not in ignore_list:
                 if len(regex_list) != 0 :
-                    for rege in regex_list:
-                        if not rege.match(r):
+                    for rege_str in regex_list:
+                        rege = re.compile(rege_str)
+                        if not rege.search(r):
                             target_list.append(r)
                 else:
                     target_list.append(r)
@@ -74,8 +75,9 @@ async def generate_ignore(ignore):
             result = await generate_target(t)
             ignore_list.extend(result)
         else:
-            regex_list.append(t.replace("*", ".*"))
-    return ignore, regex_list
+            t_escaped = re.escape(t)
+            regex_list.append(t_escaped.replace(r"\*", ".*"))
+    return ignore_list, regex_list
 
 async def task_progress():
     async for db in get_mongo_db():
