@@ -226,11 +226,11 @@ async def progress_info(request_data: dict, _: dict = Depends(verify_token), red
         return {"message": "Content not found for the provided ID", "code": 404}
 
     target = doc['target']
-    total = len(target)
     # 计算起始和结束索引
     start_index = (page_index - 1) * page_size
     end_index = start_index + page_size
     data_array = target.split("\n")
+    total = len(data_array)
     # 获取对应的数据
     paged_data = data_array[start_index:end_index]
     tg_key = {}
