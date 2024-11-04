@@ -79,6 +79,7 @@ async def generate_ignore(ignore):
             regex_list.append(t_escaped.replace(r"\*", ".*"))
     return ignore_list, regex_list
 
+
 async def task_progress():
     async for db in get_mongo_db():
         async for redis in get_redis_pool():

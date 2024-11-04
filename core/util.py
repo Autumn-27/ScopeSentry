@@ -343,7 +343,7 @@ async def get_search_query(name, request_data):
         return ""
     query = query[0]
     filter_key = {'app': 'technologies', 'color': 'color', 'status': 'status', 'level': 'level', 'type': 'type',
-                  'project': 'project', 'port': 'port', 'protocol': ['protocol', 'type'], 'icon': 'faviconmmh3',
+                  'project': 'project', 'port': 'port', 'service': "service", 'icon': 'faviconmmh3',
                   "statuscode": "statuscode", "sname": "sid"}
     filter = request_data.get("filter", {})
     if filter:

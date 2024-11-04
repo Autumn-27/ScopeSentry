@@ -144,13 +144,13 @@ user_agent: ""                    # 请求user-agent配置
 domain_headers:                   # 请求头配置:[]{domain,map[headerKey]HeaderValue}
 - domain: '*'                     # 为哪些域名设置header，glob语法
   headers: {}                     # 请求头，map[key]value
-max_depth: 10                     # 最大页面深度限制
+max_depth: 5                     # 最大页面深度限制
 navigate_timeout_second: 10       # 访问超时时间，单位秒
 load_timeout_second: 10           # 加载超时时间，单位秒
 retry: 0                          # 页面访问失败后的重试次数
-page_analyze_timeout_second: 100  # 页面分析超时时间，单位秒
-max_interactive: 500             # 单个页面最大交互次数
-max_interactive_depth: 10         # 页面交互深度限制
+page_analyze_timeout_second: 30  # 页面分析超时时间，单位秒
+max_interactive: 100             # 单个页面最大交互次数
+max_interactive_depth: 5         # 页面交互深度限制
 max_page_concurrent: 5           # 最大页面并发（不大于10）
 max_page_visit: 1000              # 总共允许访问的页面数量
 max_page_visit_per_site: 1000     # 每个站点最多访问的页面数量
@@ -276,7 +276,7 @@ URLScan:
 URLSecurity:
   goroutineCount: 15  # 设置"URL扫描结果处理"模块最大并发
 webCrawler:
-  goroutineCount: 3  # 设置"爬虫扫描"模块最大并发
+  goroutineCount: 2  # 设置"爬虫扫描"模块最大并发
 dirScan:
   goroutineCount: 3  # 设置"目录扫描"模块最大并发
 vulnerabilityScan:
