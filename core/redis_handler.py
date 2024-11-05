@@ -8,6 +8,7 @@ import sys
 from urllib.parse import quote_plus
 import redis.asyncio as redis
 
+from api.task.handler import get_task_data
 from core.db import *
 from core.util import *
 import socket
@@ -108,48 +109,9 @@ async def check_node_task(node_name, redis_conn):
         if len(result) == 0:
             return
         # Process the result as needed
-        response_data = []
         for doc in result:
-            doc["id"] = str(doc["_id"])
-            await check_redis_task_target_is_null(doc["id"], doc["target"], redis_conn)
-            response_data.append(doc)
-        for r in response_data:
-            add_redis_task_data = transform_db_redis(r)
-            await redis_conn.rpush(f"NodeTask:{node_name}", json.dumps(add_redis_task_data))
-        return
-
-
-async def check_redis_task_target_is_null(id, target, redis_conn):
-    flag = await redis_conn.exists("TaskInfo:{}".format(id))
-    if flag:
-        return
-    else:
-        from_check = False
-        r = {}
-        if target == "":
-            from_check = True
-            async for mongo_client in get_mongo_db():
-                r = await mongo_client.task.find_one({"_id": ObjectId(id)})
-                target = r.get("target", "")
-        task_target = []
-        for t in target.split("\n"):
-            key = f"TaskInfo:progress:{id}:{t}"
-            res = await redis_conn.hgetall(key)
-            if "scan_end" in res:
-                continue
-            else:
-                task_target.append(t)
-        await redis_conn.lpush(f"TaskInfo:{id}", *task_target)
-        if from_check:
-            try:
-                if len(r) != 0:
-                    if r['allNode']:
-                        r["node"] = await get_redis_online_data(redis_conn)
-                    add_redis_task_data = transform_db_redis(r)
-                    for name in r["node"]:
-                        await redis_conn.rpush(f"NodeTask:{name}", json.dumps(add_redis_task_data))
-            except Exception as e:
-                logger.error(str(e))
+            template_data = await get_task_data(mongo_client, doc, str(doc["_id"]))
+            await redis_conn.rpush(f"NodeTask:{node_name}", json.dumps(template_data))
         return
 
 

@@ -317,7 +317,6 @@ async def progress_info(request_data: dict, _: dict = Depends(verify_token), red
 
                         progress_result['All'][0] = redis_result_dict[tg_key[t][0]].get("scan_start", "")
                         progress_result['All'][1] = redis_result_dict[tg_key[t][0]].get("scan_end", "")
-                        result_list.append(progress_result)
             else:
                 progress_result["children"] = []
                 for son_target in tg_key[t]:
@@ -381,7 +380,8 @@ async def progress_info(request_data: dict, _: dict = Depends(verify_token), red
                     tmp['All'][0] = redis_result_dict[son_target].get("scan_start", "")
                     tmp['All'][1] = redis_result_dict[son_target].get("scan_end", "")
                     progress_result["children"].append(tmp)
-                result_list.append(progress_result)
+
+            result_list.append(progress_result)
 
     return {
         "code": 200,

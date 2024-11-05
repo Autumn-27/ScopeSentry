@@ -4,6 +4,8 @@
 # @contact   : rainy-autumn@outlook.com
 # @time      : 2024/4/22 19:46
 # -------------------------------------------
+import json
+
 from bson import ObjectId
 from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorCursor
@@ -22,10 +24,11 @@ async def get_page_monitoring_data(db, all):
         query = {}
     else:
         query = {"state": 1}
-    cursor: AsyncIOMotorCursor = db.PageMonitoring.find(query, {"url": 1, "_id": 0})
+    cursor: AsyncIOMotorCursor = db.PageMonitoring.find(query, {"url": 1, "_id": 0, "hash": 1, "statusCode": 1, "md5": 1} )
     result = await cursor.to_list(length=None)
-    urls = [item['url'] for item in result]
-
+    urls = []
+    for url in result:
+        urls.append(json.dumps(url))
     return urls
 
 

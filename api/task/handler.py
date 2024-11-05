@@ -55,38 +55,9 @@ async def create_scan_task(request_data, id):
                 progresskeys = await redis_con.keys(f"duplicates:{id}:*")
                 keys_to_delete.extend(progresskeys)
                 await redis_con.delete(*keys_to_delete)
-
                 # 获取模板数据
-                template_data = await db.ScanTemplates.find_one({"_id": ObjectId(request_data["template"])})
-                # 如果选择了poc 将poc参数拼接到nuclei的参数中
-                if len(template_data['vullist']) != 0:
-                    vul_tmp = ""
-                    if "All Poc" in template_data['vullist']:
-                        vul_tmp = "*"
-                    else:
-                        for vul in template_data['vullist']:
-                            vul_tmp += vul + ","
-                    vul_tmp = vul_tmp.strip(",")
-                    if "VulnerabilityScan" in template_data["Parameters"]:
-                        if "ed93b8af6b72fe54a60efdb932cf6fbc" in template_data["Parameters"]["VulnerabilityScan"]:
-                            template_data["Parameters"]["VulnerabilityScan"]["ed93b8af6b72fe54a60efdb932cf6fbc"] = \
-                            template_data["Parameters"]["VulnerabilityScan"][
-                                "ed93b8af6b72fe54a60efdb932cf6fbc"] + " -t " + vul_tmp
-                # 解析参数，支持{}获取字典
-                template_data["Parameters"] = await parameter_parser(template_data["Parameters"], db)
-                # 删除原始的vullist
-                del template_data["vullist"]
-                del template_data["_id"]
-                # 设置任务名称
-                template_data["TaskName"] = request_data["name"]
-                # 设置忽略目标
-                template_data["ignore"] = request_data["ignore"]
-                # 设置去重
-                template_data["duplicates"] = request_data["duplicates"]
-                # 任务id
-                template_data["ID"] = str(id)
-                # 任务类型
-                template_data["type"] = "scan"
+                template_data = await get_task_data(db, request_data, id)
+
                 # 原始的target生成target list
                 target_list = await get_target_list(request_data['target'], request_data.get("ignore", ""))
                 # 将任务目标插入redis中
@@ -101,6 +72,41 @@ async def create_scan_task(request_data, id):
         logger.info(f"[create_scan_task] error end: {id}")
         # Handle exceptions as needed
         return False
+
+
+async def get_task_data(db, request_data, id):
+    # 获取模板数据
+    template_data = await db.ScanTemplates.find_one({"_id": ObjectId(request_data["template"])})
+    # 如果选择了poc 将poc参数拼接到nuclei的参数中
+    if len(template_data['vullist']) != 0:
+        vul_tmp = ""
+        if "All Poc" in template_data['vullist']:
+            vul_tmp = "*"
+        else:
+            for vul in template_data['vullist']:
+                vul_tmp += vul + ","
+        vul_tmp = vul_tmp.strip(",")
+        if "VulnerabilityScan" in template_data["Parameters"]:
+            if "ed93b8af6b72fe54a60efdb932cf6fbc" in template_data["Parameters"]["VulnerabilityScan"]:
+                template_data["Parameters"]["VulnerabilityScan"]["ed93b8af6b72fe54a60efdb932cf6fbc"] = \
+                    template_data["Parameters"]["VulnerabilityScan"][
+                        "ed93b8af6b72fe54a60efdb932cf6fbc"] + " -t " + vul_tmp
+    # 解析参数，支持{}获取字典
+    template_data["Parameters"] = await parameter_parser(template_data["Parameters"], db)
+    # 删除原始的vullist
+    del template_data["vullist"]
+    del template_data["_id"]
+    # 设置任务名称
+    template_data["TaskName"] = request_data["name"]
+    # 设置忽略目标
+    template_data["ignore"] = request_data["ignore"]
+    # 设置去重
+    template_data["duplicates"] = request_data["duplicates"]
+    # 任务id
+    template_data["ID"] = str(id)
+    # 任务类型
+    template_data["type"] = "scan"
+    return template_data
 
 
 async def scheduler_scan_task(id, tp):
@@ -155,8 +161,8 @@ async def create_page_monitoring_task():
             await redis.delete(f"TaskInfo:page_monitoring")
             await redis.lpush(f"TaskInfo:page_monitoring", *targetList)
             add_redis_task_data = {
-                "type": 'page_monitoring',
-                "TaskId": "page_monitoring"
+                "ID": 'page_monitoring',
+                "type": "page_monitoring"
             }
             for name in name_list:
                 await redis.rpush(f"NodeTask:{name}", json.dumps(add_redis_task_data))
