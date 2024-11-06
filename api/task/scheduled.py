@@ -190,10 +190,11 @@ async def update_scheduled_task_pagemonit_data(request_data: dict, db=Depends(ge
         formatted_time = ""
         job = scheduler.get_job('page_monitoring')
         if state:
-            if job is None:
-                scheduler.add_job(create_page_monitoring_task, 'interval', hours=request_data.get('hour', 24), id='page_monitoring', jobstore='mongo')
-                next_time = scheduler.get_job('page_monitoring').next_run_time
-                formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
+            if job:
+                scheduler.remove_job('page_monitoring')
+            scheduler.add_job(create_page_monitoring_task, 'interval', hours=request_data.get('hour', 24), id='page_monitoring', jobstore='mongo')
+            next_time = scheduler.get_job('page_monitoring').next_run_time
+            formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
         else:
             if job:
                 scheduler.remove_job('page_monitoring')
@@ -250,9 +251,8 @@ async def add_scheduled_task_pagemonit_data(request_data: dict, db=Depends(get_m
         url = request_data.get("url")
         result = await db.PageMonitoring.insert_one({
             "url": url,
-            "content": [],
             "hash": [],
-            "diff": [],
+            "md5": calculate_md5_from_content(url),
             "state": 1,
             "project": '',
             "time": ''

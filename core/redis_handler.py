@@ -8,8 +8,8 @@ import sys
 from urllib.parse import quote_plus
 import redis.asyncio as redis
 
-from api.task.handler import get_task_data
 from core.db import *
+from core.handler.task import get_task_data
 from core.util import *
 import socket
 from motor.motor_asyncio import AsyncIOMotorCursor

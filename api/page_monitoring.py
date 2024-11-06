@@ -39,14 +39,16 @@ async def page_monitoring_result(request_data: dict, db=Depends(get_mongo_db), _
     query = await get_search_query("page", request_data)
     if query == "":
         return {"message": "Search condition parsing error", "code": 500}
-    query["diff"] = {"$ne": []}
+    query["hash"] = {"$size": 2}
     total_count = await db.PageMonitoring.count_documents(query)
     # Perform pagination query and sort by time
     cursor: AsyncIOMotorCursor = db.PageMonitoring.find(query, {"_id": 0,
                                                                 "id": {"$toString": "$_id"},
                                                                 "url": 1,
-                                                                "diff": {"$arrayElemAt": ["$diff", -1]},
-                                                                "time": 1
+                                                                "hash": 1,
+                                                                "time": 1,
+                                                                "statusCode": 1,
+                                                                "similarity": 1
                                                                 }).sort(
         [("time", DESCENDING)]).skip((page_index - 1) * page_size).limit(page_size)
     result = await cursor.to_list(length=None)

@@ -10,6 +10,7 @@ from core.update import update14, update15
 
 set_config()
 
+from core.redis_handler import subscribe_log_channel
 from core.db import get_mongo_db
 
 from starlette.requests import Request
@@ -23,7 +24,6 @@ import json
 from fastapi import WebSocket
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.websockets import WebSocketDisconnect
-from core.redis_handler import subscribe_log_channel
 
 app = FastAPI(timeout=None)
 
