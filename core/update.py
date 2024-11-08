@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorGridFSBucket
 import tldextract
-from pymongo import UpdateOne, ASCENDING
+from pymongo import ASCENDING, UpdateMany
 
 from core.config import VERSION
 from core.default import get_dirDict, get_domainDict, get_sensitive, ModulesConfig, PLUGINS, SCANTEMPLATE
@@ -68,8 +68,7 @@ async def update14(db):
 
 
 async def update15(db):
-    await db.config.insert_one(
-        {"name": "ModulesConfig", 'value': ModulesConfig, 'type': 'system'})
+
     fs = AsyncIOMotorGridFSBucket(db)
 
     # 更新目录扫描默认字典
@@ -79,7 +78,7 @@ async def update15(db):
     if result.inserted_id:
         await fs.upload_from_stream(
             str(result.inserted_id),  # 使用id作为文件名存储
-            content  # 文件内容
+            content.encode('utf-8')  # 文件内容
         )
 
     # 更新子域名默认字典
@@ -89,7 +88,7 @@ async def update15(db):
     if result.inserted_id:
         await fs.upload_from_stream(
             str(result.inserted_id),  # 使用id作为文件名存储
-            content  # 文件内容
+            content.encode('utf-8')  # 文件内容
         )
     # 获取任务名称
     cursor = db['task'].find({"type": {"$ne": "other"}})
@@ -146,7 +145,7 @@ async def update15(db):
         for task_id, task_name in task_list.items():
             query = {"taskId": task_id}
             update_query = {"$set": {"taskName": task_name}}
-            bulk_operations.append(UpdateOne(query, update_query))
+            bulk_operations.append(UpdateMany(query, update_query))
 
         # 如果有更新操作，执行批量更新
         if bulk_operations:
@@ -165,7 +164,7 @@ async def update15(db):
         1: 'unknown'
     }
     for value, label in level_map.items():
-        db['PocList'].update_many(
+        await db['PocList'].update_many(
             {"level": value},
             {"$set": {"level": label, "type": 'nuclei'}}
         )
@@ -179,6 +178,12 @@ async def update15(db):
     await db['PageMonitoring'].rename('PageMonitoring_bak')
     await db['PageMonitoring'].create_index([('url', ASCENDING)], unique=True)
     await db['PageMonitoringBody'].create_index([('md5', ASCENDING)], unique=True)
-
-
     # 修改全局线程配置、节点配置
+    await db.config.insert_one(
+        {"name": "ModulesConfig", 'value': ModulesConfig, 'type': 'system'})
+
+    # 增加任务运行状态
+    # 运行中
+    await db.task.update_many({"progress": {"$ne": 100}}, {"$set": {"status": 1}})
+    # 完成
+    await db.task.update_many({"progress": 100}, {"$set": {"status": 3}})

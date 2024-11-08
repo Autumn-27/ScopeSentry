@@ -41,7 +41,7 @@ async def get_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict = 
         result = await cursor.to_list(length=None)
         # Process the result as needed
         response_data = [
-            {"id": str(doc["_id"]), "name": doc["name"], "taskNum": doc["taskNum"], "progress": doc["progress"],
+            {"id": str(doc["_id"]),"status": doc["status"], "name": doc["name"], "taskNum": doc["taskNum"], "progress": doc["progress"],
              "creatTime": doc["creatTime"], "endTime": doc["endTime"]} for doc in result]
 
         return {
