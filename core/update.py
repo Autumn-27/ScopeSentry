@@ -79,7 +79,7 @@ async def update15(db):
     if result.inserted_id:
         await fs.upload_from_stream(
             str(result.inserted_id),  # 使用id作为文件名存储
-            content  # 文件内容
+            content.encode('utf-8')  # 文件内容，编码解决编码问题
         )
 
     # 更新子域名默认字典
@@ -89,7 +89,7 @@ async def update15(db):
     if result.inserted_id:
         await fs.upload_from_stream(
             str(result.inserted_id),  # 使用id作为文件名存储
-            content  # 文件内容
+            content.encode('utf-8')  # 文件内容，解决编码问题
         )
     # 获取任务名称
     cursor = db['task'].find({"type": {"$ne": "other"}})
