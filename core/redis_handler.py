@@ -57,9 +57,7 @@ async def refresh_config(name, t, content=None):
             keys = await redis_client.keys("node:*")
             for key in keys:
                 tmp_name = key.split(":")[1]
-                hash_data = await redis_client.hgetall(key)
-                if hash_data.get('state') != '3':
-                    name_all.append(tmp_name)
+                name_all.append(tmp_name)
         else:
             name_all.append(name)
         for n in name_all:
@@ -99,6 +97,7 @@ async def check_node_task(node_name, redis_conn):
     async for mongo_client in get_mongo_db():
         query = {
             "progress": {"$ne": 100},
+            "status": 1,
             "$or": [
                 {"node": node_name},
                 {"allNode": True}

@@ -207,10 +207,10 @@ async def do_asset_deduplication():
                   "filters": {},
                   "groups": ["output"]
               },
-              "asset": {
-                  "filters": {},
-                  "groups": [""]
-              },
+              # "asset": {
+              #     "filters": {},
+              #     "groups": [""]
+              # },
               "crawler": {
                   "filters": {},
                   "groups": ["url", "body"]
@@ -219,10 +219,10 @@ async def do_asset_deduplication():
                   "filters": {},
                   "groups": ["host", "type", "sorted_ip"]
               },
-              # "vulnerability": {
-              #     "filters": [],
-              #     "groups": ["url", "vulnid", "matched"]
-              # }
+              "vulnerability": {
+                  "filters": [],
+                  "groups": ["url", "vulnid", "matched"]
+              }
             }
         for r in result:
             if result[r]:

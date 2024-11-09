@@ -101,7 +101,7 @@ async def task_progress():
                     if progress_tmp == 100:
                         time_key = f"TaskInfo:time:{id}"
                         time_value = await redis.get(time_key)
-                        await db.task.update_one({"_id": r["_id"]}, {"$set": {"endTime": time_value}})
+                        await db.task.update_one({"_id": r["_id"]}, {"$set": {"endTime": time_value, "status": 3}})
                     await db.task.update_one({"_id": r["_id"]}, {"$set": {"progress": progress_tmp}})
                 else:
                     await db.task.update_one({"_id": r["_id"]}, {"$set": {"progress": 0}})

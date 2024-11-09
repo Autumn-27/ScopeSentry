@@ -28,13 +28,14 @@ async def insert_task(request_data, db):
     request_data['progress'] = 0
     request_data["creatTime"] = get_now_time()
     request_data["endTime"] = ""
+    request_data["status"] = 1
     result = await db.task.insert_one(request_data)
     if result.inserted_id:
         asyncio.create_task(create_scan_task(request_data, str(result.inserted_id)))
         return result.inserted_id
 
 
-async def create_scan_task(request_data, id):
+async def create_scan_task(request_data, id, stop_to_start = False):
     logger.info(f"[create_scan_task] begin: {id}")
     try:
         async for db in get_mongo_db():
@@ -45,24 +46,26 @@ async def create_scan_task(request_data, id):
                     for node in all_node:
                         if node not in request_data["node"]:
                             request_data["node"].append(node)
-                # 删除可能存在缓存
-                keys_to_delete = [
-                    f"TaskInfo:tmp:{id}",
-                    f"TaskInfo:{id}",
-                    f"TaskInfo:time:{id}",
-                ]
-                progresskeys = await redis_con.keys(f"TaskInfo:progress:{id}:*")
-                keys_to_delete.extend(progresskeys)
-                progresskeys = await redis_con.keys(f"duplicates:{id}:*")
-                keys_to_delete.extend(progresskeys)
-                await redis_con.delete(*keys_to_delete)
+
+                # 如果是暂停之后重新开始的，则不需要删除缓存和填入目标
+                if stop_to_start is False:
+                    # 删除可能存在缓存
+                    keys_to_delete = [
+                        f"TaskInfo:tmp:{id}",
+                        f"TaskInfo:{id}",
+                        f"TaskInfo:time:{id}",
+                    ]
+                    progresskeys = await redis_con.keys(f"TaskInfo:progress:{id}:*")
+                    keys_to_delete.extend(progresskeys)
+                    progresskeys = await redis_con.keys(f"duplicates:{id}:*")
+                    keys_to_delete.extend(progresskeys)
+                    await redis_con.delete(*keys_to_delete)
+                    # 原始的target生成target list
+                    target_list = await get_target_list(request_data['target'], request_data.get("ignore", ""))
+                    # 将任务目标插入redis中
+                    await redis_con.lpush(f"TaskInfo:{id}", *target_list)
                 # 获取模板数据
                 template_data = await get_task_data(db, request_data, id)
-
-                # 原始的target生成target list
-                target_list = await get_target_list(request_data['target'], request_data.get("ignore", ""))
-                # 将任务目标插入redis中
-                await redis_con.lpush(f"TaskInfo:{id}", *target_list)
                 # 分发任务
                 for name in request_data["node"]:
                     await redis_con.rpush(f"NodeTask:{name}", json.dumps(template_data))

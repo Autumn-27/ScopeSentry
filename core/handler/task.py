@@ -10,6 +10,7 @@ from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorCursor
 from loguru import logger
 
+
 async def get_task_data(db, request_data, id):
     # 获取模板数据
     template_data = await db.ScanTemplates.find_one({"_id": ObjectId(request_data["template"])})
@@ -41,8 +42,9 @@ async def get_task_data(db, request_data, id):
     # 任务id
     template_data["ID"] = str(id)
     # 任务类型
-    template_data["type"] = "scan"
+    template_data["type"] = request_data.get("type", "scan")
     return template_data
+
 
 async def parameter_parser(parameter, db):
     dict_list = {}

@@ -15,7 +15,7 @@ from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor
 
 from core.apscheduler_handler import scheduler
-from core.redis_handler import get_redis_pool
+from core.redis_handler import get_redis_pool, refresh_config
 from core.util import *
 
 router = APIRouter()
@@ -162,6 +162,7 @@ async def delete_task(request_data: dict, db=Depends(get_mongo_db), _: dict = De
 
         # Check if the deletion was successful
         if result.deleted_count > 0:
+            await refresh_config("all", "delete_task", ",".join(task_ids))
             return {"code": 200, "message": "Task deleted successfully"}
         else:
             return {"code": 404, "message": "Task not found"}
@@ -390,3 +391,36 @@ async def progress_info(request_data: dict, _: dict = Depends(verify_token), red
             "total": total
         }
     }
+
+
+@router.post("/stop")
+async def stop_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    try:
+        # Get the ID from the request data
+        task_id = request_data.get("id")
+        await refresh_config("all", "stop_task", task_id)
+        await db.task.update_one({"_id": ObjectId(task_id)}, {"$set": {"status": 2}})
+        return {"message": "success", "code": 200}
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
+        return {"message": "error", "code": 500}
+
+
+@router.post("/start")
+async def start_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    try:
+        # Get the ID from the request data
+        task_id = request_data.get("id")
+        query = {"_id": ObjectId(task_id)}
+        doc = await db.task.find_one(query)
+        if not doc:
+            return {"message": "Content not found for the provided ID", "code": 404}
+        doc["type"] = "start"
+        await create_scan_task(doc, task_id, True)
+        await db.task.update_one({"_id": ObjectId(task_id)}, {"$set": {"status": 1}})
+        return {"message": "success", "code": 200}
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
+        return {"message": "error", "code": 500}
