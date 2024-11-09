@@ -153,7 +153,7 @@ max_interactive: 100             # 单个页面最大交互次数
 max_interactive_depth: 5         # 页面交互深度限制
 max_page_concurrent: 5           # 最大页面并发（不大于10）
 max_page_visit: 1000              # 总共允许访问的页面数量
-max_page_visit_per_site: 1000     # 每个站点最多访问的页面数量
+max_page_visit_per_site: 500     # 每个站点最多访问的页面数量
 element_filter_strength: 3        # 过滤同站点相似元素强度，1-7取值，强度逐步增大，为0时不进行跨页面元素过滤
 new_task_filter_config:           # 检查某个链接是否应该被加入爬取队列
   hostname_allowed: []            # 允许访问的 Hostname，支持格式如 t.com、*.t.com、1.1.1.1、1.1.1.1/24、1.1-4.1.1-8
@@ -505,9 +505,7 @@ SCANTEMPLATE = {
     "ef244b3462744dad3040f9dcf3194eb1",
     "9669d0dcc52a5ca6dbbe580ffc99c364"
   ],
-  "WebCrawler": [
-    "4b292861d3228af0e4da8e7ef979497c"
-  ],
+  "WebCrawler": [],
   "URLSecurity": [
     "2949994c04a4e124b9c98383489510f0"
   ],

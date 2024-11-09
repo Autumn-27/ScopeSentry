@@ -344,7 +344,7 @@ async def get_search_query(name, request_data):
     query = query[0]
     filter_key = {'app': 'technologies', 'color': 'color', 'status': 'status', 'level': 'level', 'type': 'type',
                   'project': 'project', 'port': 'port', 'service': "service", 'icon': 'faviconmmh3',
-                  "statuscode": "statuscode", "sname": "sid"}
+                  "statuscode": "statuscode", "sname": "sid", "task": "taskName"}
     filter = request_data.get("filter", {})
     if filter:
         query["$and"] = []
