@@ -289,6 +289,15 @@ async def get_sensitive_result_data2(request_data: dict, db=Depends(get_mongo_db
             },
             {
                 "$limit": page_size  # 获取当前页的URL
+            },
+            {
+                "$project": {
+                    "id": "$_id",  # 这里将最终的 _id 输出为 id
+                    "url": 1,
+                    "time": 1,
+                    "body_id": 1,
+                    "children": 1
+                }
             }
         ]
         # 执行聚合查询

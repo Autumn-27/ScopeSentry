@@ -68,8 +68,6 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
         result = await cursor.to_list(length=None)
         result_list = []
         for r in result:
-            if r['tag'] is None:
-                r['tag'] = []
             tmp = {
                 'port': r['port'],
                 'time': r['time'],
@@ -78,9 +76,8 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
                 'domain': r['host'],
                 'ip': r['ip'],
                 'service': r['service'],
-                'tags': r['tag']
+                'tags': r.get("tags", [])
             }
-
             if r['type'] == 'other':
                 tmp['title'] = ""
                 tmp['status'] = None
