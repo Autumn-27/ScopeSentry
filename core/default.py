@@ -299,8 +299,8 @@ PLUGINS = [
         "module": "AssetMapping",
         "name": "httpx",
         "hash": "3a0d994a12305cb15a5cb7104d819623",
-        "parameter": "-cdncheck true",
-        "help": "-cdncheck 是否开启cdn检测",
+        "parameter": "-cdncheck true -screenshot false",
+        "help": "-cdncheck 是否开启cdn检测 -screenshot 是否开启截图，默认关闭,开启需要安装chromium",
         "introduction": "资产测绘",
         "isSystem": True,
         "version": "1.0",
@@ -466,7 +466,7 @@ SCANTEMPLATE = {
     },
     "PortFingerprint": {},
     "AssetMapping": {
-      "3a0d994a12305cb15a5cb7104d819623": "-cdncheck true"
+      "3a0d994a12305cb15a5cb7104d819623": "-cdncheck true -screenshot false"
     },
     "AssetHandle": {},
     "URLScan": {

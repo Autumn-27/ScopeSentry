@@ -61,13 +61,13 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
                                           "raw": 1,
                                           "time": 1,
                                           "iconcontent": 1,
-                                          "tag": 1
+                                          "tag": 1,
+                                          "screenshot": 1,
                                           }).skip((page_index - 1) * page_size).limit(page_size).sort(
             [("time", DESCENDING)])
         result = await cursor.to_list(length=None)
         result_list = []
         for r in result:
-
             if r['tag'] is None:
                 r['tag'] = []
             tmp = {
@@ -98,6 +98,7 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
                         tmp['banner'] = ""
                 tmp['products'] = []
             else:
+                tmp["screenshot"] = r.get("screenshot", "")
                 tmp['title'] = r['title']
                 tmp['status'] = r['statuscode']
                 tmp['url'] = r['url']
