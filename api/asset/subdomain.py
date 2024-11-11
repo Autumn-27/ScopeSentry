@@ -31,6 +31,7 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
                                                                     "value": 1,
                                                                     "ip": 1,
                                                                     "time": 1,
+                                                                    "tags": 1
                                                                     })
                                        .skip((page_index - 1) * page_size)
                                        .limit(page_size))

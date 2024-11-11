@@ -44,7 +44,7 @@ async def delete_data(request_data: dict, db=Depends(get_mongo_db), _: dict = De
 @router.post("/add/tag")
 async def add_tag(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
-        tp = request_data.get("type", "")
+        tp = request_data.get("tp", "")
         id = request_data.get("id", "")
         tag = request_data.get("tag", "")
         key = ["asset", "DirScanResult", "SensitiveResult", "SubdoaminTakerResult", "UrlScan", "crawler", "subdomain",
@@ -56,13 +56,36 @@ async def add_tag(request_data: dict, db=Depends(get_mongo_db), _: dict = Depend
 
         if not doc:
             return {"message": "Content not found for the provided ID", "code": 404}
-        if doc["tags"] is None:
+        if "tags" not in doc or doc["tags"] is None:
             doc["tags"] = [tag]
         else:
-            doc["tags"] = doc["tags"].append(tag)
+            doc["tags"].append(tag)
         await db[tp].update_one(query, {"$set": {"tags": doc["tags"]}})
+        return {"message": "success", "code": 200}
     except Exception as e:
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
 
+
+@router.post("/delete/tag")
+async def delete_tag(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    try:
+        tp = request_data.get("tp", "")
+        id = request_data.get("id", "")
+        tag = request_data.get("tag", "")
+        key = ["asset", "DirScanResult", "SensitiveResult", "SubdoaminTakerResult", "UrlScan", "crawler", "subdomain",
+               "vulnerability", "PageMonitoring"]
+        if tp not in key or id == "" or tag == "":
+            return {"code": 404, "message": "Data not found"}
+        query = {"_id": ObjectId(id)}
+        doc = await db[tp].find_one(query, {"tags": 1})
+        if "tags" not in doc or doc["tags"] is None:
+            return {"message": "success", "code": 200}
+        doc["tags"].remove(tag)
+        await db[tp].update_one(query, {"$set": {"tags": doc["tags"]}})
+        return {"message": "success", "code": 200}
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
+        return {"message": "error", "code": 500}

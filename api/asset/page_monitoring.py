@@ -49,7 +49,8 @@ async def page_monitoring_result(request_data: dict, db=Depends(get_mongo_db), _
                                                                 "time": 1,
                                                                 "md5": 1,
                                                                 "statusCode": 1,
-                                                                "similarity": 1
+                                                                "similarity": 1,
+                                                                "tags": 1
                                                                 }).sort(
         [("time", DESCENDING)]).skip((page_index - 1) * page_size).limit(page_size)
     result = await cursor.to_list(length=None)

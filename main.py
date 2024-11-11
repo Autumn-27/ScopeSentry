@@ -18,7 +18,6 @@ import asyncio
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.responses import JSONResponse
-from api import dirscan
 from core import db
 import json
 from fastapi import WebSocket
@@ -81,9 +80,9 @@ async def http_exception_handler(request, exc):
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-from api import users, poc, configuration, fingerprint, node, task, vulnerability, SubdoaminTaker, notification, system, export, project_aggregation
+from api import users, poc, configuration, fingerprint, node, task, notification, system, export, project_aggregation
 from api.dictionary import router as dictionary_router
-from api.asset import router as asset_route
+from api.asset import router as asset_route, vulnerability
 from api.plugins import router as plugin_route
 from api.project import router as project_route
 
@@ -98,8 +97,6 @@ app.include_router(project_route, prefix='/api')
 app.include_router(task.router, prefix='/api')
 app.include_router(asset_route, prefix='/api')
 app.include_router(vulnerability.router, prefix='/api')
-app.include_router(SubdoaminTaker.router, prefix='/api')
-app.include_router(dirscan.router, prefix='/api')
 app.include_router(notification.router, prefix='/api')
 app.include_router(system.router, prefix='/api')
 app.include_router(export.router, prefix='/api')

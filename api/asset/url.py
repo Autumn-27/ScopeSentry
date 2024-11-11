@@ -42,6 +42,7 @@ async def url_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
                                                                   "type": "$outputtype",
                                                                   "url": "$output",
                                                                   "time": 1,
+                                                                  "tags": 1,
                                                                   })
                                        .sort(sort_by)
                                        .skip((page_index - 1) * page_size)

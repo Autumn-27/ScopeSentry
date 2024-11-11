@@ -27,7 +27,9 @@ async def crawler_data(request_data: dict, db=Depends(get_mongo_db), _: dict = D
                                                                   "id": {"$toString": "$_id"},
                                                                   "method": 1,
                                                                   "body": 1,
-                                                                  "url": 1
+                                                                  "url": 1,
+                                                                  "tags": 1,
+                                                                  "time": 1,
                                                                   })
                                        .sort([('_id', -1)])
                                        .skip((page_index - 1) * page_size)

@@ -61,7 +61,7 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
                                           "raw": 1,
                                           "time": 1,
                                           "iconcontent": 1,
-                                          "tag": 1,
+                                          "tags": 1,
                                           "screenshot": 1,
                                           }).skip((page_index - 1) * page_size).limit(page_size).sort(
             [("time", DESCENDING)])
@@ -78,6 +78,8 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
                 'service': r['service'],
                 'tags': r.get("tags", [])
             }
+            if tmp['tags'] == None:
+                tmp['tags'] = []
             if r['type'] == 'other':
                 tmp['title'] = ""
                 tmp['status'] = None

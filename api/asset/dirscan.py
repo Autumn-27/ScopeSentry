@@ -16,7 +16,7 @@ from loguru import logger
 router = APIRouter()
 
 
-@router.post("/dirscan/result/data")
+@router.post("/data")
 async def dirscan_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         page_index = request_data.get("pageIndex", 1)
@@ -37,7 +37,7 @@ async def dirscan_data(request_data: dict, db=Depends(get_mongo_db), _: dict = D
                         sort_value = -1
                     sort_by = [('length', sort_value)]
         cursor: AsyncIOMotorCursor = ((db['DirScanResult'].find(query, {"_id": 0, "id": {"$toString": "$_id"}, "url": 1,
-                                                                        "status": 1, "msg": 1, "length": 1})
+                                                                        "status": 1, "msg": 1, "length": 1, "tags": 1})
                                        .sort(sort_by)
                                        .skip((page_index - 1) * page_size)
                                        .limit(page_size)))
