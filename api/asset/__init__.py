@@ -16,9 +16,12 @@ from .page_monitoring import router as page_monitoring_route
 from .dirscan import router as dirscan_route
 from .SubdoaminTaker import router as subdoamintaker_route
 from .vulnerability import router as vulnerability_route
+from .statistics import router as statistics_route
+
 router = APIRouter()
 
 router.include_router(asset_routeer, prefix="/asset")
+router.include_router(statistics_route, prefix="/asset/statistics")
 router.include_router(subdomain_route, prefix="/subdomain")
 router.include_router(url_route, prefix="/url")
 router.include_router(crawler_route, prefix="/crawler")

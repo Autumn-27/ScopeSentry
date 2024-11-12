@@ -257,7 +257,7 @@ async def search_to_mongodb(expression_raw, keyword):
         return stack
     except Exception as e:
         logger.error(e)
-        return ""
+        return [{}]
 
 
 async def get_search_query(name, request_data):
