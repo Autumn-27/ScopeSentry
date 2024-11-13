@@ -27,7 +27,7 @@ NODE_TIMEOUT = 50
 TOTAL_LOGS = 1000
 APP = {}
 Project_List = {}
-
+PLUGINKEY = ""
 
 def set_timezone(t):
     global TIMEZONE
@@ -49,6 +49,14 @@ def generate_random_string(length):
 def set_config():
     global MONGODB_IP, MONGODB_PORT, DATABASE_NAME, DATABASE_USER, DATABASE_PASSWORD, REDIS_IP, REDIS_PORT, REDIS_PASSWORD, SECRET_KEY, TOTAL_LOGS, TIMEZONE
     SECRET_KEY = generate_random_string(16)
+    global PLUGINKEY
+    if os.path.exists("PLUGINKEY"):
+        with open("PLUGINKEY", 'r') as file:
+            PLUGINKEY = file.read()
+    else:
+        PLUGINKEY = generate_random_string(6)
+        with open("PLUGINKEY", 'w') as file:
+            file.write(PLUGINKEY)
     config_file_path = "config.yaml"
     if os.path.exists(config_file_path):
         with open(config_file_path, 'r') as file:

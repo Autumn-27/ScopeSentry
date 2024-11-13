@@ -89,3 +89,21 @@ async def delete_tag(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
+
+
+@router.post("/update/status")
+async def delete_tag(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    try:
+        tp = request_data.get("tp", "")
+        id = request_data.get("id", "")
+        status = request_data.get("status")
+        key = ["SensitiveResult", "vulnerability"]
+        if tp not in key or id == "":
+            return {"code": 404, "message": "Data not found"}
+        query = {"_id": ObjectId(id)}
+        await db[tp].update_one(query, {"$set": {"status": status}})
+        return {"message": "success", "code": 200}
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
+        return {"message": "error", "code": 500}

@@ -51,6 +51,7 @@ async def update():
 
 @app.on_event("startup")
 async def startup_db_client():
+    print("Plugin Key:", PLUGINKEY)
     file_path = os.path.join(os.getcwd(), 'file')
     if not os.path.exists(file_path):
         os.makedirs(file_path)

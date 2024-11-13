@@ -4,6 +4,10 @@
 # @contact   : rainy-autumn@outlook.com
 # @time      : 2024/10/24 19:54
 # -------------------------------------------
+import json
+import os
+import zipfile
+from io import BytesIO
 
 from bson import ObjectId
 from fastapi import APIRouter, Depends, File, UploadFile, Query, Form
@@ -113,6 +117,13 @@ async def get_plugin_detail(request_data: dict, db=Depends(get_mongo_db), _: dic
 
 @router.post("/save")
 async def save_plugin(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    with open("PLUGINKEY", 'r') as file:
+        plg_key = file.read()
+    key = request_data.get("key", "")
+    if key == "":
+        return {"message": f"key error", "code": 505}
+    if plg_key != key:
+        return {"message": f"key error", "code": 505}
     id = request_data.get("id", "")
     request_data.pop("id")
     if id is None or id == "":
@@ -202,3 +213,70 @@ async def clean_plugin_logs(request_data: dict, _: dict = Depends(verify_token),
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "Error retrieving logs", "code": 500}
+
+
+ALLOWED_EXTENSIONS = {'.json', '.go', '.md'}
+
+
+# 检查文件名是否安全
+async def is_safe_filename(filename: str) -> bool:
+    # 禁止文件名中出现 ..（路径遍历）和其他特殊字符
+    if '..' in filename or filename.startswith('/') or filename.startswith('\\'):
+        return False
+
+    # 检查文件名的扩展名是否允许
+    ext = os.path.splitext(filename)[1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        return False
+
+    # 可以加更多检查文件名长度等规则
+    if len(filename) > 255:
+        return False
+
+    return True
+
+
+@router.post("/import")
+async def import_plugin(file: UploadFile = File(...), key: str = Query(...), db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    try:
+        plg_key = ""
+        with open("PLUGINKEY", 'r') as file:
+            plg_key = file.read()
+        if key == "":
+            return {"message": f"key error", "code": 505}
+        if plg_key != key:
+            return {"message": f"key error", "code": 505}
+        content = await file.read()
+        plugin_info = {}
+        source = ""
+        # 使用 BytesIO 将字节内容转换为类似文件对象
+        with zipfile.ZipFile(BytesIO(content), 'r') as zip_ref:
+            for file_name in zip_ref.namelist():
+                # 检查文件名的安全性
+                if not await is_safe_filename(file_name):
+                    return {"message": f"文件名不安全: {file_name}", "code": 400}
+                if os.path.basename(file_name).lower() == "info.json":
+                    # 文件名通过安全性检查后，进行后续处理
+                    with zip_ref.open(file_name) as f:
+                        file_data = f.read()
+                        plugin_info = json.loads(file_data)
+                if os.path.basename(file_name).lower() == "plugin.go":
+                    with zip_ref.open(file_name) as f:
+                        file_data = f.read()
+                        source = file_data
+        if "hash" not in plugin_info:
+            plugin_info["hash"] = generate_plugin_hash()
+        if "name" not in plugin_info or "module" not in plugin_info:
+            return {"message": "node or moudle not found", "code": 500}
+        if plugin_info["hash"] in str(PLUGINS) or plugin_info["module"] not in str(PLUGINS):
+            return {"message": "plugin is system or module error", "code": 500}
+        plugin_info["source"] = source
+        result = await db.plugins.insert_one(plugin_info)
+        if result.inserted_id:
+            return {"code": 200, "message": "plugin added successfully"}
+        else:
+            return {"code": 400, "message": "Failed to add plugin"}
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
+        return {"message": "error", "code": 500}

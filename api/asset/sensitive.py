@@ -260,6 +260,7 @@ async def get_sensitive_result_data2(request_data: dict, db=Depends(get_mongo_db
                     "color": 1,
                     "md5": 1,
                     "tags": 1,
+                    "status": 1,
                 }
             },
             {
@@ -278,7 +279,8 @@ async def get_sensitive_result_data2(request_data: dict, db=Depends(get_mongo_db
                             "color": "$color",
                             "match": "$match",
                             "time": "$time",
-                            "tags": "$tags"
+                            "tags": "$tags",
+                            "status": "$status"
                         }
                     }
                 }
@@ -300,6 +302,7 @@ async def get_sensitive_result_data2(request_data: dict, db=Depends(get_mongo_db
                     "body_id": 1,
                     "children": 1,
                     "tags": 1,
+                    "status": 1
                 }
             }
         ]
