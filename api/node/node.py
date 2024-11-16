@@ -117,7 +117,6 @@ async def get_node_logs(request_data: dict, _: dict = Depends(verify_token), red
         return {"message": "Error retrieving logs", "code": 500}
 
 
-
 @router.post("/plugin")
 async def get_node_plugin(request_data: dict, _: dict = Depends(verify_token), redis_con=Depends(get_redis_pool), db=Depends(get_mongo_db)):
     try:
@@ -146,24 +145,28 @@ async def get_node_plugin(request_data: dict, _: dict = Depends(verify_token), r
                         "install": 0,
                         "check": 0
                     })
+                    continue
                 if value == "3":
                     result_list.append({
                         "name": plugin_list[plg],
                         "install": 1,
                         "check": 0
                     })
+                    continue
                 if value == "4":
                     result_list.append({
                         "name": plugin_list[plg],
                         "install": 1,
                         "check": 1
                     })
+                    continue
                 else:
                     result_list.append({
                         "name": plugin_list[plg],
                         "install": 0,
                         "check": 0
                     })
+                    continue
             else:
                 result_list.append({
                     "name": plugin_list[plg],
@@ -175,3 +178,4 @@ async def get_node_plugin(request_data: dict, _: dict = Depends(verify_token), r
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "Error retrieving logs", "code": 500}
+

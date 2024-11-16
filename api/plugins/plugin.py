@@ -284,3 +284,42 @@ async def import_plugin(file: UploadFile = File(...), key: str = Query(...), db=
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
+
+
+@router.post("/reinstall")
+async def reinstall_plugin(request_data: dict, key: str = Query(...), db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    node = request_data.get("node", "")
+    if node == "":
+        return {"message": "node is null", "code": 500}
+    hash = request_data.get("hash", "")
+    if hash == "":
+        return {"message": "plugin hash is null", "code": 500}
+
+    await refresh_config(node, 're_install_plugin', hash)
+    return {"code": 200, "message": "success"}
+
+
+@router.post("/recheck")
+async def recheck_plugin(request_data: dict, key: str = Query(...), db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    node = request_data.get("node", "")
+    if node == "":
+        return {"message": "node is null", "code": 500}
+    hash = request_data.get("hash", "")
+    if hash == "":
+        return {"message": "plugin hash is null", "code": 500}
+
+    await refresh_config(node, 're_check_plugin', hash)
+    return {"code": 200, "message": "success"}
+
+
+@router.post("/uninstall")
+async def uninstall_plugin(request_data: dict, key: str = Query(...), db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    node = request_data.get("node", "")
+    if node == "":
+        return {"message": "node is null", "code": 500}
+    hash = request_data.get("hash", "")
+    if hash == "":
+        return {"message": "plugin hash is null", "code": 500}
+
+    await refresh_config(node, 'uninstall_plugin', hash)
+    return {"code": 200, "message": "success"}
