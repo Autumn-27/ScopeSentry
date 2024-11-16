@@ -106,7 +106,7 @@ async def delete_dictionary(request_data: dict, db=Depends(get_mongo_db), _: dic
         for id in dir_dict_ids:
             obj_ids.append(ObjectId(id))
             await refresh_config('all', 'dictionary', f"delete:{id}")
-        result = await db["dictionary"].delete_many({"_id": {"$in": obj_ids}})
+        await db["dictionary"].delete_many({"_id": {"$in": obj_ids}})
 
         fs = AsyncIOMotorGridFSBucket(db)
         for id in dir_dict_ids:

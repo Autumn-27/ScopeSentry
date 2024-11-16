@@ -9,8 +9,8 @@ import json
 
 from bson import ObjectId
 
+from api.asset.page_monitoring import get_page_monitoring_data
 from api.node.handler import get_node_all
-from api.page_monitoring import get_page_monitoring_data
 from core.apscheduler_handler import scheduler
 from api.task.util import get_target_list
 from core.db import get_mongo_db

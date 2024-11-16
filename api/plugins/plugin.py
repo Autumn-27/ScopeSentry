@@ -133,6 +133,7 @@ async def save_plugin(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         result = await db.plugins.insert_one(request_data)
 
         if result.inserted_id:
+            await refresh_config('all', 'install_plugin', str(result.inserted_id))
             return {"code": 200, "message": "plugin added successfully"}
         else:
             return {"code": 400, "message": "Failed to add plugin"}
@@ -145,6 +146,7 @@ async def save_plugin(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         # Perform the update
         result = await db.plugins.update_one(update_query, update_values)
         if result:
+            await refresh_config('all', 'install_plugin', id)
             return {"code": 200, "message": "plugin updated successfully"}
         else:
             return {"code": 404, "message": "plugin not found"}
@@ -160,6 +162,7 @@ async def delete_plugin(request_data: dict, db=Depends(get_mongo_db), _: dict = 
         hash_ids = []
         for plugin_hash in plugin_hashs:
             if plugin_hash not in str(PLUGINS):
+                await refresh_config('all', 'delete_plugin', plugin_hash)
                 hash_ids.append(plugin_hash)
         # Delete the SensitiveRule documents based on the provided IDs
         result = await db.plugins.delete_many({"hash": {"$in": hash_ids}})
@@ -273,6 +276,7 @@ async def import_plugin(file: UploadFile = File(...), key: str = Query(...), db=
         plugin_info["source"] = source
         result = await db.plugins.insert_one(plugin_info)
         if result.inserted_id:
+            await refresh_config('all', 'install_plugin', str(result.inserted_id))
             return {"code": 200, "message": "plugin added successfully"}
         else:
             return {"code": 400, "message": "Failed to add plugin"}
