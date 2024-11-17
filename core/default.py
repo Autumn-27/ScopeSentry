@@ -256,7 +256,7 @@ def get_root_domain(url):
     return root_domain
 
 
-ModulesConfig = '''maxGoroutineCount: 5 # 最大目标并发
+ModulesConfig = '''maxGoroutineCount: 3 # 最大目标并发
 subdomainScan:
   goroutineCount: 3  # 设置"子域名扫描"模块最大并发
 subdomainSecurity:

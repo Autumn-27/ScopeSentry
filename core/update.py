@@ -140,46 +140,48 @@ async def update15(db):
     print_progress_bar(4, 11)
 
 
-    # 修改敏感信息字段
-    cursor = db['SensitiveResult'].find({})
-    result = await cursor.to_list(length=None)
-
-    update_sensitive_result_ops = []
-    update_sensitive_body_ops = []
-    update_list = set()  # 使用集合提高查重效率
-
-    for item in result:
-        taskName = task_list[item["taskId"]]
-        extracted = tldextract.extract(item['url'])
-        root_domain = f"{extracted.domain}.{extracted.suffix}"
-
-        if item["body"]:  # 仅在 body 不为空时处理
-            if item['md5'] not in update_list:
-                update_sensitive_body_ops.append(
-                    UpdateOne({"md5": item['md5']}, {"$set": {"body": item['body']}}, upsert=True)
-                )
-                update_list.add(item['md5'])
-
-            update_sensitive_result_ops.append(
-                UpdateOne({"_id": item['_id']},
-                          {"$set": {"taskName": taskName, "rootDomain": root_domain}, "$unset": {"body": ""}})
-            )
-        else:
-            update_sensitive_result_ops.append(
-                UpdateOne({"_id": item['_id']},
-                          {"$set": {"md5": item['md5'].replace("md5==", ""), "taskName": taskName,
-                                    "rootDomain": root_domain},
-                           "$unset": {"body": ""}})
-            )
-
-    # 批量写入 SensitiveBody
-    if update_sensitive_body_ops:
-        await db['SensitiveBody'].bulk_write(update_sensitive_body_ops)
-
-    # 批量写入 SensitiveResult
-    if update_sensitive_result_ops:
-        await db['SensitiveResult'].bulk_write(update_sensitive_result_ops)
-
+    # # 修改敏感信息字段
+    # cursor = db['SensitiveResult'].find({})
+    # result = await cursor.to_list(length=None)
+    #
+    # update_sensitive_result_ops = []
+    # update_sensitive_body_ops = []
+    # update_list = set()  # 使用集合提高查重效率
+    #
+    # for item in result:
+    #     taskName = task_list[item["taskId"]]
+    #     extracted = tldextract.extract(item['url'])
+    #     root_domain = f"{extracted.domain}.{extracted.suffix}"
+    #
+    #     if item["body"]:  # 仅在 body 不为空时处理
+    #         if item['md5'] not in update_list:
+    #             update_sensitive_body_ops.append(
+    #                 UpdateOne({"md5": item['md5']}, {"$set": {"body": item['body']}}, upsert=True)
+    #             )
+    #             update_list.add(item['md5'])
+    #
+    #         update_sensitive_result_ops.append(
+    #             UpdateOne({"_id": item['_id']},
+    #                       {"$set": {"taskName": taskName, "rootDomain": root_domain}, "$unset": {"body": ""}})
+    #         )
+    #     else:
+    #         update_sensitive_result_ops.append(
+    #             UpdateOne({"_id": item['_id']},
+    #                       {"$set": {"md5": item['md5'].replace("md5==", ""), "taskName": taskName,
+    #                                 "rootDomain": root_domain},
+    #                        "$unset": {"body": ""}})
+    #         )
+    #
+    # # 批量写入 SensitiveBody
+    # if update_sensitive_body_ops:
+    #     await db['SensitiveBody'].bulk_write(update_sensitive_body_ops)
+    #
+    # # 批量写入 SensitiveResult
+    # if update_sensitive_result_ops:
+    #     await db['SensitiveResult'].bulk_write(update_sensitive_result_ops)
+    await db['SensitiveResult'].rename('SensitiveResult_bak')
+    logger.warning("敏感信息数据由于和新版本不兼容，备份到SensitiveResult_bak中，如果不需要可以连接数据库进行删除")
+    logger.warning("Sensitive information data is incompatible with the new version, so it is backed up to SensitiveResult_bak. If it is not needed, you can connect to the database to delete it.")
     print_progress_bar(5, 11)
     # 修改任务字段
     doc_names = ["DirScanResult", "PageMonitoring",
@@ -227,6 +229,8 @@ async def update15(db):
     # 修改页面监控数据
     # 创建页面监控文档，url不重复
     await db['PageMonitoring'].rename('PageMonitoring_bak')
+    logger.warning("页面监控数据由于和新版本不兼容，备份到PageMonitoring_bak中，如果不需要可以连接数据库进行删除")
+    logger.warning("Since the page monitoring data is incompatible with the new version, it is backed up to PageMonitoring_bak. If it is not needed, you can connect to the database to delete it.")
     await db['PageMonitoring'].create_index([('url', ASCENDING)], unique=True)
     await db['PageMonitoringBody'].create_index([('md5', ASCENDING)], unique=True)
     # 修改全局线程配置、节点配置
@@ -239,4 +243,7 @@ async def update15(db):
     # 完成
     await db.task.update_many({"progress": 100}, {"$set": {"status": 3}})
     print_progress_bar(11, 11)
+
+    logger.success("更新完成")
+    logger.success("Update Complete")
 

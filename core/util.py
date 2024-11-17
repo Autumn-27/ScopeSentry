@@ -459,5 +459,5 @@ def print_progress_bar(step, total_steps, tp = "Update"):
     bar_length = 40
     progress = step / total_steps
     bar = "█" * int(progress * bar_length) + "-" * (bar_length - int(progress * bar_length))
-    sys.stdout.write(f"\r{tp} Progress: |{bar}| {step}/{total_steps}")
+    sys.stdout.write(f"\r{tp} Progress: |{bar}| {step}/{total_steps}\n")
     sys.stdout.flush()
