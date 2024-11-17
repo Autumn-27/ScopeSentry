@@ -156,14 +156,17 @@ async def save_plugin(request_data: dict, db=Depends(get_mongo_db), _: dict = De
 async def delete_plugin(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         # Extract the list of IDs from the request_data dictionary
-        plugin_hashs = request_data.get("ids", [])
-
+        data = request_data.get("data", [])
+        if len(data) == 0:
+            return {"code": 404, "message": "data null"}
         # Convert the provided rule_ids to ObjectId
         hash_ids = []
-        for plugin_hash in plugin_hashs:
-            if plugin_hash not in str(PLUGINS):
-                await refresh_config('all', 'delete_plugin', plugin_hash)
-                hash_ids.append(plugin_hash)
+        for plugin_info in data:
+            hash = plugin_info["hash"]
+            module = plugin_info["module"]
+            await refresh_config('all', 'delete_plugin', hash + "_" + module)
+            if hash not in str(PLUGINS):
+                hash_ids.append(hash)
         # Delete the SensitiveRule documents based on the provided IDs
         result = await db.plugins.delete_many({"hash": {"$in": hash_ids}})
 
@@ -242,9 +245,8 @@ async def is_safe_filename(filename: str) -> bool:
 @router.post("/import")
 async def import_plugin(file: UploadFile = File(...), key: str = Query(...), db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
-        plg_key = ""
-        with open("PLUGINKEY", 'r') as file:
-            plg_key = file.read()
+        with open("PLUGINKEY", 'r') as PLUGINKEYFile:
+            plg_key = PLUGINKEYFile.read()
         if key == "":
             return {"message": f"key error", "code": 505}
         if plg_key != key:
@@ -274,6 +276,7 @@ async def import_plugin(file: UploadFile = File(...), key: str = Query(...), db=
         if plugin_info["hash"] in str(PLUGINS) or plugin_info["module"] not in str(PLUGINS):
             return {"message": "plugin is system or module error", "code": 500}
         plugin_info["source"] = source
+        plugin_info["isSystem"] = False
         result = await db.plugins.insert_one(plugin_info)
         if result.inserted_id:
             await refresh_config('all', 'install_plugin', str(result.inserted_id))
@@ -287,39 +290,45 @@ async def import_plugin(file: UploadFile = File(...), key: str = Query(...), db=
 
 
 @router.post("/reinstall")
-async def reinstall_plugin(request_data: dict, key: str = Query(...), db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+async def reinstall_plugin(request_data: dict, _: dict = Depends(verify_token)):
     node = request_data.get("node", "")
     if node == "":
         return {"message": "node is null", "code": 500}
     hash = request_data.get("hash", "")
     if hash == "":
         return {"message": "plugin hash is null", "code": 500}
-
-    await refresh_config(node, 're_install_plugin', hash)
+    module = request_data.get("module", "")
+    if module == "":
+        return {"message": "plugin module is null", "code": 500}
+    await refresh_config(node, 're_install_plugin', hash + "_" + module)
     return {"code": 200, "message": "success"}
 
 
 @router.post("/recheck")
-async def recheck_plugin(request_data: dict, key: str = Query(...), db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+async def recheck_plugin(request_data: dict, _: dict = Depends(verify_token)):
     node = request_data.get("node", "")
     if node == "":
         return {"message": "node is null", "code": 500}
     hash = request_data.get("hash", "")
     if hash == "":
         return {"message": "plugin hash is null", "code": 500}
-
-    await refresh_config(node, 're_check_plugin', hash)
+    module = request_data.get("module", "")
+    if module == "":
+        return {"message": "plugin module is null", "code": 500}
+    await refresh_config(node, 're_check_plugin', hash + "_" + module)
     return {"code": 200, "message": "success"}
 
 
 @router.post("/uninstall")
-async def uninstall_plugin(request_data: dict, key: str = Query(...), db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+async def uninstall_plugin(request_data: dict, _: dict = Depends(verify_token)):
     node = request_data.get("node", "")
     if node == "":
         return {"message": "node is null", "code": 500}
     hash = request_data.get("hash", "")
     if hash == "":
         return {"message": "plugin hash is null", "code": 500}
-
-    await refresh_config(node, 'uninstall_plugin', hash)
+    module = request_data.get("module", "")
+    if module == "":
+        return {"message": "plugin module is null", "code": 500}
+    await refresh_config(node, 'uninstall_plugin', hash + "_" + module)
     return {"code": 200, "message": "success"}

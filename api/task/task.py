@@ -197,7 +197,8 @@ async def retest_task(request_data: dict, db=Depends(get_mongo_db), _: dict = De
                 "$set": {
                     "progress": 0,
                     "creatTime": get_now_time(),
-                    "endTime": ""
+                    "endTime": "",
+                    "status": 1
                 }
             }
             await db.task.update_one({"_id": ObjectId(task_id)}, update_document)

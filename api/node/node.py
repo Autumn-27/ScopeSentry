@@ -126,52 +126,34 @@ async def get_node_plugin(request_data: dict, _: dict = Depends(verify_token), r
         cursor = db['plugins'].find({}, {"_id": 0,
                                          "name": 1,
                                          "hash": 1,
+                                         "module": 1
                                          })
         result = await cursor.to_list(length=None)
         plugin_list = {}
         for r in result:
-            plugin_list[r["hash"]] = r["name"]
+            plugin_list[r["hash"]] = {"name": r["name"], "module": r["module"]}
         key = "NodePlg:" + node_name
         hash_data = await redis_con.hgetall(key)
         result_list = []
         # 0 代表未安装 1代表安装失败 2代表安装成功，未检查 3代表安装成功，检查失败 4代表安装检查都成功
         for plg in plugin_list:
-            if plg in hash_data:
-                value = hash_data[plg]
-                if value == "1":
-                    # 安装失败
-                    result_list.append({
-                        "name": plugin_list[plg],
-                        "install": 0,
-                        "check": 0
-                    })
-                    continue
-                if value == "3":
-                    result_list.append({
-                        "name": plugin_list[plg],
-                        "install": 1,
-                        "check": 0
-                    })
-                    continue
-                if value == "4":
-                    result_list.append({
-                        "name": plugin_list[plg],
-                        "install": 1,
-                        "check": 1
-                    })
-                    continue
-                else:
-                    result_list.append({
-                        "name": plugin_list[plg],
-                        "install": 0,
-                        "check": 0
-                    })
-                    continue
-            else:
+            try:
+                install_value = hash_data[plg + "_install"]
+                check_value = hash_data[plg + "_check"]
                 result_list.append({
-                    "name": plugin_list[plg],
-                    "install": 0,
-                    "check": 0
+                    "name": plugin_list[plg]["name"],
+                    "install": install_value,
+                    "check": check_value,
+                    "hash": plg,
+                    "module": plugin_list[plg]["module"]
+                })
+            except:
+                result_list.append({
+                    "name": plugin_list[plg]["name"],
+                    "install": "0",
+                    "check": "0",
+                    "hash": plg,
+                    "module": plugin_list[plg]["module"]
                 })
         return {"code": 200, "data": {"list": result_list}}
     except Exception as e:
