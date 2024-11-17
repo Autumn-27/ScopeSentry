@@ -9,6 +9,7 @@ from api.project.scan import scheduler_project
 from api.task.handler import scheduler_scan_task, insert_task
 from api.task.util import delete_asset, get_target_list
 from api.users import verify_token
+from core.db import get_mongo_db
 from core.redis_handler import refresh_config, get_redis_pool
 from core.util import *
 from core.apscheduler_handler import scheduler

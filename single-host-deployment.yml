@@ -79,13 +79,13 @@ services:
     environment:
       NodeName: node-test
       TimeZoneName: Asia/Shanghai
-      Mongodb_IP: 127.0.0.1
+      MONGODB_IP: 127.0.0.1
       MONGODB_PORT: 27017
-      Mongodb_Username: ${MONGO_INITDB_ROOT_USERNAME}
-      Mongodb_Password: ${MONGO_INITDB_ROOT_PASSWORD}
-      Redis_IP: 127.0.0.1
-      Redis_PORT: 6379
-      Redis_Password: ${REDIS_PASSWORD}
+      MONGODB_USER: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGODB_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      REDIS_IP: 127.0.0.1
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     depends_on:
       redis:
         condition: service_healthy

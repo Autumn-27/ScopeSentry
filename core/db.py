@@ -2,6 +2,7 @@
 # @name: db
 # @auth: rainy-autumn@outlook.com
 # @version:
+import hashlib
 import time
 from urllib.parse import quote_plus
 from motor.motor_asyncio import AsyncIOMotorGridFSBucket
@@ -11,6 +12,8 @@ from pymongo import ASCENDING
 from core.default import *
 from core.config import *
 from loguru import logger
+
+from core.util import print_progress_bar
 
 
 async def get_mongo_db():
@@ -47,10 +50,19 @@ async def create_database():
         if DATABASE_NAME not in database_names:
             # 在数据库中创建一个集合，比如名为 "user"
             collection = db["user"]
-
+            password = generate_random_string(8)
+            print("\n" + "=" * 50)
+            print("✨✨✨ IMPORTANT NOTICE: Please review the User/Password below ✨✨✨")
+            print("=" * 50)
+            print(f"🔑 User/Password: ScopeSentry/{password}")
+            print("=" * 50)
+            print("✅ Ensure the User/Password is correctly copied!\n")
+            total_steps = 16
             # 用户数据
             await collection.insert_one({"username": "ScopeSentry",
-                                         'password': 'b0ce71fcbed8a6ca579d52800145119cc7d999dc8651b62dfc1ced9a984e6e64'})
+                                         'password': hashlib.sha256(password.encode()).hexdigest()})
+            logger.info("Project initialization")
+            print_progress_bar(1, total_steps, "install")
 
             collection = db["config"]
             # 扫描模块配置
@@ -58,17 +70,18 @@ async def create_database():
                 {"name": "ModulesConfig", 'value': ModulesConfig, 'type': 'system'})
             await collection.insert_one(
                 {"name": "timezone", 'value': 'Asia/Shanghai', 'type': 'system'})
+
+            print_progress_bar(2, total_steps, "install")
             # subfinder配置
             collection = db["config"]
-            # 插入一条数据
             await collection.insert_one(
                 {"name": "SubfinderApiConfig", 'value': subfinderApiConfig, 'type': 'subfinder'})
+            print_progress_bar(3, total_steps, "install")
+            # rad配置
             await collection.insert_one(
                 {"name": "RadConfig", 'value': radConfig, 'type': 'rad'})
-            # dirDict = get_dirDict()
-            # await collection.insert_one(
-            #     {"name": "DirDic", 'value': dirDict, 'type': 'dirDict'})
-
+            print_progress_bar(4, total_steps, "install")
+            # 通知配置
             await collection.insert_one(
                 {"name": "notification", 'dirScanNotification': True,
                  'portScanNotification': True, 'sensitiveNotification': True,
@@ -79,6 +92,7 @@ async def create_database():
                  'type': 'notification'})
 
             fs = AsyncIOMotorGridFSBucket(db)
+            print_progress_bar(5, total_steps, "install")
             # 更新目录扫描默认字典
             content = get_dirDict()
             size = len(content) / (1024 * 1024)
@@ -89,7 +103,7 @@ async def create_database():
                     str(result.inserted_id),  # 使用id作为文件名存储
                     content  # 文件内容
                 )
-
+            print_progress_bar(6, total_steps, "install")
             # 更新子域名默认字典
             content = get_domainDict()
             size = len(content) / (1024 * 1024)
@@ -100,24 +114,32 @@ async def create_database():
                     str(result.inserted_id),  # 使用id作为文件名存储
                     content  # 文件内容
                 )
-
+            print_progress_bar(7, total_steps, "install")
+            # 插入敏感信息
             sensitive_data = get_sensitive()
             collection = db["SensitiveRule"]
             if sensitive_data:
                 await collection.insert_many(sensitive_data)
 
+            print_progress_bar(8, total_steps, "install")
+            # 定时任务
             collection = db["ScheduledTasks"]
             await collection.insert_one(
                 {"id": "page_monitoring", "name": "Page Monitoring", 'hour': 24, 'node': [], 'allNode': True, 'type': 'Page Monitoring', 'state': True})
-
+            print_progress_bar(9, total_steps, "install")
+            # 通知API
             await db.create_collection("notification")
-
+            print_progress_bar(10, total_steps, "install")
+            # 默认端口
             collection = db["PortDict"]
             await collection.insert_many(portDic)
-
+            print_progress_bar(11, total_steps, "install")
+            # poc导入
             collection = db["PocList"]
             pocData = get_poc()
             await collection.insert_many(pocData)
+
+            print_progress_bar(12, total_steps, "install")
             # 新版本不内置项目
             # collection = db["project"]
             # project_data, target_data = get_project_data()
@@ -125,21 +147,24 @@ async def create_database():
             #
             # collection = db["ProjectTargetData"]
             # await collection.insert_many(target_data)
-
+            print_progress_bar(13, total_steps, "install")
+            # 指纹导入
             collection = db["FingerprintRules"]
             fingerprint = get_finger()
             await collection.insert_many(fingerprint)
+            print_progress_bar(14, total_steps, "install")
             # 创建默认插件
             collection = db["plugins"]
             await collection.insert_many(PLUGINS)
-
+            print_progress_bar(15, total_steps, "install")
             # 创建默认扫描模板
             collection = db["ScanTemplates"]
             await collection.insert_one(SCANTEMPLATE)
-
+            print_progress_bar(16, total_steps, "install")
             # 创建页面监控文档，url不重复
             db['PageMonitoring'].create_index([('url', ASCENDING)], unique=True)
             db['PageMonitoringBody'].create_index([('md5', ASCENDING)], unique=True)
+            logger.success("Project initialization successful")
         else:
             collection = db["config"]
             result = await collection.find_one({"name": "timezone"})

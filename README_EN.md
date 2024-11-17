@@ -8,11 +8,13 @@
 - Official Website: [https://www.scope-sentry.top](https://www.scope-sentry.top)
 - Github: [https://github.com/Autumn-27/ScopeSentry](https://github.com/Autumn-27/ScopeSentry)
 - Scanner source code: [https://github.com/Autumn-27/ScopeSentry-Scan](https://github.com/Autumn-27/ScopeSentry-Scan)
+- Plugin Market: [Plugin Market](https://plugin.scope-sentry.top/)
 
 ## Introduction
 Scope Sentry is a tool with functions such as asset mapping, subdomain enumeration, information leakage detection, vulnerability scanning, directory scanning, subdomain takeover, crawler, and page monitoring. By building multiple nodes, users can freely choose nodes to run scanning tasks. When new vulnerabilities emerge, it can quickly check whether the concerned assets have related components.
 
 ## Current Features
+- Plugin System (Add any tool through extension)
 - Subdomain Enumeration
 - Subdomain Takeover Detection
 - Port Scanning
@@ -30,11 +32,8 @@ Scope Sentry is a tool with functions such as asset mapping, subdomain enumerati
 - Webhook
 
 ## To Do
-- Plugin System
 - Weak Password Cracking
-- Data Cleaning
-- Data Sharing?
-- ~
+- 
 ## Installation
 
 For installation instructions, see the [official website](https://www.scope-sentry.top)
@@ -46,6 +45,17 @@ Discord:
 [https://discord.gg/agsYdAyN](https://discord.gg/agsYdAyN)
 
 
+## 赞助 && 合作
+If the project is helpful to you, sponsor the author for a cup of coffee~
+
+paypal.me/autumn5520
+
+<img src="docs/images/zfb.png" alt="WX" width="200"/>
+<img src="docs/images/wx.jpg" alt="WX" width="200"/>
+
+Also, due to my limited energy, I am seeking cooperation
+
+
 ## Screenshots
 
 ### Login
@@ -54,6 +64,9 @@ Discord:
 
 ### Homepage Dashboard
 ![alt text](docs/images/index-en.png)
+
+## Plugin System
+![alt text](docs/images/plugin-cn.png)
 
 ## Asset Data
 ### Assets

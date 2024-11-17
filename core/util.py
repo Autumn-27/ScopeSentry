@@ -5,14 +5,14 @@
 import hashlib, random
 import re
 import string
+import sys
+
 from loguru import logger
 from core.config import TIMEZONE, APP, Project_List
 from datetime import timezone
 from datetime import datetime, timedelta
 import json
 from urllib.parse import urlparse
-
-from core.db import get_mongo_db
 
 
 def calculate_md5_from_content(content):
@@ -346,8 +346,12 @@ async def get_search_query(name, request_data):
                   'project': 'project', 'port': 'port', 'service': "service", 'icon': 'faviconmmh3',
                   "statuscode": "statuscode", "sname": "sid", "task": "taskName", "tags": "tags"}
     filter = request_data.get("filter", {})
-    if filter:
-        query["$and"] = []
+    if "project" in filter:
+        if len(filter["project"]) == 0:
+            del filter["project"]
+    if len(filter) != 0:
+        if "$and" not in query:
+            query["$and"] = []
         for f in filter:
             if f in filter_key:
                 tmp_or = []
@@ -360,6 +364,7 @@ async def get_search_query(name, request_data):
                             tmp_or.append({filter_key[f]: v})
                 if len(tmp_or) != 0:
                     query["$and"].append({"$or": tmp_or})
+
     fuzzy_query = request_data.get("fq", {})
     fuzzy_query_key = {"sub_host": 'host', "sub_value": "value", "sub_ip": "ip", "port_port": "port",
                        "port_domain": ['domain', 'host'], 'port_ip': ['ip', 'host'], 'port_protocol': "service",
@@ -448,3 +453,11 @@ def generate_plugin_hash(length=32):
     md5_hash = hashlib.md5(salted_string.encode()).hexdigest()
 
     return md5_hash
+
+
+def print_progress_bar(step, total_steps, tp = "Update"):
+    bar_length = 40
+    progress = step / total_steps
+    bar = "█" * int(progress * bar_length) + "-" * (bar_length - int(progress * bar_length))
+    sys.stdout.write(f"\r{tp} Progress: |{bar}| {step}/{total_steps}")
+    sys.stdout.flush()

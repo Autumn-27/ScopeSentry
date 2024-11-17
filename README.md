@@ -9,13 +9,15 @@
 - 官网&安装教程：[https://www.scope-sentry.top](https://www.scope-sentry.top)
 - Github: [https://github.com/Autumn-27/ScopeSentry](https://github.com/Autumn-27/ScopeSentry)
 - 扫描端源码：[https://github.com/Autumn-27/ScopeSentry-Scan](https://github.com/Autumn-27/ScopeSentry-Scan)
-
+- 插件市场: [插件市场](https://plugin.scope-sentry.top/)
+- 
 ## 介绍
-Scope Sentry是一款具有资产测绘、子域名枚举、信息泄露检测、漏洞扫描、目录扫描、子域名接管、爬虫、页面监控功能的工具，通过构建多个节点，自由选择节点运行扫描任务。当出现新漏洞时可以快速排查关注资产是否存在相关组件。
+Scope Sentry是一款具有分布式资产测绘、子域名枚举、信息泄露检测、漏洞扫描、目录扫描、子域名接管、爬虫、页面监控功能的工具，通过构建多个节点，自由选择节点运行扫描任务。当出现新漏洞时可以快速排查关注资产是否存在相关组件。
 
 
 
 ## 目前功能
+- 插件系统（通过拓展的方式加入任何工具）
 - 子域名枚举
 - 子域名接管检测
 - 端口扫描
@@ -33,30 +35,27 @@ Scope Sentry是一款具有资产测绘、子域名枚举、信息泄露检测�
 - webhook
 
 ## To DO
-- 插件系统
 - 弱口令爆破
-- 数据清洗
-- 数据共享？
-- ~
+- 关系图
 
 ## 安装
 
 安装教程见[官网](https://www.scope-sentry.top)
 
 ## 交流
+联系方式见下方
 
-Discord:
+## 赞助 && 合作
+如果项目对您有帮助，赞助作者一杯咖啡吧~
 
-[https://discord.gg/GWVwSBBm48](https://discord.gg/GWVwSBBm48)
+paypal.me/autumn5520
 
-QQ:
+<img src="docs/images/zfb.png" alt="WX" width="200"/>
+<img src="docs/images/wx.jpg" alt="WX" width="200"/>
 
-<img src="docs/images/qq.png" alt="QQ" width="200"/>
+另~ 因本人精力有限，寻求合作
 
-WX:
 
-<img src="docs/images/wx-2.jpg" alt="WX" width="200"/>
-<img src="docs/images/wx.png" alt="WX" width="200"/>
 
 ## 截图
 
@@ -66,6 +65,9 @@ WX:
 
 ### 首页面板
 ![alt text](docs/images/index-cn.png)
+
+## 插件系统
+![alt text](docs/images/plugin-cn.png)
 
 ## 资产数据
 ### 资产
@@ -125,3 +127,15 @@ WX:
 ![](docs/images/node-cn.png)
 
 
+Discord:
+
+[https://discord.gg/GWVwSBBm48](https://discord.gg/GWVwSBBm48)
+
+QQ:
+
+<img src="docs/images/qq.png" alt="QQ" width="200"/>
+
+WX:
+
+<img src="docs/images/wx-2.jpg" alt="WX" width="200"/>
+<img src="docs/images/wx.png" alt="WX" width="200"/>

@@ -15,6 +15,7 @@ from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor
 
 from core.apscheduler_handler import scheduler
+from core.db import get_mongo_db
 from core.redis_handler import get_redis_pool, refresh_config
 from core.util import *
 

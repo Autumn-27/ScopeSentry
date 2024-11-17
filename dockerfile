@@ -23,6 +23,8 @@ RUN echo 'server {\n\
     listen 80;\n\
     server_name localhost;\n\
 \n\
+    client_max_body_size 100M;\n\
+\n\
     location / {\n\
         root /opt/ScopeSentry/static;\n\
         try_files $uri $uri/ =404;\n\
@@ -34,8 +36,11 @@ RUN echo 'server {\n\
         proxy_set_header X-Real-IP $remote_addr;\n\
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n\
         proxy_set_header X-Forwarded-Proto $scheme;\n\
+\n\
+        proxy_connect_timeout 300s;\n\
+        proxy_read_timeout 300s;\n\
     }\n\
-}\n' > /etc/nginx/sites-available/default
+}\n' > /etc/nginx/conf.d/default.conf
 
 # 确保 Nginx 默认配置启用
 RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/

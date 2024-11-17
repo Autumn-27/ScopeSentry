@@ -7,6 +7,8 @@
 from fastapi import APIRouter, Depends
 from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor
+
+from core.db import get_mongo_db
 from core.util import *
 from pymongo import DESCENDING
 from loguru import logger

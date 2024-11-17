@@ -9,10 +9,11 @@ from urllib.parse import urlparse
 from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorGridFSBucket
 import tldextract
-from pymongo import ASCENDING, UpdateMany
+from pymongo import ASCENDING, UpdateMany, UpdateOne
 
 from core.config import VERSION
 from core.default import get_dirDict, get_domainDict, get_sensitive, ModulesConfig, PLUGINS, SCANTEMPLATE
+from core.util import print_progress_bar
 
 
 async def update14(db):
@@ -70,7 +71,7 @@ async def update14(db):
 async def update15(db):
 
     fs = AsyncIOMotorGridFSBucket(db)
-
+    total_steps = 11
     # 更新目录扫描默认字典
     content = get_dirDict()
     size = len(content) / (1024 * 1024)
@@ -80,7 +81,7 @@ async def update15(db):
             str(result.inserted_id),  # 使用id作为文件名存储
             content.encode('utf-8')  # 文件内容
         )
-
+    print_progress_bar(1, 11)
     # 更新子域名默认字典
     content = get_domainDict()
     size = len(content) / (1024 * 1024)
@@ -90,48 +91,96 @@ async def update15(db):
             str(result.inserted_id),  # 使用id作为文件名存储
             content.encode('utf-8')  # 文件内容
         )
+    print_progress_bar(2, 11)
     # 获取任务名称
     cursor = db['task'].find({"type": {"$ne": "other"}})
     task_list = {}
     result = await cursor.to_list(length=None)
     for item in result:
-        task_list[str(item["id"])] = item['name']
+        task_list[str(item["_id"])] = item['name']
+
+    print_progress_bar(3, 11)
+
     # 修改资产字段
     cursor = db['asset'].find({})
     result = await cursor.to_list(length=None)
+    # 构建批量操作列表
+    bulk_operations = []
     for item in result:
         taskName = ""
         time = item["timestamp"]
         if item["taskId"] in task_list:
             taskName = task_list[item["taskId"]]
+
         if item["type"] != "other":
             ip = item["host"]
             parsed_url = urlparse(item['url'])
             host = parsed_url.netloc
             extracted = tldextract.extract(item['url'])
             root_domain = f"{extracted.domain}.{extracted.suffix}"
-            await db['asset'].update_many({"_id": item["_id"]}, [{'$set': {'host': host, "ip": ip, "taskName": taskName, "rootDomain": root_domain, "time": time, "service": item["type"], "tag": []}}, {'$unset': 'timestamp'}])
+            bulk_operations.append(UpdateOne(
+                {"_id": item["_id"]},
+                {'$set': {'host': host, "ip": ip, "taskName": taskName, "rootDomain": root_domain, "time": time,
+                          "service": item["type"], "tag": []}},
+                upsert=False
+            ))
         else:
             service = item["protocol"]
             extracted = tldextract.extract("https://" + item['host'])
             root_domain = f"{extracted.domain}.{extracted.suffix}"
-            await db['asset'].update_many({"_id": item["_id"]}, [{'$set': {"taskName": taskName, "rootDomain": root_domain, "time": time, "service": service, "tag": []}}, {'$unset': 'timestamp'}, {'$unset': 'protocol'}])
+            bulk_operations.append(UpdateOne(
+                {"_id": item["_id"]},
+                {'$set': {"taskName": taskName, "rootDomain": root_domain, "time": time, "service": service,
+                          "tag": []}},
+                upsert=False
+            ))
+    # 批量执行更新操作
+    if bulk_operations:
+        await db['asset'].bulk_write(bulk_operations)
+    print_progress_bar(4, 11)
+
 
     # 修改敏感信息字段
     cursor = db['SensitiveResult'].find({})
-    update_list =[]
     result = await cursor.to_list(length=None)
+
+    update_sensitive_result_ops = []
+    update_sensitive_body_ops = []
+    update_list = set()  # 使用集合提高查重效率
+
     for item in result:
         taskName = task_list[item["taskId"]]
         extracted = tldextract.extract(item['url'])
         root_domain = f"{extracted.domain}.{extracted.suffix}"
-        if item["body"] is not None or item["body"] != "":
+
+        if item["body"]:  # 仅在 body 不为空时处理
             if item['md5'] not in update_list:
-                await db['SensitiveBody'].update_one({"md5": item['md5']}, {"body": item['body']}, upsert=True)
-                update_list.append(item['md5'])
-            await db['SensitiveResult'].update_one({"_id": item['_id']}, {"taskName": taskName, "rootDomain": root_domain}, {'$unset': 'body'})
+                update_sensitive_body_ops.append(
+                    UpdateOne({"md5": item['md5']}, {"$set": {"body": item['body']}}, upsert=True)
+                )
+                update_list.add(item['md5'])
+
+            update_sensitive_result_ops.append(
+                UpdateOne({"_id": item['_id']},
+                          {"$set": {"taskName": taskName, "rootDomain": root_domain}, "$unset": {"body": ""}})
+            )
         else:
-            await db['SensitiveResult'].update_one({"_id": item['_id']}, {'$set': {"md5": item['md5'].replace("md5==", ""), "taskName": taskName, "rootDomain": root_domain}}, {'$unset': 'body'})
+            update_sensitive_result_ops.append(
+                UpdateOne({"_id": item['_id']},
+                          {"$set": {"md5": item['md5'].replace("md5==", ""), "taskName": taskName,
+                                    "rootDomain": root_domain},
+                           "$unset": {"body": ""}})
+            )
+
+    # 批量写入 SensitiveBody
+    if update_sensitive_body_ops:
+        await db['SensitiveBody'].bulk_write(update_sensitive_body_ops)
+
+    # 批量写入 SensitiveResult
+    if update_sensitive_result_ops:
+        await db['SensitiveResult'].bulk_write(update_sensitive_result_ops)
+
+    print_progress_bar(5, 11)
     # 修改任务字段
     doc_names = ["DirScanResult", "PageMonitoring",
                  "SubdoaminTakerResult",
@@ -150,9 +199,11 @@ async def update15(db):
         # 如果有更新操作，执行批量更新
         if bulk_operations:
             await db[doc_name].bulk_write(bulk_operations)
+    print_progress_bar(6, 11)
 
     # 增加默认插件
     await db["plugins"].insert_many(PLUGINS)
+    print_progress_bar(7, 11)
 
     # 更新POC严重等级
     level_map = {
@@ -168,11 +219,11 @@ async def update15(db):
             {"level": value},
             {"$set": {"level": label, "type": 'nuclei'}}
         )
-
+    print_progress_bar(8, 11)
     # 创建默认扫描模板
     collection = db["ScanTemplates"]
     await collection.insert_one(SCANTEMPLATE)
-
+    print_progress_bar(9, 11)
     # 修改页面监控数据
     # 创建页面监控文档，url不重复
     await db['PageMonitoring'].rename('PageMonitoring_bak')
@@ -181,9 +232,11 @@ async def update15(db):
     # 修改全局线程配置、节点配置
     await db.config.insert_one(
         {"name": "ModulesConfig", 'value': ModulesConfig, 'type': 'system'})
-
+    print_progress_bar(10, 11)
     # 增加任务运行状态
     # 运行中
     await db.task.update_many({"progress": {"$ne": 100}}, {"$set": {"status": 1}})
     # 完成
     await db.task.update_many({"progress": 100}, {"$set": {"status": 3}})
+    print_progress_bar(11, 11)
+
