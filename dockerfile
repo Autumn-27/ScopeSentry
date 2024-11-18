@@ -42,6 +42,5 @@ RUN echo 'server {\n\
     }\n\
 }\n' > /etc/nginx/conf.d/default.conf
 
-
 # 启动 Nginx 和 Python 应用
 CMD service nginx start && python main.py
