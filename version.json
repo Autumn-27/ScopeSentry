@@ -1,6 +1,6 @@
 {
-  "server":"1.4",
-  "scan": "1.4",
-  "server_msg": "https://www.scope-sentry.top/guide/update/#%E6%9C%AA%E5%8F%91%E7%89%88-1-4",
-  "scan_msg": "https://www.scope-sentry.top/guide/update/#%E6%9C%AA%E5%8F%91%E7%89%88-1-4"
+  "server":"1.5",
+  "scan": "1.5",
+  "server_msg": "https://www.scope-sentry.top/guide/update/",
+  "scan_msg": "https://www.scope-sentry.top/guide/update/"
 }
