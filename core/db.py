@@ -101,7 +101,7 @@ async def create_database():
             if result.inserted_id:
                 await fs.upload_from_stream(
                     str(result.inserted_id),  # 使用id作为文件名存储
-                    content  # 文件内容
+                    content.encode("utf-8")  # 文件内容
                 )
             print_progress_bar(6, total_steps, "install")
             # 更新子域名默认字典
@@ -112,7 +112,7 @@ async def create_database():
             if result.inserted_id:
                 await fs.upload_from_stream(
                     str(result.inserted_id),  # 使用id作为文件名存储
-                    content  # 文件内容
+                    content.encode("utf-8")  # 文件内容
                 )
             print_progress_bar(7, total_steps, "install")
             # 插入敏感信息
