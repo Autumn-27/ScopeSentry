@@ -134,44 +134,38 @@ async def task_detail(request_data: dict, db=Depends(get_mongo_db), _: dict = De
 @router.post("/delete")
 async def delete_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token),
                       redis_con=Depends(get_redis_pool), background_tasks: BackgroundTasks = BackgroundTasks()):
-    try:
-        # Extract the list of IDs from the request_data dictionary
-        task_ids = request_data.get("ids", [])
-        delA = request_data.get("delA", False)
+    # Extract the list of IDs from the request_data dictionary
+    task_ids = request_data.get("ids", [])
+    delA = request_data.get("delA", False)
 
-        # Convert the provided rule_ids to ObjectId
-        obj_ids = []
-        redis_key = []
-        for task_id in task_ids:
-            obj_ids.append(ObjectId(task_id))
-            redis_key.append("TaskInfo:" + task_id)
-            job = scheduler.get_job(task_id)
-            if job:
-                scheduler.remove_job(task_id)
-        # 删除redis中的任务
-        await redis_con.delete(*redis_key)
+    # Convert the provided rule_ids to ObjectId
+    obj_ids = []
+    redis_key = []
+    for task_id in task_ids:
+        obj_ids.append(ObjectId(task_id))
+        redis_key.append("TaskInfo:" + task_id)
+        job = scheduler.get_job(task_id)
+        if job:
+            scheduler.remove_job(task_id)
+    # 删除redis中的任务
+    await redis_con.delete(*redis_key)
 
-        # 删除计划任务
-        await db.ScheduledTasks.delete_many({"id": {"$in": task_ids}})
-        if delA:
-            # 如果选择了删除资产，则删除资产
-            task_name = await db.task.find({"_id": {"$in": obj_ids}}, {"name": 1})
-            background_tasks.add_task(delete_asset, task_name, False)
+    # 删除计划任务
+    await db.ScheduledTasks.delete_many({"id": {"$in": task_ids}})
+    if delA:
+        # 如果选择了删除资产，则删除资产
+        task_name = await db.task.find({"_id": {"$in": obj_ids}}, {"name": 1})
+        background_tasks.add_task(delete_asset, task_name, False)
 
-        # 删除mongdob中的任务
-        result = await db.task.delete_many({"_id": {"$in": obj_ids}})
+    # 删除mongdob中的任务
+    result = await db.task.delete_many({"_id": {"$in": obj_ids}})
 
-        # Check if the deletion was successful
-        if result.deleted_count > 0:
-            await refresh_config("all", "delete_task", ",".join(task_ids))
-            return {"code": 200, "message": "Task deleted successfully"}
-        else:
-            return {"code": 404, "message": "Task not found"}
-
-    except Exception as e:
-        logger.error(str(e))
-        # Handle exceptions as needed
-        return {"message": "error", "code": 500}
+    # Check if the deletion was successful
+    if result.deleted_count > 0:
+        await refresh_config("all", "delete_task", ",".join(task_ids))
+        return {"code": 200, "message": "Task deleted successfully"}
+    else:
+        return {"code": 404, "message": "Task not found"}
 
 
 @router.post("/retest")
