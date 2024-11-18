@@ -11,9 +11,9 @@ from core.config import *
 mongo_config = {
     'host': MONGODB_IP,
     'port': int(MONGODB_PORT),
-    'username': str(DATABASE_USER),
-    'password': str(DATABASE_PASSWORD),
-    'database': str(DATABASE_NAME),
+    'username': str(MONGODB_USER),
+    'password': str(MONGODB_PASSWORD),
+    'database': str(MONGODB_DATABASE),
     'collection': 'apscheduler'
 }
 jobstores = {

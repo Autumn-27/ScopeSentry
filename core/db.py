@@ -18,9 +18,9 @@ from core.util import print_progress_bar
 
 async def get_mongo_db():
 
-    client = AsyncIOMotorClient(f"mongodb://{DATABASE_USER}:{quote_plus(DATABASE_PASSWORD)}@{MONGODB_IP}:{str(MONGODB_PORT)}",
+    client = AsyncIOMotorClient(f"mongodb://{MONGODB_USER}:{quote_plus(MONGODB_PASSWORD)}@{MONGODB_IP}:{str(MONGODB_PORT)}",
                                 serverSelectionTimeoutMS=10000, unicode_decode_error_handler='ignore')
-    db = client[DATABASE_NAME]
+    db = client[MONGODB_DATABASE]
     try:
         yield db
     finally:
@@ -34,7 +34,7 @@ async def create_database():
         while True:
             try:
                 # 创建新的 MongoDB 客户端
-                client = AsyncIOMotorClient(f"mongodb://{quote_plus(DATABASE_USER)}:{quote_plus(DATABASE_PASSWORD)}@{MONGODB_IP}:{str(MONGODB_PORT)}",
+                client = AsyncIOMotorClient(f"mongodb://{quote_plus(MONGODB_USER)}:{quote_plus(MONGODB_PASSWORD)}@{MONGODB_IP}:{str(MONGODB_PORT)}",
                                             serverSelectionTimeoutMS=2000)
                 break
             except Exception as e:
@@ -45,9 +45,9 @@ async def create_database():
                     exit(1)
         # 获取数据库列表
         database_names = await client.list_database_names()
-        db = client[DATABASE_NAME]
+        db = client[MONGODB_DATABASE]
         # 如果数据库不存在，创建数据库
-        if DATABASE_NAME not in database_names:
+        if MONGODB_DATABASE not in database_names:
             # 在数据库中创建一个集合，比如名为 "user"
             collection = db["user"]
             password = generate_random_string(8)

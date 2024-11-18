@@ -14,9 +14,9 @@ REMOTE_REPO_URL = "https://github.com/Autumn-27/ScopeSentry.git"
 SECRET_KEY = "ScopeSentry-15847412364125411"
 MONGODB_IP = ""
 MONGODB_PORT = 0
-DATABASE_NAME = ""
-DATABASE_USER = ''
-DATABASE_PASSWORD = ''
+MONGODB_DATABASE = ""
+MONGODB_USER = ''
+MONGODB_PASSWORD = ''
 REDIS_IP = ""
 REDIS_PORT = ""
 REDIS_PASSWORD = ""
@@ -47,7 +47,7 @@ def generate_random_string(length):
 
 
 def set_config():
-    global MONGODB_IP, MONGODB_PORT, DATABASE_NAME, DATABASE_USER, DATABASE_PASSWORD, REDIS_IP, REDIS_PORT, REDIS_PASSWORD, SECRET_KEY, TOTAL_LOGS, TIMEZONE
+    global MONGODB_IP, MONGODB_PORT, MONGODB_DATABASE, MONGODB_USER, MONGODB_PASSWORD, REDIS_IP, REDIS_PORT, REDIS_PASSWORD, SECRET_KEY, TOTAL_LOGS, TIMEZONE
     SECRET_KEY = generate_random_string(16)
     global PLUGINKEY
     if os.path.exists("PLUGINKEY"):
@@ -63,20 +63,20 @@ def set_config():
             data = yaml.safe_load(file)
             MONGODB_IP = data['mongodb']['ip']
             MONGODB_PORT = data['mongodb']['port']
-            DATABASE_NAME = data['mongodb']['database_name']
-            DATABASE_USER = data['mongodb']['username']
-            DATABASE_PASSWORD = data['mongodb']['password']
+            MONGODB_DATABASE = data['mongodb']['mongodb_database']
+            MONGODB_USER = data['mongodb']['username']
+            MONGODB_PASSWORD = data['mongodb']['password']
             REDIS_IP = data['redis']['ip']
             REDIS_PORT = data['redis']['port']
             REDIS_PASSWORD = data['redis']['password']
             TOTAL_LOGS = data['logs']['total_logs']
             TIMEZONE = data['system']['timezone']
-        env_db_user = os.environ.get("DATABASE_USER", default='')
-        if env_db_user != '' and env_db_user != DATABASE_USER:
-            DATABASE_USER = env_db_user
-        env_db_password = os.environ.get("DATABASE_PASSWORD", default='')
-        if env_db_password != '' and env_db_password != DATABASE_PASSWORD:
-            DATABASE_PASSWORD = env_db_password
+        env_db_user = os.environ.get("MONGODB_USER", default='')
+        if env_db_user != '' and env_db_user != MONGODB_USER:
+            MONGODB_USER = env_db_user
+        env_db_password = os.environ.get("MONGODB_PASSWORD", default='')
+        if env_db_password != '' and env_db_password != MONGODB_PASSWORD:
+            MONGODB_PASSWORD = env_db_password
         env_redis_password = os.environ.get("REDIS_PASSWORD", default='')
         if env_redis_password != '' and env_redis_password != REDIS_PASSWORD:
             REDIS_PASSWORD = env_redis_password
@@ -84,9 +84,9 @@ def set_config():
         TIMEZONE = os.environ.get("TIMEZONE", default='Asia/Shanghai')
         MONGODB_IP = os.environ.get("MONGODB_IP", default='127.0.0.1')
         MONGODB_PORT = int(os.environ.get("MONGODB_PORT", default=27017))
-        DATABASE_NAME = os.environ.get("DATABASE_NAME", default='ScopeSentry')
-        DATABASE_USER = os.environ.get("DATABASE_USER", default='root')
-        DATABASE_PASSWORD = os.environ.get("DATABASE_PASSWORD", default='QckSdkg5CKvtxfec')
+        MONGODB_DATABASE = os.environ.get("MONGODB_DATABASE", default='ScopeSentry')
+        MONGODB_USER = os.environ.get("MONGODB_USER", default='root')
+        MONGODB_PASSWORD = os.environ.get("MONGODB_PASSWORD", default='QckSdkg5CKvtxfec')
         REDIS_IP = os.environ.get("REDIS_IP", default='127.0.0.1')
         REDIS_PORT = os.environ.get("REDIS_PORT", default="6379")
         REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD", default='ScopeSentry')
@@ -98,9 +98,9 @@ def set_config():
             'mongodb': {
                 'ip': MONGODB_IP,
                 'port': int(MONGODB_PORT),
-                'database_name': DATABASE_NAME,
-                'username': DATABASE_USER,
-                'password': DATABASE_PASSWORD,
+                'mongodb_database': MONGODB_DATABASE,
+                'username': MONGODB_USER,
+                'password': MONGODB_PASSWORD,
             },
             'redis': {
                 'ip': REDIS_IP,
