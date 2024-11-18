@@ -42,8 +42,6 @@ RUN echo 'server {\n\
     }\n\
 }\n' > /etc/nginx/conf.d/default.conf
 
-# 确保 Nginx 默认配置启用
-RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
 
 # 启动 Nginx 和 Python 应用
 CMD service nginx start && python main.py
