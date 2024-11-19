@@ -8,6 +8,7 @@
 - Official Website: [https://www.scope-sentry.top](https://www.scope-sentry.top)
 - Github: [https://github.com/Autumn-27/ScopeSentry](https://github.com/Autumn-27/ScopeSentry)
 - Scanner source code: [https://github.com/Autumn-27/ScopeSentry-Scan](https://github.com/Autumn-27/ScopeSentry-Scan)
+- UI source code: [https://github.com/Autumn-27/ScopeSentry-UI](https://github.com/Autumn-27/ScopeSentry-UI)
 - Plugin Market: [Plugin Market](https://plugin.scope-sentry.top/)
 
 ## Introduction

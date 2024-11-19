@@ -332,7 +332,7 @@ PLUGINS = [
         "module": "PortScan",
         "name": "RustScan",
         "hash": "66b4ddeb983387df2b7ee7726653874d",
-        "parameter": "-port {port.top1000} -b 600 -t 3000",
+        "parameter": "-port {port.nmap top 1000} -b 600 -t 3000",
         "help": "-port 端口扫描范围 -b 端口扫描并发数量  -t 超时时间",
         "introduction": "端口存活扫描",
         "isSystem": True,
@@ -398,7 +398,7 @@ PLUGINS = [
         "module": "URLScan",
         "name": "katana",
         "hash": "9669d0dcc52a5ca6dbbe580ffc99c364",
-        "parameter": "-t 10 -timeout 5 -depth 5 -et 60",
+        "parameter": "-t 10 -timeout 5 -depth 5 -et 20",
         "help": "-t 并发数 -timeout 超时时间 -et 最长运行时间(分钟)",
         "introduction": "url爬取",
         "isSystem": True,
@@ -462,7 +462,7 @@ SCANTEMPLATE = {
     "SubdomainSecurity": {},
     "PortScanPreparation": {},
     "PortScan": {
-      "66b4ddeb983387df2b7ee7726653874d": "-port {port.top1000} -b 600 -t 3000"
+      "66b4ddeb983387df2b7ee7726653874d": "-port {port.nmap top 1000} -b 600 -t 3000"
     },
     "PortFingerprint": {},
     "AssetMapping": {
@@ -470,7 +470,7 @@ SCANTEMPLATE = {
     },
     "AssetHandle": {},
     "URLScan": {
-      "9669d0dcc52a5ca6dbbe580ffc99c364": "-t 10 -timeout 5 -depth 5 -et 60"
+      "9669d0dcc52a5ca6dbbe580ffc99c364": "-t 10 -timeout 5 -depth 5 -et 20"
     },
     "WebCrawler": {},
     "URLSecurity": {},

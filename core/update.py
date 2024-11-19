@@ -108,7 +108,13 @@ async def update15(db):
     bulk_operations = []
     for item in result:
         taskName = ""
-        time = item["timestamp"]
+        if "timestamp" in item:
+            time = item["timestamp"]
+        else:
+            if "time" in item:
+                time = item["time"]
+            else:
+                time = ""
         if item["taskId"] in task_list:
             taskName = task_list[item["taskId"]]
 

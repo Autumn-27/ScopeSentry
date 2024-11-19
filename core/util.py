@@ -184,6 +184,7 @@ def string_to_postfix(expression):
 async def search_to_mongodb(expression_raw, keyword):
     try:
         keyword["task"] = "taskName"
+        keyword["tag"] = "tags"
         if expression_raw == "":
             return [{}]
         if len(APP) == 0:
@@ -321,6 +322,7 @@ async def get_search_query(name, request_data):
             'project': 'project',
             'input': 'input',
             'source': 'source',
+            "resultId": 'resultId',
             "type": "outputtype"
         },
         'page': {
@@ -334,7 +336,8 @@ async def get_search_query(name, request_data):
             'url': 'url',
             'method': 'method',
             'body': 'body',
-            'project': 'project'
+            'project': 'project',
+            "resultId": 'resultId',
         }
     }
     keyword = search_key_v[name]
