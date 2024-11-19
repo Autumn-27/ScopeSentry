@@ -57,6 +57,10 @@ async def create_database():
             print(f"🔑 User/Password: ScopeSentry/{password}")
             print("=" * 50)
             print("✅ Ensure the User/Password is correctly copied!\n")
+            print("✅ The initialization password is stored in the file PASSWORD\n")
+            with open("PASSWORD", 'w') as file:
+                file.write(password)
+
             total_steps = 16
             # 用户数据
             await collection.insert_one({"username": "ScopeSentry",
