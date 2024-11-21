@@ -185,7 +185,10 @@ async def update15(db):
     # # 批量写入 SensitiveResult
     # if update_sensitive_result_ops:
     #     await db['SensitiveResult'].bulk_write(update_sensitive_result_ops)
-    await db['SensitiveResult'].rename('SensitiveResult_bak')
+    try:
+        await db['SensitiveResult'].rename('SensitiveResult_bak')
+    except:
+        logger.warning("SensitiveResult not found")
     logger.warning("敏感信息数据由于和新版本不兼容，备份到SensitiveResult_bak中，如果不需要可以连接数据库进行删除")
     logger.warning("Sensitive information data is incompatible with the new version, so it is backed up to SensitiveResult_bak. If it is not needed, you can connect to the database to delete it.")
     print_progress_bar(5, 11)
@@ -234,7 +237,10 @@ async def update15(db):
     print_progress_bar(9, 11)
     # 修改页面监控数据
     # 创建页面监控文档，url不重复
-    await db['PageMonitoring'].rename('PageMonitoring_bak')
+    try:
+        await db['PageMonitoring'].rename('PageMonitoring_bak')
+    except:
+        logger.warning("PageMonitoring not found")
     logger.warning("页面监控数据由于和新版本不兼容，备份到PageMonitoring_bak中，如果不需要可以连接数据库进行删除")
     logger.warning("Since the page monitoring data is incompatible with the new version, it is backed up to PageMonitoring_bak. If it is not needed, you can connect to the database to delete it.")
     await db['PageMonitoring'].create_index([('url', ASCENDING)], unique=True)
