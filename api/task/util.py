@@ -66,6 +66,9 @@ async def get_target_list(raw_target, ignore):
 
 
 async def generate_ignore(ignore):
+    # 处理'NoneType' object has no attribute 'split'的报错
+    if ignore is None:
+        ignore = ""
     ignore_list = []
     regex_list = []
     for t in ignore.split("\n"):
