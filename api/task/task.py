@@ -154,8 +154,11 @@ async def delete_task(request_data: dict, db=Depends(get_mongo_db), _: dict = De
     await db.ScheduledTasks.delete_many({"id": {"$in": task_ids}})
     if delA:
         # 如果选择了删除资产，则删除资产
-        task_name = await db.task.find({"_id": {"$in": obj_ids}}, {"name": 1}).to_list(length=None)
-        background_tasks.add_task(delete_asset, task_name, False)
+        results = await db.task.find({"_id": {"$in": obj_ids}}, {"name": 1}).to_list(length=None)
+        name_list = []
+        for task_tmp in results:
+            name_list.append(task_tmp["name"])
+        background_tasks.add_task(delete_asset, name_list, False)
 
     # 删除mongdob中的任务
     result = await db.task.delete_many({"_id": {"$in": obj_ids}})

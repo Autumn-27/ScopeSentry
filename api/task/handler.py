@@ -37,8 +37,7 @@ async def insert_task(request_data, db):
 
 async def create_scan_task(request_data, id, stop_to_start = False):
     logger.info(f"[create_scan_task] begin: {id}")
-    try:
-        async for db in get_mongo_db():
+    async for db in get_mongo_db():
             async for redis_con in get_redis_pool():
                 request_data["id"] = str(id)
                 if request_data['allNode']:
@@ -71,11 +70,6 @@ async def create_scan_task(request_data, id, stop_to_start = False):
                     await redis_con.rpush(f"NodeTask:{name}", json.dumps(template_data))
                 logger.info(f"[create_scan_task] end: {id}")
                 return True
-    except Exception as e:
-        logger.error(str(e))
-        logger.info(f"[create_scan_task] error end: {id}")
-        # Handle exceptions as needed
-        return False
 
 
 async def scheduler_scan_task(id, tp):

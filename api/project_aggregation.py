@@ -185,10 +185,10 @@ async def get_projects_vul_data(request_data: dict, db=Depends(get_mongo_db), _:
             "host": 1,
             "ip": 1,
             "type": 1,
-            "timestamp": 1,
+            "time": 1,
             "domain": 1,
             "protocol": 1
-        }).sort([("timestamp", DESCENDING)])
+        }).sort([("time", DESCENDING)])
 
         asset_result = await cursor.to_list(length=None)
         children_list = []
@@ -205,7 +205,7 @@ async def get_projects_vul_data(request_data: dict, db=Depends(get_mongo_db), _:
                 children_data['domain'] = asset['domain']
                 children_data['ip'] = asset['host']
 
-            children_data['timestamp'] = asset['timestamp']
+            children_data['time'] = asset['time']
             children_data['id'] = asset['id']
             children_list.append(children_data)
 
@@ -261,7 +261,7 @@ async def get_projects_service_data(request_data: dict, db=Depends(get_mongo_db)
             "id": generate_random_string(5),
             "domain": "",
             "ip": "",
-            "timestamp": "",
+            "time": "",
             "port": ""
         }
 
@@ -279,12 +279,12 @@ async def get_projects_service_data(request_data: dict, db=Depends(get_mongo_db)
             "host": 1,
             "ip": 1,
             "type": 1,
-            "timestamp": 1,
+            "time": 1,
             "webServer": 1,
             "domain": 1,
             "port": 1,
             "protocol": 1
-        }).sort([("timestamp", DESCENDING)])
+        }).sort([("time", DESCENDING)])
 
         asset_result = await cursor.to_list(length=None)
         children_list = []
@@ -304,7 +304,7 @@ async def get_projects_service_data(request_data: dict, db=Depends(get_mongo_db)
                 children_data['domain'] = asset['domain']
                 children_data['ip'] = asset['host']
 
-            children_data['timestamp'] = asset['timestamp']
+            children_data['time'] = asset['time']
             children_data['port'] = asset['port']
             children_data['id'] = asset['id']
             children_list.append(children_data)

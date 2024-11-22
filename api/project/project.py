@@ -164,61 +164,55 @@ async def get_project_content(request_data: dict, db=Depends(get_mongo_db), _: d
 @router.post("/add")
 async def add_project_rule(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token),
                            background_tasks: BackgroundTasks = BackgroundTasks()):
-    try:
-        # Extract values from request data
-        name = request_data.get("name")
-        cursor = db.project.find({"name": {"$eq": name}}, {"_id": 1})
-        results = await cursor.to_list(length=None)
-        if len(results) != 0:
-            return {"code": 400, "message": "name already exists"}
-        target = request_data.get("target").strip("\n").strip("\r").strip()
-        runNow = request_data.get("runNow")
-        del request_data["runNow"]
-        scheduledTasks = request_data.get("scheduledTasks", False)
-        hour = request_data.get("hour", 24)
-        root_domains = []
-        target_list = await get_target_list(target, request_data.get("ignore", ""))
-        for tg in target_list:
-            root_domain = get_root_domain(tg)
-            if root_domain not in root_domains:
-                root_domains.append(root_domain)
-        request_data["root_domains"] = root_domains
-        del request_data['target']
-        # Insert the new document into the SensitiveRule collection
-        result = await db.project.insert_one(request_data)
-        # Check if the insertion was successful6
-        if result.inserted_id:
-            await db.ProjectTargetData.insert_one({"id": str(result.inserted_id), "target": target})
-            if scheduledTasks:
-                scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[str(result.inserted_id), "project"],
-                                  id=str(result.inserted_id), jobstore='mongo')
-                next_time = scheduler.get_job(str(result.inserted_id)).next_run_time
-                formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
-                request_data["type"] = "project"
-                request_data["state"] = True
-                request_data["lastTime"] = ""
-                request_data["nextTime"] = formatted_time
-                request_data["id"] = str(result.inserted_id)
-                request_data["target"] = target
-                del request_data["root_domains"]
-                await db.ScheduledTasks.insert_one(request_data)
-            if runNow:
-                time_now = get_now_time()
-                del request_data["scheduledTasks"]
-                request_data["target"] = target
-                request_data["name"] = request_data["name"] + "-project-" + time_now
-                await insert_task(request_data, db)
-            background_tasks.add_task(update_project, root_domains, str(result.inserted_id), False)
-            await refresh_config('all', 'project', result.inserted_id)
-            Project_List[name] = str(result.inserted_id)
-            return {"code": 200, "message": "Project added successfully"}
-        else:
-            return {"code": 400, "message": "Failed to add Project"}
-
-    except Exception as e:
-        logger.error(str(e))
-        # Handle exceptions as needed
-        return {"message": "error", "code": 500}
+    # Extract values from request data
+    name = request_data.get("name")
+    cursor = db.project.find({"name": {"$eq": name}}, {"_id": 1})
+    results = await cursor.to_list(length=None)
+    if len(results) != 0:
+        return {"code": 400, "message": "name already exists"}
+    target = request_data.get("target").strip("\n").strip("\r").strip()
+    runNow = request_data.get("runNow")
+    del request_data["runNow"]
+    scheduledTasks = request_data.get("scheduledTasks", False)
+    hour = request_data.get("hour", 24)
+    root_domains = []
+    target_list = await get_target_list(target, request_data.get("ignore", ""))
+    for tg in target_list:
+        root_domain = get_root_domain(tg)
+        if root_domain not in root_domains:
+            root_domains.append(root_domain)
+    request_data["root_domains"] = root_domains
+    del request_data['target']
+    # Insert the new document into the SensitiveRule collection
+    result = await db.project.insert_one(request_data)
+    # Check if the insertion was successful6
+    if result.inserted_id:
+        await db.ProjectTargetData.insert_one({"id": str(result.inserted_id), "target": target})
+        if scheduledTasks:
+            scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[str(result.inserted_id), "project"],
+                              id=str(result.inserted_id), jobstore='mongo')
+            next_time = scheduler.get_job(str(result.inserted_id)).next_run_time
+            formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
+            request_data["type"] = "project"
+            request_data["state"] = True
+            request_data["lastTime"] = ""
+            request_data["nextTime"] = formatted_time
+            request_data["id"] = str(result.inserted_id)
+            request_data["target"] = target
+            del request_data["root_domains"]
+            await db.ScheduledTasks.insert_one(request_data)
+        if runNow:
+            time_now = get_now_time()
+            del request_data["scheduledTasks"]
+            request_data["target"] = target
+            request_data["name"] = request_data["name"] + "-project-" + time_now
+            await insert_task(request_data, db)
+        background_tasks.add_task(update_project, root_domains, str(result.inserted_id), False)
+        await refresh_config('all', 'project', str(result.inserted_id))
+        Project_List[name] = str(result.inserted_id)
+        return {"code": 200, "message": "Project added successfully"}
+    else:
+        return {"code": 400, "message": "Failed to add Project"}
 
 
 @router.post("/delete")
