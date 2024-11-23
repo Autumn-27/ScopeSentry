@@ -173,7 +173,7 @@ async def asset_data_statistics_icon(request_data: dict, db=Depends(get_mongo_db
             "num_tutorial": {"$sum": 1},
             "iconcontent": {"$first": "$iconcontent"}
         }},
-        {"$match": {"_id": {"$ne": ""}}},  # 过滤无效分组
+        {"$match": {"$and": [{"_id": {"$ne": ""}}, {"_id": {"$ne": None}}]}},
         {"$sort": {"num_tutorial": -1}},  # 按数量排序
         {"$skip": skip},  # 分页
         {"$limit": limit}  # 限制返回数量

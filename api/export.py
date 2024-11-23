@@ -31,11 +31,12 @@ keywords = {
         'title': 'title',
         'statuscode': 'statuscode',
         'icon': 'faviconmmh3',
-        'ip': ['host', 'ip'],
-        'domain': ['host', 'url', 'domain'],
+        'ip': "ip",
+        'domain': 'host',
         'port': 'port',
-        'protocol': ['protocol', 'type'],
+        'protocol': 'service',
         'banner': 'raw',
+        'tag': 'tag'
     },
     "subdomain": {
         'domain': 'host',
@@ -215,7 +216,6 @@ async def export_data_from_mongodb(quantity, query, file_name, index):
                     "cdn": "cdn",
                     "webcheck": "webcheck",
                     "project": "项目",
-                    "webfinger": "指纹",
                     "iconcontent": "图标",
                     "domain": "域名"
                 }
@@ -224,11 +224,11 @@ async def export_data_from_mongodb(quantity, query, file_name, index):
                     "host": "域名",
                     "ip": "IP",
                     "port": "端口",
-                    "protocol": "协议",
+                    "service": "服务",
                     "tls": "TLS",
                     "transport": "transport",
                     "version": "版本",
-                    "raw": "banner",
+                    "metadata": "metadata",
                     "project": "项目",
                     "type": "类型"
                 }
