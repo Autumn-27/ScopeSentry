@@ -257,6 +257,8 @@ async def import_plugin(file: UploadFile = File(...), key: str = Query(...), db=
         # 使用 BytesIO 将字节内容转换为类似文件对象
         with zipfile.ZipFile(BytesIO(content), 'r') as zip_ref:
             for file_name in zip_ref.namelist():
+                if file_name.endswith('/'):
+                    continue
                 # 检查文件名的安全性
                 if not await is_safe_filename(file_name):
                     return {"message": f"文件名不安全: {file_name}", "code": 400}
