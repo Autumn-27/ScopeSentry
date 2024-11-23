@@ -155,41 +155,44 @@ async def asset_data_statistics_icon(request_data: dict, db=Depends(get_mongo_db
     query = await get_search_query("asset", request_data)
     if query == "":
         return {"message": "Search condition parsing error", "code": 500}
+
+    page = request_data.get("page", 1)
+    page_size = request_data.get("page_size", 50)
+    skip = (page - 1) * page_size
+    limit = page_size
+
+    # 聚合管道
     pipeline = [
-        {
-            "$match": query  # 添加搜索条件
-        },
-        {
-            "$project": {
-                "faviconmmh3": 1,
-                "iconcontent": 1
-            }
-        },
-        {
-            "$facet": {
-                "by_icon": [
-                    {"$group": {"_id": "$faviconmmh3",
-                                "num_tutorial": {"$sum": 1},
-                                "iconcontent": {"$first": "$iconcontent"}
-                                }
-                     },
-                    {"$match": {"_id": {"$ne": None}}}
-                ]
-            }
-        }
+        {"$match": query},  # 搜索条件
+        {"$project": {  # 仅保留必要字段，避免超大数据传递
+            "faviconmmh3": 1,
+            "iconcontent": 1  # 限制字段大小，防止过长
+        }},
+        {"$group": {  # 按 `faviconmmh3` 分组统计
+            "_id": "$faviconmmh3",
+            "num_tutorial": {"$sum": 1},
+            "iconcontent": {"$first": "$iconcontent"}
+        }},
+        {"$match": {"_id": {"$ne": ""}}},  # 过滤无效分组
+        {"$sort": {"num_tutorial": -1}},  # 按数量排序
+        {"$skip": skip},  # 分页
+        {"$limit": limit}  # 限制返回数量
     ]
-    result = await db['asset'].aggregate(pipeline).to_list(None)
-    result_list = {"Icon": []}
-    icon_list = {}
-    icon_tmp = {}
-    for r in result:
-        for icon in r['by_icon']:
-            if icon['_id'] != "":
-                icon_tmp[icon['_id']] = icon['iconcontent']
-                icon_list[icon['_id']] = icon['num_tutorial']
-    icon_list = dict(sorted(icon_list.items(), key=lambda item: -item[1]))
-    for ic in icon_list:
-        result_list['Icon'].append({"value": icon_tmp[ic], "number": icon_list[ic], "icon_hash": ic})
+
+    # 执行聚合查询
+    result = await db['asset'].aggregate(pipeline, allowDiskUse=True).to_list(None)
+
+    # 构建返回数据
+    result_list = {
+        "Icon": [
+            {
+                "value": r["iconcontent"],
+                "number": r["num_tutorial"],
+                "icon_hash": r["_id"]
+            }
+            for r in result
+        ]
+    }
 
     return {
         "code": 200,
