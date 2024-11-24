@@ -162,13 +162,7 @@ def flatten_dict(d):
         if isinstance(v, dict):
             items.append((k, str(v)))
         elif isinstance(v, list):
-            if k == "webfinger":
-                tem = ""
-                for w in v:
-                    tem += str(APP[w]) + ","
-                items.append((k, tem.strip(",")))
-            else:
-                items.append((k, ', '.join(map(str, v))))
+            items.append((k, ', '.join(map(str, v))))
         else:
             items.append((k, v))
     return dict(items)
@@ -195,17 +189,20 @@ async def export_data_from_mongodb(quantity, query, file_name, index):
             wb = Workbook()
             if index == "asset":
                 http_columns = {
-                    "timestamp": "时间",
-                    "tlsdata": "TLS_Data",
-                    "hashes": "Hash",
+                    "time": "时间",
+                    "lastScanTime": "最近扫描时间",
+                    "tls": "TLS_Data",
+                    "hash": "Hash",
                     "cdnname": "Cdn_Name",
                     "port": "端口",
                     "url": "url",
                     "title": "标题",
                     "type": "类型",
                     "error": "错误",
-                    "responsebody": "响应体",
-                    "host": "IP",
+                    "body": "响应体",
+                    "host": "域名",
+                    "ip": "IP",
+                    "screenshot": "截图",
                     "faviconmmh3": "图标Hash",
                     "faviconpath": "faviconpath",
                     "rawheaders": "响应头",
@@ -217,10 +214,15 @@ async def export_data_from_mongodb(quantity, query, file_name, index):
                     "webcheck": "webcheck",
                     "project": "项目",
                     "iconcontent": "图标",
-                    "domain": "域名"
+                    "taskName": "任务",
+                    "webServer": "webServer",
+                    "service": "service",
+                    "rootDomain": "根域名",
+                    "tags": "tags"
                 }
                 other_columns = {
-                    "timestamp": "时间",
+                    "time": "时间",
+                    "lastScanTime": "最近扫描时间",
                     "host": "域名",
                     "ip": "IP",
                     "port": "端口",
@@ -230,7 +232,10 @@ async def export_data_from_mongodb(quantity, query, file_name, index):
                     "version": "版本",
                     "metadata": "metadata",
                     "project": "项目",
-                    "type": "类型"
+                    "type": "类型",
+                    "tags": "tags",
+                    "taskName": "任务",
+                    "rootDomain": "根域名",
                 }
                 # 创建两个工作表
                 http_ws = wb.active
@@ -255,38 +260,38 @@ async def export_data_from_mongodb(quantity, query, file_name, index):
                 columns = {}
                 if index == "subdomain":
                     columns = {'host': '域名', 'type': '解析类型', 'value': '解析值', 'ip': '解析IP', 'project': '项目',
-                               'time': '时间'}
+                               'time': '时间', "taskName": "任务", "tags": "tags", "rootDomain": "根域名"}
                 if index == "SubdoaminTakerResult":
                     columns = {
-                        'input': '源域名', 'value': '解析值', 'cname': '接管类型', 'response': '响应体', 'project': '项目'
+                        'input': '源域名', 'value': '解析值', 'cname': '接管类型', 'response': '响应体', 'project': '项目', "taskName": "任务", "tags": "tags", "rootDomain": "根域名"
                     }
                 if index == "UrlScan":
                     columns = {
                         'input': '输入', 'source': '来源', 'outputtype': '输出类型', 'output': '输出',
-                        'statuscode': 'statuscode', 'length': 'length', 'time': '时间', 'project': '项目'
+                        'statuscode': 'statuscode', 'length': 'length', 'time': '时间', 'project': '项目', "taskName": "任务", "tags": "tags", "rootDomain": "根域名"
                     }
                 if index == "crawler":
                     columns = {
-                        'url': 'URL', 'method': 'Method', 'body': 'Body', 'project': '项目'
+                        'url': 'URL', 'method': 'Method', 'body': 'Body', 'project': '项目', "taskName": "任务", "tags": "tags", "rootDomain": "根域名"
                     }
                 if index == "SensitiveResult":
                     columns = {
                         'url': 'URL', 'sid': '规则名称', 'match': '匹配内容', 'project': '项目', 'body': '响应体',
-                        'color': '等级', 'time': '时间', 'md5': '响应体MD5'
+                        'color': '等级', 'time': '时间', 'md5': '响应体MD5', "taskName": "任务", "tags": "tags", "rootDomain": "根域名"
                     }
                 if index == "DirScanResult":
                     columns = {
-                        'url': 'URL', 'status': '响应码', 'msg': '跳转', 'project': '项目'
+                        'url': 'URL', 'status': '响应码', 'msg': '跳转', 'project': '项目', "taskName": "任务", "tags": "tags", "rootDomain": "根域名"
                     }
                 if index == "vulnerability":
                     columns = {
                         'url': 'URL', 'vulname': '漏洞', 'matched': '匹配', 'project': '项目', 'level': '危害等级',
-                        'time': '时间', 'request': '请求', 'response': '响应'
+                        'time': '时间', 'request': '请求', 'response': '响应', "taskName": "任务", "tags": "tags", "rootDomain": "根域名"
                     }
                 if index == "PageMonitoring":
                     columns = {
                         'url': 'URL', 'content': '响应体', 'hash': '响应体Hash', 'diff': 'Diff',
-                        'state': '状态', 'project': '项目', 'time': '时间'
+                        'state': '状态', 'project': '项目', 'time': '时间', "taskName": "任务", "tags": "tags", "rootDomain": "根域名"
                     }
                 ws = wb.active
                 ws.title = index

@@ -63,15 +63,15 @@ async def asset_update_project(root_domain, db_key, doc_name, db, project_id):
 
 async def delete_asset_project(db, collection, project_id):
     try:
+        # 直接使用批量更新操作，减少单独更新的次数
         query = {"project": project_id}
+        update = {"$set": {"project": ""}}
 
-        cursor = db[collection].find(query)
+        result = await db[collection].update_many(query, update)
 
-        async for document in cursor:
-            await db[collection].update_one({"_id": document["_id"]}, {"$set": {"project": ""}})
-
+        logger.info(f"Matched {result.matched_count}, Modified {result.modified_count} documents.")
     except Exception as e:
-        logger.error(f"delete_asset_project error:{e}")
+        logger.error(f"delete_asset_project error: {e}")
 
 
 async def delete_asset_project_handler(project_id):

@@ -204,6 +204,7 @@ async def search_to_mongodb(expression_raw, keyword):
                 key, value = expr.split("!=", 1)
                 key = key.strip()
                 if key in keyword:
+                    value = value.strip()
                     value = value.strip("\"")
                     if key == 'statuscode' or key == 'length':
                         value = int(value)
@@ -226,6 +227,7 @@ async def search_to_mongodb(expression_raw, keyword):
                 key, value = expr.split("==", 1)
                 key = key.strip()
                 if key in keyword:
+                    value = value.strip()
                     value = value.strip("\"")
                     if key == 'statuscode' or key == 'length':
                         value = int(value)
@@ -244,6 +246,7 @@ async def search_to_mongodb(expression_raw, keyword):
                 key, value = expr.split("=", 1)
                 key = key.strip()
                 if key in keyword:
+                    value = value.strip()
                     value = value.strip("\"")
                     if key == 'project':
                         if value.lower() in Project_List:

@@ -122,6 +122,7 @@ async def process_domains(root_domains, query, db):
 
     return processed_results
 
+
 @router.post("/project/subdomain/data")
 async def get_projects_subdomain_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     filter = request_data.get("filter", {})
@@ -186,8 +187,7 @@ async def get_projects_vul_data(request_data: dict, db=Depends(get_mongo_db), _:
             "ip": 1,
             "type": 1,
             "time": 1,
-            "domain": 1,
-            "protocol": 1
+            "service": 1
         }).sort([("time", DESCENDING)])
 
         asset_result = await cursor.to_list(length=None)
@@ -195,17 +195,10 @@ async def get_projects_vul_data(request_data: dict, db=Depends(get_mongo_db), _:
 
         for asset in asset_result:
             children_data = {}
-
-            if asset['type'] == "other":
-                children_data['protocol'] = asset['protocol']
-                children_data['domain'] = asset['host']
-                children_data['ip'] = asset['ip']
-            else:
-                children_data['protocol'] = asset['type']
-                children_data['domain'] = asset['domain']
-                children_data['ip'] = asset['host']
-
+            children_data['service'] = asset['service']
+            children_data['host'] = asset['host']
             children_data['time'] = asset['time']
+            children_data['ip'] = asset['ip']
             children_data['id'] = asset['id']
             children_list.append(children_data)
 
@@ -237,13 +230,7 @@ async def get_projects_service_data(request_data: dict, db=Depends(get_mongo_db)
         },
         {
             "$group": {
-                "_id": {
-                    "$cond": {
-                        "if": {"$eq": ["$type", "other"]},
-                        "then": "$protocol",
-                        "else": "$type"
-                    }
-                },
+                "_id": "$service",
                 "count": {"$sum": 1}
             }
         },
@@ -259,31 +246,27 @@ async def get_projects_service_data(request_data: dict, db=Depends(get_mongo_db)
             "service": r['_id'],
             "count": r['count'],
             "id": generate_random_string(5),
-            "domain": "",
+            "host": "",
             "ip": "",
             "time": "",
             "port": ""
         }
 
         query_copy = query.copy()
-        if r['_id'] == 'http' or r['_id'] == 'https':
-            query_copy["type"] = r['_id']
-        else:
-            query_copy["protocol"] = r['_id']
-            if r['_id'] == "":
-                tmp_result['service'] = 'unknown'
+        query_copy["service"] = r['_id']
+        if r['_id'] == "":
+            tmp_result['service'] = 'unknown'
 
         cursor: AsyncIOMotorCursor = db['asset'].find(query_copy, {
             "_id": 0,
             "id": {"$toString": "$_id"},
             "host": 1,
             "ip": 1,
-            "type": 1,
+            "service": 1,
             "time": 1,
             "webServer": 1,
-            "domain": 1,
             "port": 1,
-            "protocol": 1
+            "type": 1
         }).sort([("time", DESCENDING)])
 
         asset_result = await cursor.to_list(length=None)
@@ -294,16 +277,14 @@ async def get_projects_service_data(request_data: dict, db=Depends(get_mongo_db)
 
             if asset['type'] == "other":
                 children_data['service'] = ''
-                children_data['domain'] = asset['host']
-                children_data['ip'] = asset['ip']
             else:
                 if 'webServer' in asset:
                     children_data['service'] = asset['webServer']
                 else:
                     children_data['service'] = ''
-                children_data['domain'] = asset['domain']
-                children_data['ip'] = asset['host']
 
+            children_data['host'] = asset['host']
+            children_data['ip'] = asset['ip']
             children_data['time'] = asset['time']
             children_data['port'] = asset['port']
             children_data['id'] = asset['id']
