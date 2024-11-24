@@ -5,7 +5,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # 更新包列表并安装必要的包，包括 nginx
 RUN apt-get update && \
-    apt-get install -y curl ca-certificates libcurl4-openssl-dev vim && \
+    apt-get install -y git curl ca-certificates libcurl4-openssl-dev vim && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
