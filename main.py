@@ -1,4 +1,6 @@
+import logging
 import time
+from distutils.version import LooseVersion
 
 from loguru import logger
 import uvicorn
@@ -31,22 +33,23 @@ from core.apscheduler_handler import scheduler
 
 async def update():
     async for db in get_mongo_db():
-        # 判断版本
         result = await db.config.find_one({"name": "version"})
         update = False
         if result is not None:
-            version = result["version"]
+            version_str = str(result["version"])
             update = result["update"]
-            if version < float(VERSION):
+            version = LooseVersion(version_str)  # 使用 LooseVersion 解析版本号
+            if version < LooseVersion(VERSION):  # 直接进行版本比较
                 update = False
         else:
-            await db.config.insert_one({"name": "version", "version": float(VERSION), "update": False})
-            version = float(VERSION)
+            await db.config.insert_one({"name": "version", "version": VERSION, "update": False})
+            version = LooseVersion(VERSION)
         if update is False:
-            if version < 1.4:
+            if version < LooseVersion("1.4"):
                 await update14(db)
-            if version < 1.5:
+            if version < LooseVersion("1.5"):
                 await update15(db)
+            await db.config.update_one({"name": "version"}, {"$set": {"version": VERSION, "update": True}})
 
 
 @app.on_event("startup")
@@ -218,6 +221,17 @@ def banner():
     print(banner)
     print("Server Version:", VERSION)
 
+
+# 自定义日志过滤器
+class IgnoreStaticFilesFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        # 如果日志消息包含静态文件路径，则过滤掉
+        static_file_keywords = [".js", ".css", ".png", ".svg", ".jpg"]
+        return not any(keyword in record.getMessage() for keyword in static_file_keywords)
+
+
+# 应用自定义过滤器，禁用静态文件日志
+logging.getLogger("uvicorn.access").addFilter(IgnoreStaticFilesFilter())
 
 if __name__ == "__main__":
     banner()
