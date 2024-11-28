@@ -431,7 +431,7 @@ PLUGINS = [
         "module": "VulnerabilityScan",
         "name": "nuclei",
         "hash": "ed93b8af6b72fe54a60efdb932cf6fbc",
-        "parameter": "-s high, critical",
+        "parameter": "-s high,critical",
         "help": "参考官方支持t, s, es, tags, etags, rl, rld, bs, c, hbs, headc, jsc, pc, prc参数",
         "introduction": "漏洞扫描",
         "isSystem": True,
@@ -478,7 +478,7 @@ SCANTEMPLATE = {
       "920546788addc6d29ea63e4a314a1b85": "-d {dict.dir.default} -t 10"
     },
     "VulnerabilityScan": {
-      "ed93b8af6b72fe54a60efdb932cf6fbc": "-s high, critical"
+      "ed93b8af6b72fe54a60efdb932cf6fbc": "-s high,critical"
     }
   },
   "SubdomainScan": [

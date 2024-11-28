@@ -1,0 +1,90 @@
+version: "3.5"
+
+networks:
+  scopesentry-network:
+    name: scopesentry-network
+    driver: bridge
+
+services:
+  mongodb:
+    image: mongo:7.0.4
+    container_name: scopesentry-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    volumes:
+      - ./data/mongodb:/data/db
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - scopesentry-network
+
+  redis:
+    image: redis:7.0.11
+    container_name: scopesentry-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - ./data/redis/data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - scopesentry-network
+
+  scope-sentry:
+    image: autumn27/scopesentry:latest
+    container_name: scope-sentry
+    restart: always
+    ports:
+      - "8082:8082"
+    environment:
+      TIMEZONE: Asia/Shanghai
+      MONGODB_IP: scopesentry-mongodb
+      MONGODB_PORT: 27017
+      MONGODB_DATABASE: ScopeSentry
+      MONGODB_USER: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGODB_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      REDIS_IP: scopesentry-redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:8082 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      - redis
+      - mongodb
+    networks:
+      - scopesentry-network
+
+  scopesentry-scan:
+    image: autumn27/scopesentry-scan:latest
+    network_mode: host
+    container_name: scopesentry-scan
+    restart: always
+    environment:
+      NodeName: node-test
+      TimeZoneName: Asia/Shanghai
+      MONGODB_IP: 127.0.0.1
+      MONGODB_PORT: 27017
+      MONGODB_DATABASE: ScopeSentry
+      MONGODB_USER: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGODB_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      REDIS_IP: 127.0.0.1
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    depends_on:
+      - redis
+      - scope-sentry
