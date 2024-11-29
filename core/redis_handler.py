@@ -15,33 +15,47 @@ import socket
 from motor.motor_asyncio import AsyncIOMotorCursor
 
 
+
 async def get_redis_pool():
-    keep_alive_config = {}
-    if sys.platform == 'darwin':  # macOS 平台
-        keep_alive_config = {
-            'socket_keepalive': True,
-            'socket_keepalive_options': {
-                socket.TCP_KEEPALIVE: 60,
-                socket.TCP_KEEPCNT: 10,
-                socket.TCP_KEEPINTVL: 10,
-            }
-        }
-    else:
-        keep_alive_config = {
-            'socket_keepalive': True,
-            'socket_keepalive_options': {
-                socket.TCP_KEEPIDLE: 60,
-                socket.TCP_KEEPCNT: 10,
-                socket.TCP_KEEPINTVL: 10,
-            }
-        }
-    redis_con = await redis.from_url(f"redis://:{quote_plus(REDIS_PASSWORD)}@{REDIS_IP}:{REDIS_PORT}", encoding="utf-8",
-                                     decode_responses=True, **keep_alive_config)
+    # 初始化连接配置
+    keep_alive_config = {'socket_keepalive': True}
+
+    # 动态检查并配置 socket 选项
+    socket_options = {}
+    if hasattr(socket, 'TCP_KEEPALIVE'):
+        socket_options[socket.TCP_KEEPALIVE] = 60  # 通用选项
+    if hasattr(socket, 'TCP_KEEPIDLE'):
+        socket_options[socket.TCP_KEEPIDLE] = 60
+    if hasattr(socket, 'TCP_KEEPINTVL'):
+        socket_options[socket.TCP_KEEPINTVL] = 10
+    if hasattr(socket, 'TCP_KEEPCNT'):
+        socket_options[socket.TCP_KEEPCNT] = 10
+
+    # 将 socket 配置合并到 keep_alive_config 中
+    keep_alive_config['socket_keepalive_options'] = socket_options
+
+    # 异常处理，确保 Redis 连接失败时资源正确清理
     try:
+        # 创建 Redis 连接池
+        redis_con = await redis.from_url(
+            f"redis://:{quote_plus(REDIS_PASSWORD)}@{REDIS_IP}:{REDIS_PORT}",
+            encoding="utf-8",
+            decode_responses=True,
+            **keep_alive_config
+        )
+
+        # 使用 Redis 连接池
         yield redis_con
+
+    except Exception as e:
+        print(f"Error occurred while connecting to Redis: {e}")
+        raise e  # 重新抛出异常，方便外部捕获并处理
+
     finally:
-        await redis_con.close()
-        await redis_con.connection_pool.disconnect()
+        # 确保在退出时正确关闭连接池
+        if redis_con:
+            await redis_con.close()
+            await redis_con.connection_pool.disconnect()
 
 
 async def refresh_config(name, t, content=None):
