@@ -220,7 +220,7 @@ async def do_asset_deduplication():
                   "groups": ["host", "type", "sorted_ip"]
               },
               "vulnerability": {
-                  "filters": [],
+                  "filters": {},
                   "groups": ["url", "vulnid", "matched"]
               }
             }
