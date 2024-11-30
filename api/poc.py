@@ -122,10 +122,6 @@ async def import_poc_handle(file):
                     if hash in hash_list:
                         repeat_num += 1
                         continue
-                    if severity in severity_dic:
-                        severity = severity_dic[severity]
-                    else:
-                        severity = 1
                     formatted_time = get_now_time()
                     data = {
                         "name": name,

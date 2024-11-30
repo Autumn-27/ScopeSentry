@@ -66,17 +66,17 @@ async def startup_db_client():
     await db.create_database()
     await update()
     scheduler.start()
-    jobs = scheduler.get_jobs()
-    find_page_m = False
-    for j in jobs:
-        if j.id == 'page_monitoring':
-            find_page_m = True
-    if not find_page_m:
-        from api.task.handler import get_page_monitoring_time, create_page_monitoring_task
-        pat, flag = await get_page_monitoring_time()
-        if flag:
-            scheduler.add_job(create_page_monitoring_task, 'interval', hours=pat, id='page_monitoring',
-                              jobstore='mongo')
+    # jobs = scheduler.get_jobs()
+    # find_page_m = False
+    # for j in jobs:
+    #     if j.id == 'page_monitoring':
+    #         find_page_m = True
+    # if not find_page_m:
+    #     from api.task.handler import get_page_monitoring_time, create_page_monitoring_task
+    #     pat, flag = await get_page_monitoring_time()
+    #     if flag:
+    #         scheduler.add_job(create_page_monitoring_task, 'interval', hours=pat, id='page_monitoring',
+    #                           jobstore='mongo')
     asyncio.create_task(subscribe_log_channel())
 
 
