@@ -174,36 +174,35 @@ async def import_poc_handle(file):
 async def poc_data(db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         cursor: AsyncIOMotorCursor = db.PocList.find({}, {"id": {"$toString": "$_id"}, "name": 1, "time": -1, "_id": 0, "tags": 1})
-        data = await cursor.to_list(None)
-
-        tree = []
-
-        # 通过 tags 构建树
-        for item in data:
-            current_level = tree
-
-            # 遍历 tags 数组，逐层构建树
-            for tag in item['tags']:
-                # 查找当前层级是否有该标签
-                existing_node = next((node for node in current_level if node['label'] == tag), None)
-                if not existing_node:
-                    # 如果没有找到，则生成一个分类节点
-                    random_string = generate_random_string(5)
-                    new_node = {"value": random_string, "label": tag, "children": []}
-                    current_level.append(new_node)
-                    current_level = new_node["children"]
-                else:
-                    # 如果找到了现有节点，继续往下查找其子节点
-                    current_level = existing_node["children"]
-
-            # 将实际数据节点添加到树
-            current_level.append({"value": item['id'], "label": item['name'], "children": []})
-
+        result = await cursor.to_list(None)
+        #
+        # tree = []
+        #
+        # # 通过 tags 构建树
+        # for item in data:
+        #     current_level = tree
+        #
+        #     # 遍历 tags 数组，逐层构建树
+        #     for tag in item['tags']:
+        #         # 查找当前层级是否有该标签
+        #         existing_node = next((node for node in current_level if node['label'] == tag), None)
+        #         if not existing_node:
+        #             # 如果没有找到，则生成一个分类节点
+        #             random_string = generate_random_string(5)
+        #             new_node = {"value": random_string, "label": tag, "children": []}
+        #             current_level.append(new_node)
+        #             current_level = new_node["children"]
+        #         else:
+        #             # 如果找到了现有节点，继续往下查找其子节点
+        #             current_level = existing_node["children"]
+        #
+        #     # 将实际数据节点添加到树
+        #     current_level.append({"value": item['id'], "label": item['name'], "children": []})
 
         return {
             "code": 200,
             "data": {
-                'data': tree
+                'list': result
             }
         }
     except Exception as e:
