@@ -28,13 +28,31 @@ async def poc_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         search_query = request_data.get("search", "")
         page_index = request_data.get("pageIndex", 1)
         page_size = request_data.get("pageSize", 10)
-        query = {"name": {"$regex": search_query, "$options": "i"}}
+        filters = request_data.get("filter", {})
+        level_lis = []
+        if "level" in filters:
+            levels = filters["level"]
+            for level in levels:
+                if level in ["critical", "high", "medium", "low", "info", "unknown"]:
+                    level_lis.append(level)
+        if len(level_lis) != 0:
+            query = {
+                "name": {"$regex": search_query, "$options": "i"},
+                "level": {"$in": level_lis}
+            }
+        else:
+            query = {"name": {"$regex": search_query, "$options": "i"}}
 
         # Get the total count of documents matching the search criteria
         total_count = await db.PocList.count_documents(query)
         # Perform pagination query and sort by time
-        cursor: AsyncIOMotorCursor = db.PocList.find(query, {"_id": 0, "id": {"$toString": "$_id"}, "name": 1, "level": 1, "time": 1}).sort([("time", DESCENDING)]).skip((page_index - 1) * page_size).limit(page_size)
+        cursor: AsyncIOMotorCursor = db.PocList.find(query, {"_id": 0, "id": {"$toString": "$_id"}, "name": 1, "level": 1, "time": 1, "tags": 1}).sort([("time", DESCENDING)]).skip((page_index - 1) * page_size).limit(page_size)
+        # 获取结果并处理缺失的 tags 字段
         result = await cursor.to_list(length=None)
+        # 遍历结果，检查 tags 字段是否存在
+        for item in result:
+            if 'tags' not in item:
+                item['tags'] = []  # 如果没有 tags 字段，则赋值为 []
         return {
             "code": 200,
             "data": {
@@ -128,7 +146,8 @@ async def import_poc_handle(file):
                         "content": file_content,
                         "hash": hash,
                         "level": severity,
-                        "time": formatted_time
+                        "time": formatted_time,
+                        "tags": []
                     }
                     poc_data_list.append(data)
                 except:
@@ -154,12 +173,37 @@ async def import_poc_handle(file):
 @router.get("/poc/data/all")
 async def poc_data(db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
-        cursor: AsyncIOMotorCursor = db.PocList.find({}, {"id": {"$toString": "$_id"}, "name": 1, "time": -1, "_id": 0}).sort([("time", DESCENDING)])
-        result = await cursor.to_list(length=None)
+        cursor: AsyncIOMotorCursor = db.PocList.find({}, {"id": {"$toString": "$_id"}, "name": 1, "time": -1, "_id": 0, "tags": 1})
+        data = await cursor.to_list(None)
+
+        tree = []
+
+        # 通过 tags 构建树
+        for item in data:
+            current_level = tree
+
+            # 遍历 tags 数组，逐层构建树
+            for tag in item['tags']:
+                # 查找当前层级是否有该标签
+                existing_node = next((node for node in current_level if node['label'] == tag), None)
+                if not existing_node:
+                    # 如果没有找到，则生成一个分类节点
+                    random_string = generate_random_string(5)
+                    new_node = {"value": random_string, "label": tag, "children": []}
+                    current_level.append(new_node)
+                    current_level = new_node["children"]
+                else:
+                    # 如果找到了现有节点，继续往下查找其子节点
+                    current_level = existing_node["children"]
+
+            # 将实际数据节点添加到树
+            current_level.append({"value": item['id'], "label": item['name'], "children": []})
+
+
         return {
             "code": 200,
             "data": {
-                'list': result
+                'data': tree
             }
         }
     except Exception as e:
@@ -215,6 +259,7 @@ async def update_poc_data(request_data: dict, db=Depends(get_mongo_db), _: dict 
         content = request_data.get("content")
         hash_value = calculate_md5_from_content(content)
         level = request_data.get("level")
+        tags = request_data.get("tags", [])
 
         # Prepare the update document
         update_document = {
@@ -222,7 +267,8 @@ async def update_poc_data(request_data: dict, db=Depends(get_mongo_db), _: dict 
                 "name": name,
                 "content": content,
                 "hash": hash_value,
-                "level": level
+                "level": level,
+                "tags": tags
             }
         }
 
@@ -256,6 +302,7 @@ async def add_poc_data(request_data: dict, db=Depends(get_mongo_db), _: dict = D
         content = request_data.get("content")
         hash_value = calculate_md5_from_content(content)
         level = request_data.get("level")
+        tags = request_data.get("tags", [])
         formatted_time = get_now_time()
         doc = await db.PocList.find_one({"hash": hash_value}, {"_id": 1})
         if doc:
@@ -266,6 +313,7 @@ async def add_poc_data(request_data: dict, db=Depends(get_mongo_db), _: dict = D
             "content": content,
             "hash": hash_value,
             "level": level,
+            "tags": tags,
             "time": formatted_time
         })
 
