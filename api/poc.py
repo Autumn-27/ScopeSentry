@@ -112,16 +112,16 @@ async def import_poc_handle(file):
             with open(yaml_file, 'r', encoding='utf-8') as stream:
                 try:
                     file_content = stream.read()
+                    hash = calculate_md5_from_content(file_content)
+                    if hash in hash_list:
+                        repeat_num += 1
+                        continue
                     data = yaml.safe_load(file_content)
                     name = data["id"]
                     if "severity" in data["info"]:
                         severity = data["info"]["severity"]
                     else:
-                        severity = "unkown"
-                    hash = calculate_md5_from_content(file_content)
-                    if hash in hash_list:
-                        repeat_num += 1
-                        continue
+                        severity = "unknown"
                     formatted_time = get_now_time()
                     data = {
                         "name": name,
@@ -140,7 +140,7 @@ async def import_poc_handle(file):
             result = await db.PocList.insert_many(poc_data_list)
             if result.inserted_ids:
                 success_num += len(result.inserted_ids)
-                await refresh_config('all', 'poc', f"add:{','.join(result.inserted_ids)}")
+                await refresh_config('all', 'poc', f"add:{','.join(str(id) for id in result.inserted_ids)}")
         logger.info(f"POC更新成功: {success_num} 重复：{repeat_num} 失败: {error_num}")
         try:
             os.remove(zip_file_path)

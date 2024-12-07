@@ -230,18 +230,30 @@ async def progress_info(request_data: dict, _: dict = Depends(verify_token), red
     start_index = (page_index - 1) * page_size
     end_index = start_index + page_size
     data_array = target.split("\n")
-    total = len(data_array)
-    # 获取对应的数据
-    paged_data = data_array[start_index:end_index]
+    total = doc["taskNum"]
+    num = 0
     tg_key = {}
     redis_key = []
-    for tg in paged_data:
+    all_target = []
+    for tg in data_array:
         r = await get_target_list(tg, doc.get("ignore", ""))
-        if len(r) == 0:
-            tg_key[tg + "[ignore]"] = []
-        else:
-            tg_key[tg] = r
-            redis_key.extend(r)
+        all_target.extend(r)
+        num += len(r)
+        if num > page_size * page_index:
+            break
+    for tg in all_target[start_index:end_index]:
+        tg_key[tg] = [tg]
+        redis_key.append(tg)
+    # 获取对应的数据
+    # paged_data = data_array[start_index:end_index]
+    #
+    # for tg in paged_data:
+    #     r = await get_target_list(tg, doc.get("ignore", ""))
+    #     if len(r) == 0:
+    #         tg_key[tg + "[ignore]"] = []
+    #     else:
+    #         tg_key[tg] = r
+    #         redis_key.extend(r)
 
     tasks = []
     for t in redis_key:
