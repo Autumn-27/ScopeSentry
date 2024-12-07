@@ -301,7 +301,7 @@ async def get_search_query(name, request_data):
         },
         'asset': {
             'app': 'technologies',
-            'body': 'responsebody',
+            'body': 'body',
             'header': 'rawheaders',
             'project': 'project',
             'title': 'title',
