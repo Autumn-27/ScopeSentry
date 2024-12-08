@@ -283,6 +283,22 @@ vulnerabilityScan:
   goroutineCount: 2  # 设置"漏洞扫描"模块最大并发
 '''
 
+PLUGINSMODULES = [
+    "TargetHandler",
+    "SubdomainScan",
+    "SubdomainSecurity",
+    "AssetMapping",
+    "PortScanPreparation",
+    "PortScan",
+    "PortFingerprint",
+    "AssetHandle",
+    "URLScan",
+    "URLSecurity",
+    "WebCrawler",
+    "DirScan",
+    "VulnerabilityScan",
+]
+
 PLUGINS = [
     {
         "module": "AssetHandle",

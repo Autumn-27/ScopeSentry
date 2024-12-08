@@ -239,6 +239,30 @@ async def poc_content(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         return {"message": "error", "code": 500}
 
 
+@router.post("/poc/detail")
+async def poc_detail(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    try:
+        # Get the ID from the request data
+        poc_id = request_data.get("id")
+
+        # Check if ID is provided
+        if not poc_id:
+            return {"message": "ID is missing in the request data", "code": 400}
+
+        # Query the database for content based on ID
+        query = {"_id": ObjectId(poc_id)}
+        doc = await db.PocList.find_one(query, {"_id": 0, "id": {"$toString": "$_id"}, "name": 1, "level": 1, "time": 1, "tags": 1, "content": 1})
+
+        if not doc:
+            return {"message": "Content not found for the provided ID", "code": 404}
+
+        return {"code": 200, "data": {"data": doc}}
+
+    except Exception as e:
+        logger.error(str(e))
+        # Handle exceptions as needed
+        return {"message": "error", "code": 500}
+
 @router.post("/poc/update")
 async def update_poc_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
