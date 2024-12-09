@@ -17,7 +17,7 @@ from starlette.responses import StreamingResponse
 from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor, AsyncIOMotorGridFSBucket
 from core.db import get_mongo_db
-from core.default import PLUGINS
+from core.default import PLUGINS, PLUGINSMODULES
 from core.redis_handler import refresh_config, get_redis_pool
 from loguru import logger
 
@@ -275,7 +275,7 @@ async def import_plugin(file: UploadFile = File(...), key: str = Query(...), db=
             plugin_info["hash"] = generate_plugin_hash()
         if "name" not in plugin_info or "module" not in plugin_info:
             return {"message": "node or moudle not found", "code": 500}
-        if plugin_info["hash"] in str(PLUGINS) or plugin_info["module"] not in str(PLUGINS):
+        if plugin_info["hash"] in str(PLUGINS) or plugin_info["module"] not in PLUGINSMODULES:
             return {"message": "plugin is system or module error", "code": 500}
         plugin_info["source"] = source
         plugin_info["isSystem"] = False

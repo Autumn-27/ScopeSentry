@@ -74,23 +74,25 @@ async def update15(db):
     total_steps = 11
     # 更新目录扫描默认字典
     content = get_dirDict()
-    size = len(content) / (1024 * 1024)
-    result = await db["dictionary"].insert_one({"name": "default", "category": "dir", "size": "{:.2f}".format(size)})
-    if result.inserted_id:
-        await fs.upload_from_stream(
-            str(result.inserted_id),  # 使用id作为文件名存储
-            content.encode('utf-8')  # 文件内容
-        )
+    if content != "":
+        size = len(content) / (1024 * 1024)
+        result = await db["dictionary"].insert_one({"name": "default", "category": "dir", "size": "{:.2f}".format(size)})
+        if result.inserted_id:
+            await fs.upload_from_stream(
+                str(result.inserted_id),  # 使用id作为文件名存储
+                content.encode('utf-8')  # 文件内容
+            )
     print_progress_bar(1, 11)
     # 更新子域名默认字典
     content = get_domainDict()
-    size = len(content) / (1024 * 1024)
-    result = await db["dictionary"].insert_one({"name": "default", "category": "subdomain", "size": "{:.2f}".format(size)})
-    if result.inserted_id:
-        await fs.upload_from_stream(
-            str(result.inserted_id),  # 使用id作为文件名存储
-            content.encode('utf-8')  # 文件内容
-        )
+    if content != "":
+        size = len(content) / (1024 * 1024)
+        result = await db["dictionary"].insert_one({"name": "default", "category": "subdomain", "size": "{:.2f}".format(size)})
+        if result.inserted_id:
+            await fs.upload_from_stream(
+                str(result.inserted_id),  # 使用id作为文件名存储
+                content.encode('utf-8')  # 文件内容
+            )
     print_progress_bar(2, 11)
     # 获取任务名称
     cursor = db['task'].find({"type": {"$ne": "other"}})
@@ -107,39 +109,42 @@ async def update15(db):
     # 构建批量操作列表
     bulk_operations = []
     for item in result:
-        taskName = ""
-        if "timestamp" in item:
-            time = item["timestamp"]
-        else:
-            if "time" in item:
-                time = item["time"]
+        try:
+            taskName = ""
+            if "timestamp" in item:
+                time = item["timestamp"]
             else:
-                time = ""
-        if item["taskId"] in task_list:
-            taskName = task_list[item["taskId"]]
+                if "time" in item:
+                    time = item["time"]
+                else:
+                    time = ""
+            if item.get("taskId", "") in task_list:
+                taskName = task_list[item["taskId"]]
 
-        if item["type"] != "other":
-            ip = item["host"]
-            parsed_url = urlparse(item['url'])
-            host = parsed_url.netloc
-            extracted = tldextract.extract(item['url'])
-            root_domain = f"{extracted.domain}.{extracted.suffix}"
-            bulk_operations.append(UpdateOne(
-                {"_id": item["_id"]},
-                {'$set': {'host': host, "ip": ip, "taskName": taskName, "rootDomain": root_domain, "time": time,
-                          "service": item["type"], "tag": []}},
-                upsert=False
-            ))
-        else:
-            service = item["protocol"]
-            extracted = tldextract.extract("https://" + item['host'])
-            root_domain = f"{extracted.domain}.{extracted.suffix}"
-            bulk_operations.append(UpdateOne(
-                {"_id": item["_id"]},
-                {'$set': {"taskName": taskName, "rootDomain": root_domain, "time": time, "service": service,
-                          "tag": []}},
-                upsert=False
-            ))
+            if item["type"] != "other":
+                ip = item["host"]
+                parsed_url = urlparse(item['url'])
+                host = parsed_url.netloc
+                extracted = tldextract.extract(item['url'])
+                root_domain = f"{extracted.domain}.{extracted.suffix}"
+                bulk_operations.append(UpdateOne(
+                    {"_id": item["_id"]},
+                    {'$set': {'host': host, "ip": ip, "taskName": taskName, "rootDomain": root_domain, "time": time,
+                              "service": item["type"], "tag": []}},
+                    upsert=False
+                ))
+            else:
+                service = item["protocol"]
+                extracted = tldextract.extract("https://" + item['host'])
+                root_domain = f"{extracted.domain}.{extracted.suffix}"
+                bulk_operations.append(UpdateOne(
+                    {"_id": item["_id"]},
+                    {'$set': {"taskName": taskName, "rootDomain": root_domain, "time": time, "service": service,
+                              "tag": []}},
+                    upsert=False
+                ))
+        except:
+            logger.warning(f"asset 更新失败： {item}")
     # 批量执行更新操作
     if bulk_operations:
         await db['asset'].bulk_write(bulk_operations)

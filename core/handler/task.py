@@ -21,13 +21,18 @@ async def get_task_data(db, request_data, id):
             vul_tmp = "*"
         else:
             for vul in template_data['vullist']:
-                vul_tmp += vul + ","
+                vul_tmp += vul + ".yaml" + ","
         vul_tmp = vul_tmp.strip(",")
-        if "VulnerabilityScan" in template_data["Parameters"]:
-            if "ed93b8af6b72fe54a60efdb932cf6fbc" in template_data["Parameters"]["VulnerabilityScan"]:
-                template_data["Parameters"]["VulnerabilityScan"]["ed93b8af6b72fe54a60efdb932cf6fbc"] = \
-                    template_data["Parameters"]["VulnerabilityScan"][
-                        "ed93b8af6b72fe54a60efdb932cf6fbc"] + " -t " + vul_tmp
+
+        if "VulnerabilityScan" not in template_data["Parameters"]:
+            template_data["Parameters"]["VulnerabilityScan"] = {"ed93b8af6b72fe54a60efdb932cf6fbc": ""}
+        if "ed93b8af6b72fe54a60efdb932cf6fbc" not in template_data["Parameters"]["VulnerabilityScan"]:
+            template_data["Parameters"]["VulnerabilityScan"]["ed93b8af6b72fe54a60efdb932cf6fbc"] = ""
+
+        if "ed93b8af6b72fe54a60efdb932cf6fbc" in template_data["VulnerabilityScan"]:
+            template_data["Parameters"]["VulnerabilityScan"]["ed93b8af6b72fe54a60efdb932cf6fbc"] = \
+                template_data["Parameters"]["VulnerabilityScan"][
+                    "ed93b8af6b72fe54a60efdb932cf6fbc"] + " -t " + vul_tmp
     # 解析参数，支持{}获取字典
     template_data["Parameters"] = await parameter_parser(template_data["Parameters"], db)
     # 删除原始的vullist
