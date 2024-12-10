@@ -182,8 +182,8 @@ def flatten_dict(d):
 
 def clean_string(value):
     if isinstance(value, str):
-        # 过滤掉非法字符（ASCII码 < 32 或 >= 127）
-        return ''.join(char for char in value if 32 <= ord(char) < 127)
+        # 过滤掉非法字符（ASCII码 < 32 或 >= 127），增加支持中文显示 
+        return ''.join(char for char in value if (32 <= ord(char) < 127) or (0x4E00 <= ord(char) <= 0x9FFF))
     return value
 
 
