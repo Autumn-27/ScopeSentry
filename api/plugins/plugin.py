@@ -30,9 +30,9 @@ router = APIRouter()
 async def get_all_plugin(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     page_index = request_data.get("pageIndex", 1)
     page_size = request_data.get("pageSize", 10)
-    query = request_data.get("query", "")
+    query = request_data.get("search", "")
     query = {
-        "name": {"$regex": query}
+        "name": {"$regex": query, "$options": "i"}
     }
     total_count = await db['plugins'].count_documents(query)
     cursor = db['plugins'].find(query, {"_id": 0,
