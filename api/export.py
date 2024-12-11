@@ -57,35 +57,35 @@ async def export_data(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         return {"message": "Failed to export data", "code": 500}
 
 
-async def fetch_data(db, collection, query, quantity, project_list):
+async def fetch_data(db, collection, query, quantity):
     # 预先构造替换映射
-    project_map = {original_value: new_value for new_value, original_value in project_list.items()}
+    # project_map = {original_value: new_value for new_value, original_value in project_list.items()}
 
     # 使用 $cond 和 $in 来避免复杂的数组索引操作
     pipeline = [
         {"$match": query},
         {"$limit": quantity},
-        {"$addFields": {
-            "project": {
-                "$cond": {
-                    "if": {"$in": ["$project", list(project_map.keys())]},  # 检查 project 是否在 project_map 中
-                    "then": {
-                        "$let": {
-                            "vars": {
-                                "mapped_project": {
-                                    "$arrayElemAt": [
-                                        list(project_map.values()),
-                                        {"$indexOfArray": [list(project_map.keys()), "$project"]}
-                                    ]
-                                }
-                            },
-                            "in": "$$mapped_project"  # 如果匹配到，则替换为对应的新值
-                        }
-                    },
-                    "else": "$project"  # 如果没有匹配到，则保留原值
-                }
-            }
-        }},
+        # {"$addFields": {
+        #     "project": {
+        #         "$cond": {
+        #             "if": {"$in": ["$project", list(project_map.keys())]},  # 检查 project 是否在 project_map 中
+        #             "then": {
+        #                 "$let": {
+        #                     "vars": {
+        #                         "mapped_project": {
+        #                             "$arrayElemAt": [
+        #                                 list(project_map.values()),
+        #                                 {"$indexOfArray": [list(project_map.keys()), "$project"]}
+        #                             ]
+        #                         }
+        #                     },
+        #                     "in": "$$mapped_project"  # 如果匹配到，则替换为对应的新值
+        #                 }
+        #             },
+        #             "else": "$project"  # 如果没有匹配到，则保留原值
+        #         }
+        #     }
+        # }},
         {"$project": {"_id": 0, "vulnid": 0}}
     ]
 
@@ -116,10 +116,10 @@ async def export_data_from_mongodb(quantity, query, file_name, index):
     logger.info("导出开始")
     async for db in get_mongo_db():
         try:
-            global Project_List
-            if len(Project_List) == 0:
-                await get_project(db)
-            cursor = await fetch_data(db, index, query, quantity, Project_List)
+            # global Project_List
+            # if len(Project_List) == 0:
+            #     await get_project(db)
+            cursor = await fetch_data(db, index, query, quantity)
             result = await cursor.to_list(length=None)
             relative_path = f'file/{file_name}.xlsx'
             file_path = os.path.join(os.getcwd(), relative_path)
