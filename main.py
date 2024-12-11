@@ -5,6 +5,7 @@ from distutils.version import LooseVersion
 from loguru import logger
 import uvicorn
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from starlette.staticfiles import StaticFiles
 
 from core.config import *
@@ -146,6 +147,7 @@ async def get_favicon(request: Request):
 #         response = await call_next(request)
 #     return response
 
+# app.add_middleware(GZipMiddleware, minimum_size=10000)
 
 @app.get("/")
 async def read_root():
