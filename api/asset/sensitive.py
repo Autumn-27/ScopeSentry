@@ -242,7 +242,7 @@ async def get_sensitive_result_data2(request_data: dict, db=Depends(get_mongo_db
     try:
         page_index = request_data.get("pageIndex", 1)
         page_size = request_data.get("pageSize", 10)
-        query = await get_search_query("sens", request_data)
+        query = await get_search_query("SensitiveResult", request_data)
         if query == "":
             return {"message": "Search condition parsing error", "code": 500}
         total_count = await db['SensitiveResult'].count_documents(query)
@@ -323,7 +323,7 @@ async def get_sensitive_result_data2(request_data: dict, db=Depends(get_mongo_db
 
 @router.post("/result/names")
 async def get_sensitive_result_names(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    query = await get_search_query("sens", request_data)
+    query = await get_search_query("SensitiveResult", request_data)
     if query == "":
         return {"message": "Search condition parsing error", "code": 500}
 

@@ -88,6 +88,84 @@ def get_sensitive():
         d.pop('_id', None)
     return data
 
+
+SEARCHKEY = {
+        'SensitiveResult': {
+            'url': 'url',
+            'sname': 'sid',
+            "body": "body",
+            "info": "match",
+            'project': 'project',
+            'md5': 'md5'
+        },
+        'DirScanResult': {
+            'project': 'project',
+            'statuscode': 'status',
+            'url': 'url',
+            'redirect': 'msg',
+            'length': 'length'
+        },
+        'vulnerability': {
+            'url': 'url',
+            'vulname': 'vulname',
+            'project': 'project',
+            'matched': 'matched',
+            'request': 'request',
+            'response': 'response',
+            'level': 'level'
+        },
+        'subdomain': {
+            'domain': 'host',
+            'ip': 'ip',
+            'type': 'type',
+            'project': 'project',
+            'value': 'value'
+        },
+        'asset': {
+            'app': 'technologies',
+            'body': 'body',
+            'header': 'rawheaders',
+            'project': 'project',
+            'title': 'title',
+            'statuscode': 'statuscode',
+            'icon': 'faviconmmh3',
+            'ip': "ip",
+            'domain': "host",
+            'port': 'port',
+            'service': "service",
+            'banner': 'raw',
+        },
+        'SubdoaminTakerResult': {
+            'domain': 'input',
+            'value': 'value',
+            'type': 'cname',
+            'response': 'response',
+            'project': 'project',
+        },
+        'UrlScan': {
+            'url': 'output',
+            'project': 'project',
+            'input': 'input',
+            'source': 'source',
+            "resultId": 'resultId',
+            "type": "outputtype"
+        },
+        'PageMonitoring': {
+            'url': 'url',
+            'project': 'project',
+            'hash': 'hash',
+            'diff': 'diff',
+            'response': 'response'
+        },
+        'crawler': {
+            'url': 'url',
+            'method': 'method',
+            'body': 'body',
+            'project': 'project',
+            "resultId": 'resultId',
+        }
+    }
+
 subfinderApiConfig = '''# subfinder can be used right after the installation, however many sources required API keys to work. Learn more here: https://docs.projectdiscovery.io/tools/subfinder/install#post-install-configuration.
 bevigil: []
 binaryedge: []

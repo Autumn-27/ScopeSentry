@@ -21,7 +21,7 @@ async def get_subdomaintaker_data(request_data: dict, db=Depends(get_mongo_db), 
         page_size = request_data.get("pageSize", 10)
         # MongoDB collection for SensitiveRule
         # Fuzzy search based on the name field
-        query = await get_search_query("subdomainTaker", request_data)
+        query = await get_search_query("SubdoaminTakerResult", request_data)
         if query == "":
             return {"message": "Search condition parsing error", "code": 500}
         # Get the total count of documents matching the search criteria
