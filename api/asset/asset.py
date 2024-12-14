@@ -80,6 +80,8 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
                 tmp['products'] = []
             else:
                 tmp["screenshot"] = r.get("screenshot", "")
+                # if tmp["screenshot"] != "":
+                #     tmp["screenshot"] = "true"
                 tmp['title'] = r['title']
                 tmp['status'] = r['statuscode']
                 tmp['url'] = r['url']
@@ -101,6 +103,24 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
         logger.error(traceback.format_exc())
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
+
+
+@router.post("/screenshot")
+async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    id = request_data.get("id", "")
+    if id == "":
+        return {"message": "not found", "code": 404}
+    query = {"_id": ObjectId(id)}
+    doc = await db.asset.find_one(query, {"screenshot": 1})
+    if doc is None:
+        return {"message": "not found", "code": 404}
+    screenshot = doc.get('screenshot', "")
+    return {
+            "code": 200,
+            "data": {
+                'screenshot': screenshot
+            }
+        }
 
 
 # @router.post("/detail")

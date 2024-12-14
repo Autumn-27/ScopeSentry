@@ -147,7 +147,7 @@ async def get_favicon(request: Request):
 #         response = await call_next(request)
 #     return response
 
-# app.add_middleware(GZipMiddleware, minimum_size=10000)
+app.add_middleware(GZipMiddleware, minimum_size=5 * 1024 * 1024)
 
 @app.get("/")
 async def read_root():
