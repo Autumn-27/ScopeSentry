@@ -66,7 +66,7 @@ async def get_system_version(redis_con=Depends(get_redis_pool), _: dict = Depend
     }
 
 
-@router.get("/system/update")
+@router.post("/system/update")
 async def system_update(request_data: dict, _: dict = Depends(verify_token)):
     with open("PLUGINKEY", 'r') as file:
         plg_key = file.read()
