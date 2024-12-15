@@ -22,7 +22,7 @@ RUN pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple 
 # CMD python main.py
 
 # 复制 start.sh 脚本到容器
-COPY start.sh /usr/local/bin/start.sh
+RUN cp /opt/ScopeSentry/start.sh /usr/local/bin/start.sh
 
 # 给 start.sh 脚本赋予执行权限
 RUN chmod +x /usr/local/bin/start.sh
