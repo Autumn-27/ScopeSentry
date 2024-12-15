@@ -36,7 +36,7 @@ async def get_page_monitoring_data(db, all):
 async def page_monitoring_result(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     page_index = request_data.get("pageIndex", 1)
     page_size = request_data.get("pageSize", 10)
-    query = await get_search_query("page", request_data)
+    query = await get_search_query("PageMonitoring", request_data)
     if query == "":
         return {"message": "Search condition parsing error", "code": 500}
     query["hash"] = {"$size": 2}

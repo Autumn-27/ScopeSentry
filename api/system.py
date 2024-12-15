@@ -5,6 +5,8 @@
 # @time      : 2024/5/14 21:59
 # -------------------------------------------
 import subprocess
+import sys
+import time
 import traceback
 
 from fastapi import APIRouter, Depends
@@ -64,10 +66,27 @@ async def get_system_version(redis_con=Depends(get_redis_pool), _: dict = Depend
     }
 
 
-# @router.get("/system/update")
-# async def system_update():
-#     await update_server()
-#     await refresh_config("all", 'UpdateSystem')
+@router.post("/system/update")
+async def system_update(request_data: dict, _: dict = Depends(verify_token)):
+    with open("PLUGINKEY", 'r') as file:
+        plg_key = file.read()
+    key = request_data.get("key", "")
+    if key == "":
+        return {"message": f"key error", "code": 505}
+    if plg_key != key:
+        return {"message": f"key error", "code": 505}
+    server_url = request_data.get("server", "")
+    scan_url = request_data.get("scan", "")
+    if server_url == "" or scan_url == "":
+        return {"message": f"url not set", "code": 404}
+    await refresh_config("all", 'UpdateSystem', scan_url)
+
+    with open("/opt/ScopeSentry/UPDATE", 'w') as file:
+        file.write(server_url)
+    time.sleep(3)
+    sys.exit("System updated, exiting application.")
+    # await update_server()
+    # await refresh_config("all", 'UpdateSystem')
 
 
 async def update_server():

@@ -14,6 +14,8 @@ from datetime import datetime, timedelta
 import json
 from urllib.parse import urlparse
 
+from core.default import SEARCHKEY
+
 
 def calculate_md5_from_content(content):
     md5 = hashlib.md5()
@@ -267,82 +269,7 @@ async def search_to_mongodb(expression_raw, keyword):
 async def get_search_query(name, request_data):
     global tmp_f_q
     search_query = request_data.get("search", "")
-    search_key_v = {
-        'sens': {
-            'url': 'url',
-            'sname': 'sid',
-            "body": "body",
-            "info": "match",
-            'project': 'project',
-            'md5': 'md5'
-        },
-        'dir': {
-            'project': 'project',
-            'statuscode': 'status',
-            'url': 'url',
-            'redirect': 'msg',
-            'length': 'length'
-        },
-        'vul': {
-            'url': 'url',
-            'vulname': 'vulname',
-            'project': 'project',
-            'matched': 'matched',
-            'request': 'request',
-            'response': 'response',
-            'level': 'level'
-        },
-        'subdomain': {
-            'domain': 'host',
-            'ip': 'ip',
-            'type': 'type',
-            'project': 'project',
-            'value': 'value'
-        },
-        'asset': {
-            'app': 'technologies',
-            'body': 'body',
-            'header': 'rawheaders',
-            'project': 'project',
-            'title': 'title',
-            'statuscode': 'statuscode',
-            'icon': 'faviconmmh3',
-            'ip': "ip",
-            'domain': "host",
-            'port': 'port',
-            'service': "service",
-            'banner': 'raw',
-        },
-        'subdomainTaker': {
-            'domain': 'input',
-            'value': 'value',
-            'type': 'cname',
-            'response': 'response',
-            'project': 'project',
-        },
-        'url': {
-            'url': 'output',
-            'project': 'project',
-            'input': 'input',
-            'source': 'source',
-            "resultId": 'resultId',
-            "type": "outputtype"
-        },
-        'page': {
-            'url': 'url',
-            'project': 'project',
-            'hash': 'hash',
-            'diff': 'diff',
-            'response': 'response'
-        },
-        'crawler': {
-            'url': 'url',
-            'method': 'method',
-            'body': 'body',
-            'project': 'project',
-            "resultId": 'resultId',
-        }
-    }
+    search_key_v = SEARCHKEY
     keyword = search_key_v[name]
     query = await search_to_mongodb(search_query, keyword)
     if query == "" or query is None:

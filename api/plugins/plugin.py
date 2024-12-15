@@ -30,9 +30,9 @@ router = APIRouter()
 async def get_all_plugin(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     page_index = request_data.get("pageIndex", 1)
     page_size = request_data.get("pageSize", 10)
-    query = request_data.get("query", "")
+    query = request_data.get("search", "")
     query = {
-        "name": {"$regex": query}
+        "name": {"$regex": query, "$options": "i"}
     }
     total_count = await db['plugins'].count_documents(query)
     cursor = db['plugins'].find(query, {"_id": 0,
@@ -333,4 +333,16 @@ async def uninstall_plugin(request_data: dict, _: dict = Depends(verify_token)):
     if module == "":
         return {"message": "plugin module is null", "code": 500}
     await refresh_config(node, 'uninstall_plugin', hash + "_" + module)
+    return {"code": 200, "message": "success"}
+
+
+@router.post("/key/check")
+async def check_plugin_key(request_data: dict, _: dict = Depends(verify_token)):
+    key = request_data.get("key", "")
+    with open("PLUGINKEY", 'r') as PLUGINKEYFile:
+        plg_key = PLUGINKEYFile.read()
+    if key == "":
+        return {"message": f"key error", "code": 505}
+    if plg_key != key:
+        return {"message": f"key error", "code": 505}
     return {"code": 200, "message": "success"}

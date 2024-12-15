@@ -21,7 +21,7 @@ async def dirscan_data(request_data: dict, db=Depends(get_mongo_db), _: dict = D
     try:
         page_index = request_data.get("pageIndex", 1)
         page_size = request_data.get("pageSize", 10)
-        query = await get_search_query("dir", request_data)
+        query = await get_search_query("DirScanResult", request_data)
         if query == "":
             return {"message": "Search condition parsing error", "code": 500}
         total_count = await db['DirScanResult'].count_documents(query)

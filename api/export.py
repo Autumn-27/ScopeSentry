@@ -22,81 +22,6 @@ from loguru import logger
 from openpyxl import Workbook
 router = APIRouter()
 
-keywords = {
-    "asset": {
-        'app': '',
-        'body': 'responsebody',
-        'header': 'rawheaders',
-        'project': 'project',
-        'title': 'title',
-        'statuscode': 'statuscode',
-        'icon': 'faviconmmh3',
-        'ip': "ip",
-        'domain': 'host',
-        'port': 'port',
-        'protocol': 'service',
-        'banner': 'raw',
-        'tag': 'tag'
-    },
-    "subdomain": {
-        'domain': 'host',
-        'ip': 'ip',
-        'type': 'type',
-        'project': 'project',
-        'value': 'value'
-    },
-    "SubdoaminTakerResult": {
-        'domain': 'input',
-        'value': 'value',
-        'type': 'cname',
-        'response': 'response',
-        'project': 'project',
-    },
-    "UrlScan": {
-        'url': 'output',
-        'project': 'project',
-        'input': 'input',
-        'source': 'source',
-        "type": "outputtype"
-    },
-    "crawler": {
-        'url': 'url',
-        'method': 'method',
-        'body': 'body',
-        'project': 'project'
-    },
-    "SensitiveResult": {
-        'url': 'url',
-        'sname': 'sid',
-        "body": "body",
-        "info": "match",
-        'project': 'project',
-        'md5': 'md5'
-    },
-    "DirScanResult": {
-        'project': 'project',
-        'statuscode': 'status',
-        'url': 'url',
-        'redirect': 'msg'
-    },
-    "vulnerability": {
-        'url': 'url',
-        'vulname': 'vulname',
-        'project': 'project',
-        'matched': 'matched',
-        'request': 'request',
-        'response': 'response',
-        'level': 'level'
-    },
-    "PageMonitoring": {
-        'url': 'url',
-        'project': 'project',
-        'hash': 'hash',
-        'diff': 'diff',
-        'response': 'response'
-    }
-}
-
 
 @router.post("/export")
 async def export_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token),
@@ -109,7 +34,7 @@ async def export_data(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         return {"code": 500, "message": f"get index, quantity, export_type null"}
     query = {}
     if export_type == "search":
-        query = await search_to_mongodb(search_query, keywords[index])
+        query = await search_to_mongodb(search_query, SEARCHKEY[index])
         if query == "" or query is None:
             return {"message": "Search condition parsing error", "code": 500}
         query = query[0]
@@ -132,35 +57,35 @@ async def export_data(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         return {"message": "Failed to export data", "code": 500}
 
 
-async def fetch_data(db, collection, query, quantity, project_list):
+async def fetch_data(db, collection, query, quantity):
     # 预先构造替换映射
-    project_map = {original_value: new_value for new_value, original_value in project_list.items()}
+    # project_map = {original_value: new_value for new_value, original_value in project_list.items()}
 
     # 使用 $cond 和 $in 来避免复杂的数组索引操作
     pipeline = [
         {"$match": query},
         {"$limit": quantity},
-        {"$addFields": {
-            "project": {
-                "$cond": {
-                    "if": {"$in": ["$project", list(project_map.keys())]},  # 检查 project 是否在 project_map 中
-                    "then": {
-                        "$let": {
-                            "vars": {
-                                "mapped_project": {
-                                    "$arrayElemAt": [
-                                        list(project_map.values()),
-                                        {"$indexOfArray": [list(project_map.keys()), "$project"]}
-                                    ]
-                                }
-                            },
-                            "in": "$$mapped_project"  # 如果匹配到，则替换为对应的新值
-                        }
-                    },
-                    "else": "$project"  # 如果没有匹配到，则保留原值
-                }
-            }
-        }},
+        # {"$addFields": {
+        #     "project": {
+        #         "$cond": {
+        #             "if": {"$in": ["$project", list(project_map.keys())]},  # 检查 project 是否在 project_map 中
+        #             "then": {
+        #                 "$let": {
+        #                     "vars": {
+        #                         "mapped_project": {
+        #                             "$arrayElemAt": [
+        #                                 list(project_map.values()),
+        #                                 {"$indexOfArray": [list(project_map.keys()), "$project"]}
+        #                             ]
+        #                         }
+        #                     },
+        #                     "in": "$$mapped_project"  # 如果匹配到，则替换为对应的新值
+        #                 }
+        #             },
+        #             "else": "$project"  # 如果没有匹配到，则保留原值
+        #         }
+        #     }
+        # }},
         {"$project": {"_id": 0, "vulnid": 0}}
     ]
 
@@ -182,7 +107,7 @@ def flatten_dict(d):
 
 def clean_string(value):
     if isinstance(value, str):
-        # 过滤掉非法字符（ASCII码 < 32 或 >= 127），增加支持中文显示 
+        # 过滤掉非法字符（ASCII码 < 32 或 >= 127），增加支持中文显示
         return ''.join(char for char in value if (32 <= ord(char) < 127) or (0x4E00 <= ord(char) <= 0x9FFF))
     return value
 
@@ -191,10 +116,10 @@ async def export_data_from_mongodb(quantity, query, file_name, index):
     logger.info("导出开始")
     async for db in get_mongo_db():
         try:
-            global Project_List
-            if len(Project_List) == 0:
-                await get_project(db)
-            cursor = await fetch_data(db, index, query, quantity, Project_List)
+            # global Project_List
+            # if len(Project_List) == 0:
+            #     await get_project(db)
+            cursor = await fetch_data(db, index, query, quantity)
             result = await cursor.to_list(length=None)
             relative_path = f'file/{file_name}.xlsx'
             file_path = os.path.join(os.getcwd(), relative_path)
