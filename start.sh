@@ -16,7 +16,7 @@ if [ -f "/opt/ScopeSentry/UPDATE" ]; then
         # 解压 /tmp/main.zip 并覆盖原有的 main.zip
         echo "解压并覆盖 main.zip..."
         unzip -o /tmp/main.zip -d /opt/ScopeSentry/ || echo "ERROR: 解压失败"
-
+        pip install -r /opt/ScopeSentry/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir
         # 删除 UPDATE 文件
         rm -f /opt/ScopeSentry/UPDATE || echo "ERROR: 删除 UPDATE 文件失败"
     fi
