@@ -334,3 +334,15 @@ async def uninstall_plugin(request_data: dict, _: dict = Depends(verify_token)):
         return {"message": "plugin module is null", "code": 500}
     await refresh_config(node, 'uninstall_plugin', hash + "_" + module)
     return {"code": 200, "message": "success"}
+
+
+@router.post("/key/check")
+async def check_plugin_key(request_data: dict, _: dict = Depends(verify_token)):
+    key = request_data.get("key", "")
+    with open("PLUGINKEY", 'r') as PLUGINKEYFile:
+        plg_key = PLUGINKEYFile.read()
+    if key == "":
+        return {"message": f"key error", "code": 505}
+    if plg_key != key:
+        return {"message": f"key error", "code": 505}
+    return {"code": 200, "message": "success"}

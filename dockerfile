@@ -18,5 +18,14 @@ COPY ./ScopeSentry /opt/ScopeSentry/
 # 安装 Python 依赖包
 RUN pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir
 
-# 启动 Nginx 和 Python 应用
-CMD python main.py
+# # Python 应用
+# CMD python main.py
+
+# 复制 start.sh 脚本到容器
+COPY start.sh /usr/local/bin/start.sh
+
+# 给 start.sh 脚本赋予执行权限
+RUN chmod +x /usr/local/bin/start.sh
+
+# 使用 start.sh 启动容器
+CMD ["/usr/local/bin/start.sh"]
