@@ -6,7 +6,9 @@
 
 ## 编程语言
 服务端：python - FastApi
+
 扫描端：go
+
 前端：vue - vue-element-plus-admin
 
 ## 网址
