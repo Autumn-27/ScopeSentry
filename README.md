@@ -4,6 +4,11 @@
 
 中文 | [English](./README_EN.md)
 
+## 编程语言
+服务端：python - FastApi
+扫描端：go
+前端：vue - vue-element-plus-admin
+
 ## 网址
 
 - 官网&安装教程：[https://www.scope-sentry.top](https://www.scope-sentry.top)
