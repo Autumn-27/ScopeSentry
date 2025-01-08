@@ -48,7 +48,8 @@ async def generate_target(target):
 # 根据原始target生成目标列表
 async def get_target_list(raw_target, ignore):
     ignore_list, regex_list = await generate_ignore(ignore)
-    target_list= []
+    # 使用集合来避免重复
+    target_list= set()
     for t in raw_target.split("\n"):
         t.replace("http://", "").replace("https://", "")
         t = t.strip("\n").strip("\r").strip()
@@ -59,10 +60,10 @@ async def get_target_list(raw_target, ignore):
                     for rege_str in regex_list:
                         rege = re.compile(rege_str)
                         if not rege.search(r):
-                            target_list.append(r)
+                            target_list.add(r)
                 else:
-                    target_list.append(r)
-    return target_list
+                    target_list.add(r)
+    return list(target_list)
 
 
 async def generate_ignore(ignore):
