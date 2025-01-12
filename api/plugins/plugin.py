@@ -105,6 +105,7 @@ async def get_plugin_detail(request_data: dict, db=Depends(get_mongo_db), _: dic
             "help": doc.get("help", ""),
             "introduction": doc.get("introduction", ""),
             "source": doc.get("source", ""),
+            "version": doc.get("version", ""),
             "isSystem": doc.get("isSystem", False)
         }
         return {"code": 200, "data": result}
