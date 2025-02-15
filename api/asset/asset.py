@@ -40,7 +40,7 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
                                           "statuscode": 1,
                                           "rawheaders": 1,
                                           "technologies": 1,
-                                          "raw": 1,
+                                          "metadata": 1,
                                           "time": 1,
                                           "iconcontent": 1,
                                           "tags": 1,
@@ -67,13 +67,13 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
                 tmp['status'] = None
                 tmp['banner'] = ""
                 try:
-                    if r['raw'] is not None:
-                        raw_data = json.loads(r['raw'].decode('utf-8'))
+                    if r['metadata'] is not None:
+                        raw_data = json.loads(r['metadata'].decode('utf-8'))
                         for k in raw_data:
                             tmp['banner'] += k + ":" + str(raw_data[k]).strip("\n") + "\n"
                 except:
                     try:
-                        raw_data = r['raw'].decode('utf-8')
+                        raw_data = r['metadata'].decode('utf-8')
                         tmp['banner'] = raw_data
                     except:
                         tmp['banner'] = ""
