@@ -264,3 +264,12 @@ async def update15(db):
     logger.success("更新完成")
     logger.success("Update Complete")
 
+
+async def update155(db):
+    # 创建asset索引
+    await db['asset'].create_index([('time', ASCENDING)])
+    await db['asset'].create_index([('url', ASCENDING)])
+    await db['asset'].create_index([('host', ASCENDING)])
+    await db['asset'].create_index([('ip', ASCENDING)])
+    await db['asset'].create_index([('port', ASCENDING)])
+    await db['asset'].create_index([('host', ASCENDING)], ('port', ASCENDING))
