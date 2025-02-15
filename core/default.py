@@ -134,6 +134,7 @@ SEARCHKEY = {
             'port': 'port',
             'service': "service",
             'banner': 'raw',
+            'type': 'type',
         },
         'SubdoaminTakerResult': {
             'domain': 'input',

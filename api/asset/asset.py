@@ -105,6 +105,40 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
         return {"message": "error", "code": 500}
 
 
+@router.post("/data/card")
+async def asset_card_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    try:
+        page_index = request_data.get("pageIndex", 1)
+        page_size = request_data.get("pageSize", 10)
+        query = await get_search_query("asset", request_data)
+        if query == "":
+            return {"message": "Search condition parsing error", "code": 500}
+        total_count = await db['asset'].count_documents(query)
+        cursor: AsyncIOMotorCursor = db['asset'].find(query, {"_id": 0,
+                                          "host": 1,
+                                          "url": 1,
+                                          "port": 1,
+                                          "service": 1,
+                                          "type": 1,
+                                          "title": 1,
+                                          "statuscode": 1,
+                                          "screenshot": 1,
+                                          }).skip((page_index - 1) * page_size).limit(page_size).sort(
+            [("time", DESCENDING)])
+        result = await cursor.to_list(length=None)
+        return {
+            "code": 200,
+            "data": {
+                'list': result,
+                'total': total_count
+            }
+        }
+    except Exception as e:
+        logger.error(str(e))
+        logger.error(traceback.format_exc())
+        # Handle exceptions as needed
+        return {"message": "error", "code": 500}
+
 @router.post("/screenshot")
 async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     id = request_data.get("id", "")
