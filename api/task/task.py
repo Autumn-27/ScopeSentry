@@ -486,7 +486,7 @@ async def start_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
         doc = await db.task.find_one(query)
         if not doc:
             return {"message": "Content not found for the provided ID", "code": 404}
-        doc["type"] = "start"
+        doc["IsStart"] = True
         await create_scan_task(doc, task_id, True)
         await db.task.update_one({"_id": ObjectId(task_id)}, {"$set": {"status": 1}})
         return {"message": "success", "code": 200}

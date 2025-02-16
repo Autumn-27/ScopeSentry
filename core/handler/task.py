@@ -48,6 +48,8 @@ async def get_task_data(db, request_data, id):
     template_data["ID"] = str(id)
     # 任务类型
     template_data["type"] = request_data.get("type", "scan")
+    # 是否暂停后开启
+    template_data["IsStart"] = request_data.get("IsStart", False)
     return template_data
 
 
