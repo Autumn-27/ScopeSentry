@@ -68,10 +68,32 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         results = await cursor.to_list(length=None)
         if len(results) != 0:
             return {"code": 400, "message": "name already exists"}
-        target = request_data.get("target", "")
+        dataSource = request_data.get("tp", "scan")
+        if "Source" in dataSource:
+            # 如果是从资产处选则数据进行创建任务
+            index = dataSource.replace("Source", "")
+            targetTp = request_data.get("targetTp")
+            if targetTp == "search":
+                # 如果是按照当前搜索条件进行搜索
+                targetNumber = int(request_data.get("targetNumber", 0))
+                if targetNumber == 0:
+                    return {"code": 400, "message": "targetNumber is 0"}
+                query = await get_search_query(index, request_data)
+                target = await get_target_search(query, targetNumber, index, db)
+                request_data["target"] = target
+            else:
+                # 按照选择的数据进行创建任务
+                targetIds = request_data.get("targetIds", [])
+                if len(targetIds) == 0:
+                    return {"code": 400, "message": "targetIds is null"}
+                target = get_target_ids(targetIds, index)
+                request_data["target"] = target
+        else:
+            # 正常创建任务
+            target = request_data.get("target", "")
         node = request_data.get("node")
         if name == "" or target == "" or node == []:
-            return {"message": "Null", "code": 500}
+            return {"message": "target is Null", "code": 500}
         scheduledTasks = request_data.get("scheduledTasks", False)
         hour = request_data.get("hour", 24)
         task_id = await insert_task(request_data, db)
@@ -95,6 +117,43 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
+
+
+async def get_target_search(query, number, index, db):
+    displayKey = {
+        'subdomain': {
+            'host': 1,
+        },
+        'asset': {
+            'url': 1,
+            'host': 1,
+            'port': 1,
+            'service': 1,
+            'type': 1,
+        },
+        'UrlScan': {
+            'output': 1,
+        },
+    }
+    if index not in displayKey:
+        return ""
+    cursor: AsyncIOMotorCursor = db[index].find(query, displayKey[index]).limit(number).sort([("time", DESCENDING)])
+    target = ""
+    async for doc in cursor:
+        if index == "asset":
+            if doc["type"] == "http":
+                target += doc.get("url", "") + "\n"
+            else:
+                target += doc.get("service", "http") + "://" + doc["host"] + ":" + str(doc["port"]) + "\n"
+        elif index == "subdomain":
+            target += doc.get("host", "") + "\n"
+        elif index == "UrlScan":
+            target += doc.get("output", "") + "\n"
+    return target
+
+
+async def get_target_ids(ids, index):
+    return ""
 
 
 @router.post("/detail")

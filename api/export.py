@@ -34,10 +34,9 @@ async def export_data(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         return {"code": 500, "message": f"get index, quantity, export_type null"}
     query = {}
     if export_type == "search":
-        query = await search_to_mongodb(search_query, SEARCHKEY[index])
+        query = await get_search_query(index, request_data)
         if query == "" or query is None:
             return {"message": "Search condition parsing error", "code": 500}
-        query = query[0]
     if index == "PageMonitoring":
         query["diff"] = {"$ne": []}
     file_name = generate_random_string(16)

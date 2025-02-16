@@ -30,7 +30,7 @@ async def generate_ip_range(start_ip, end_ip):
 # 解析ip段
 async def generate_target(target):
     try:
-        if "http://" in target or "https://" in target:
+        if "://" in target:
             return [target]
         if '-' in target:
             start_ip, end_ip = target.split('-')
@@ -51,10 +51,11 @@ async def get_target_list(raw_target, ignore):
     # 使用集合来避免重复
     target_list= set()
     for t in raw_target.split("\n"):
-        t.replace("http://", "").replace("https://", "")
         t = t.strip("\n").strip("\r").strip()
         result = await generate_target(t)
         for r in result:
+            if r.strip("\n").strip("\r").strip() == "":
+                continue
             if r not in ignore_list:
                 if len(regex_list) != 0 :
                     for rege_str in regex_list:

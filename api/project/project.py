@@ -172,6 +172,7 @@ async def add_project_rule(request_data: dict, db=Depends(get_mongo_db), _: dict
         return {"code": 400, "message": "name already exists"}
     target = request_data.get("target").strip("\n").strip("\r").strip()
     runNow = request_data.get("runNow")
+    request_data["tp"] = "project"
     del request_data["runNow"]
     scheduledTasks = request_data.get("scheduledTasks", False)
     hour = request_data.get("hour", 24)

@@ -47,9 +47,8 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
                                           "screenshot": 1,
                                           }).skip((page_index - 1) * page_size).limit(page_size).sort(
             [("time", DESCENDING)])
-        result = await cursor.to_list(length=None)
         result_list = []
-        for r in result:
+        async for r in cursor:
             tmp = {
                 'port': r['port'],
                 'time': r['time'],

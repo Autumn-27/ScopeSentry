@@ -29,6 +29,7 @@ async def insert_task(request_data, db):
     request_data["creatTime"] = get_now_time()
     request_data["endTime"] = ""
     request_data["status"] = 1
+    request_data["type"] = request_data.get("tp", "scan")
     result = await db.task.insert_one(request_data)
     if result.inserted_id:
         asyncio.create_task(create_scan_task(request_data, str(result.inserted_id)))
@@ -87,6 +88,7 @@ async def scheduler_scan_task(id, tp):
         await db.ScheduledTasks.update_one({"id": id}, update_document)
         doc = await db.ScheduledTasks.find_one({"id": id})
         doc["name"] = doc["name"] + f"-{tp}-" + time_now
+        doc["tp"] = "scheduler"
         await insert_task(doc, db)
 
 
