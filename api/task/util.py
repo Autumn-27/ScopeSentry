@@ -49,7 +49,7 @@ async def generate_target(target):
 async def get_target_list(raw_target, ignore):
     ignore_list, regex_list = await generate_ignore(ignore)
     # 使用集合来避免重复
-    target_list= set()
+    target_dict = {}
     for t in raw_target.split("\n"):
         t = t.strip("\n").strip("\r").strip()
         result = await generate_target(t)
@@ -57,14 +57,14 @@ async def get_target_list(raw_target, ignore):
             if r.strip("\n").strip("\r").strip() == "":
                 continue
             if r not in ignore_list:
-                if len(regex_list) != 0 :
+                if len(regex_list) != 0:
                     for rege_str in regex_list:
                         rege = re.compile(rege_str)
                         if not rege.search(r):
-                            target_list.add(r)
+                            target_dict[r] = None  # 使用字典的键去重
                 else:
-                    target_list.add(r)
-    return list(target_list)
+                    target_dict[r] = None  # 使用字典的键去重
+    return list(target_dict.keys())
 
 
 async def generate_ignore(ignore):
