@@ -16,6 +16,8 @@ from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor
 from core.db import get_mongo_db, get_project
 import pandas as pd
+
+from core.default import FIELD
 from core.util import *
 from pymongo import ASCENDING, DESCENDING, results
 from loguru import logger
@@ -54,6 +56,14 @@ async def export_data(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         return {"message": "Successfully added data export task", "code": 200}
     else:
         return {"message": "Failed to export data", "code": 500}
+
+
+@router.post("/getfield")
+async def export_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token),
+                      background_tasks: BackgroundTasks = BackgroundTasks()):
+    index = request_data["index"]
+    if index in FIELD:
+        return {"code": 200, "data": {"field": FIELD[index]}}
 
 
 async def fetch_data(db, collection, query, quantity):

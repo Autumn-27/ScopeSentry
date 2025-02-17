@@ -88,7 +88,6 @@ async def scheduler_scan_task(id, tp):
         await db.ScheduledTasks.update_one({"id": id}, update_document)
         doc = await db.ScheduledTasks.find_one({"id": id})
         doc["name"] = doc["name"] + f"-{tp}-" + time_now
-        doc["tp"] = "scheduler"
         await insert_task(doc, db)
 
 

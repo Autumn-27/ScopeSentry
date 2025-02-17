@@ -611,3 +611,14 @@ SCANTEMPLATE = {
   "name": "default",
   "vullist": []
 }
+
+FIELD = {
+    "asset": ['time', 'lastScanTime', 'tls', 'hash', 'cdnname', 'port', 'url', 'title', 'type', 'error', 'body', 'host', 'ip', 'favicon', 'faviconpath', 'rawheaders', 'jarm', 'technologies', 'statuscode', 'contentlength', 'cdn', 'webcheck', 'project', 'iconcontent', 'domain', 'taskName', 'webServer', 'service', 'rootDomain', 'tag', 'faviconmmh3', 'screenshot', 'tags', 'transport', 'version', 'metadata'],
+    "crawler": ['url', 'method', 'body', 'project', 'taskName', 'resultId', 'rootDomain', 'time', 'tags'],
+    "DirScanResult": ['url', 'status', 'msg', 'project', 'length', 'taskName', 'rootDomain', 'tags'],
+    "SensitiveResult": ['url', 'urlid', 'sid', 'match', 'project', 'color', 'time', 'md5', 'taskName', 'rootDomain', 'tags', 'status'],
+    "subdomain": ['host', 'type', 'value', 'ip', 'time', 'tags', 'project', 'taskName', 'rootDomain'],
+    "SubdoaminTakerResult": ['input', 'value', 'cname', 'response', 'project', 'taskName', 'rootDomain', 'tags'],
+    "UrlScan": ['input', 'source', 'outputtype', 'output', 'status', 'length', 'time', 'body', 'project', 'taskName', 'resultId', 'rootDomain', 'tags'],
+    "vulnerability": ['url', 'vulnid', 'vulname', 'matched', 'project', 'level', 'time', 'request', 'response', 'taskName', 'rootdomain', 'tags', 'status'],
+}
