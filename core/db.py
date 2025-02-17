@@ -18,7 +18,7 @@ from core.util import print_progress_bar
 
 async def get_mongo_db():
 
-    client = AsyncIOMotorClient(f"mongodb://{MONGODB_USER}:{quote_plus(MONGODB_PASSWORD)}@{MONGODB_IP}:{str(MONGODB_PORT)}",
+    client = AsyncIOMotorClient(f"mongodb://{MONGODB_USER}:{quote_plus(str(MONGODB_PASSWORD))}@{MONGODB_IP}:{str(MONGODB_PORT)}",
                                 serverSelectionTimeoutMS=10000, unicode_decode_error_handler='ignore')
     db = client[MONGODB_DATABASE]
     try:
@@ -34,7 +34,7 @@ async def create_database():
         while True:
             try:
                 # 创建新的 MongoDB 客户端
-                client = AsyncIOMotorClient(f"mongodb://{quote_plus(MONGODB_USER)}:{quote_plus(MONGODB_PASSWORD)}@{MONGODB_IP}:{str(MONGODB_PORT)}",
+                client = AsyncIOMotorClient(f"mongodb://{quote_plus(MONGODB_USER)}:{quote_plus(str(MONGODB_PASSWORD))}@{MONGODB_IP}:{str(MONGODB_PORT)}",
                                             serverSelectionTimeoutMS=2000)
                 break
             except Exception as e:

@@ -42,11 +42,16 @@ async def export_data(request_data: dict, db=Depends(get_mongo_db), _: dict = De
     if index == "PageMonitoring":
         query["diff"] = {"$ne": []}
     file_name = generate_random_string(16)
+    file_type = request_data.get("filetype", "csv")
+    fields = request_data.get("field", [])
+    if len(fields) == 0:
+        return {"message": "fields is null", "code": 500}
     result = await db.export.insert_one({
         "file_name": file_name,
         "create_time": get_now_time(),
         "quantity": quantity,
         "data_type": index,
+        "file_type": file_type,
         "state": 0,
         "end_time": "",
         "file_size": ""
@@ -120,6 +125,164 @@ def clean_string(value):
         return ''.join(char for char in value if (32 <= ord(char) < 127) or (0x4E00 <= ord(char) <= 0x9FFF))
     return value
 
+
+async def export_data_from_mongodb2(quantity, query, file_name, index, file_type, fields):
+    logger.info("导出开始")
+    async for db in get_mongo_db():
+        try:
+            # global Project_List
+            # if len(Project_List) == 0:
+            #     await get_project(db)
+            cursor = await fetch_data(db, index, query, quantity)
+            result = await cursor.to_list(length=None)
+            relative_path = f'file/{file_name}.xlsx'
+            file_path = os.path.join(os.getcwd(), relative_path)
+            wb = Workbook()
+            if index == "asset":
+                http_columns = {
+                    "time": "时间",
+                    "lastScanTime": "最近扫描时间",
+                    "tls": "TLS_Data",
+                    "hash": "Hash",
+                    "cdnname": "Cdn_Name",
+                    "port": "端口",
+                    "url": "url",
+                    "title": "标题",
+                    "type": "类型",
+                    "error": "错误",
+                    "body": "响应体",
+                    "host": "域名",
+                    "ip": "IP",
+                    "screenshot": "截图",
+                    "faviconmmh3": "图标Hash",
+                    "faviconpath": "faviconpath",
+                    "rawheaders": "响应头",
+                    "jarm": "jarm",
+                    "technologies": "technologies",
+                    "statuscode": "响应码",
+                    "contentlength": "contentlength",
+                    "cdn": "cdn",
+                    "webcheck": "webcheck",
+                    "project": "项目",
+                    "iconcontent": "图标",
+                    "taskName": "任务",
+                    "webServer": "webServer",
+                    "service": "service",
+                    "rootDomain": "根域名",
+                    "tags": "tags"
+                }
+                other_columns = {
+                    "time": "时间",
+                    "lastScanTime": "最近扫描时间",
+                    "host": "域名",
+                    "ip": "IP",
+                    "port": "端口",
+                    "service": "服务",
+                    "tls": "TLS",
+                    "transport": "transport",
+                    "version": "版本",
+                    "metadata": "metadata",
+                    "project": "项目",
+                    "type": "类型",
+                    "tags": "tags",
+                    "taskName": "任务",
+                    "rootDomain": "根域名",
+                }
+                # 创建两个工作表
+                http_ws = wb.active
+                http_ws.title = 'HTTP Data'
+                other_ws = wb.create_sheet(title='Other Data')
+
+                # 写入HTTP Data列名
+                http_ws.append(list(http_columns.values()))
+                # 写入Other Data列名
+                other_ws.append(list(other_columns.values()))
+
+                # 分别写入数据
+                for doc in result:
+                    flattened_doc = flatten_dict(doc)
+                    if doc["type"] == "other":
+                        row = [clean_string(flattened_doc.get(col, "")) for col in other_columns.keys()]
+                        other_ws.append(row)
+                    else:
+                        row = [clean_string(flattened_doc.get(col, "")) for col in http_columns.keys()]
+                        http_ws.append(row)
+            else:
+                columns = {}
+                if index == "subdomain":
+                    columns = {'host': '域名', 'type': '解析类型', 'value': '解析值', 'ip': '解析IP', 'project': '项目',
+                               'time': '时间', "taskName": "任务", "tags": "tags", "rootDomain": "根域名"}
+                if index == "SubdoaminTakerResult":
+                    columns = {
+                        'input': '源域名', 'value': '解析值', 'cname': '接管类型', 'response': '响应体',
+                        'project': '项目', "taskName": "任务", "tags": "tags", "rootDomain": "根域名"
+                    }
+                if index == "UrlScan":
+                    columns = {
+                        'input': '输入', 'source': '来源', 'outputtype': '输出类型', 'output': '输出',
+                        'statuscode': 'statuscode', 'length': 'length', 'time': '时间', 'project': '项目',
+                        "taskName": "任务", "tags": "tags", "rootDomain": "根域名"
+                    }
+                if index == "crawler":
+                    columns = {
+                        'url': 'URL', 'method': 'Method', 'body': 'Body', 'project': '项目', "taskName": "任务",
+                        "tags": "tags", "rootDomain": "根域名"
+                    }
+                if index == "SensitiveResult":
+                    columns = {
+                        'url': 'URL', 'sid': '规则名称', 'match': '匹配内容', 'project': '项目', 'body': '响应体',
+                        'color': '等级', 'time': '时间', 'md5': '响应体MD5', "taskName": "任务", "tags": "tags",
+                        "rootDomain": "根域名"
+                    }
+                if index == "DirScanResult":
+                    columns = {
+                        'url': 'URL', 'status': '响应码', 'msg': '跳转', 'project': '项目', "taskName": "任务",
+                        "tags": "tags", "rootDomain": "根域名"
+                    }
+                if index == "vulnerability":
+                    columns = {
+                        'url': 'URL', 'vulname': '漏洞', 'matched': '匹配', 'project': '项目', 'level': '危害等级',
+                        'time': '时间', 'request': '请求', 'response': '响应', "taskName": "任务", "tags": "tags",
+                        "rootDomain": "根域名"
+                    }
+                if index == "PageMonitoring":
+                    columns = {
+                        'url': 'URL', 'content': '响应体', 'hash': '响应体Hash', 'diff': 'Diff',
+                        'state': '状态', 'project': '项目', 'time': '时间', "taskName": "任务", "tags": "tags",
+                        "rootDomain": "根域名"
+                    }
+                ws = wb.active
+                ws.title = index
+                ws.append(list(columns.values()))
+
+                for doc in result:
+                    flattened_doc = flatten_dict(doc)
+                    row = [clean_string(flattened_doc.get(col, "")) for col in columns.keys()]
+                    ws.append(row)
+            try:
+                wb.save(file_path)
+                logger.info(f"Data saved to {file_path} successfully.")
+            except IllegalCharacterError as e:
+                logger.error("导出内容有不可见字符，忽略此错误")
+            file_size = os.path.getsize(file_path) / (1024 * 1024)  # kb
+            update_document = {
+                "$set": {
+                    "state": 1,
+                    "end_time": get_now_time(),
+                    "file_size": str(round(file_size, 2))
+                }
+            }
+            await db.export.update_one({"file_name": file_name}, update_document)
+        except Exception as e:
+            logger.error(str(e))
+            logger.error(traceback.format_exc())
+            update_document = {
+                "$set": {
+                    "state": 2,
+                }
+            }
+            await db.export.update_one({"file_name": file_name}, update_document)
+    logger.info("导出结束")
 
 async def export_data_from_mongodb(quantity, query, file_name, index):
     logger.info("导出开始")
