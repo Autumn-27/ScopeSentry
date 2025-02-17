@@ -43,6 +43,8 @@ async def export_data(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         query["diff"] = {"$ne": []}
     file_name = generate_random_string(16)
     file_type = request_data.get("filetype", "csv")
+    if file_type != "csv" or file_type !="json":
+        return {"message": "filetype error", "code": 500}
     fields = request_data.get("field", [])
     if len(fields) == 0:
         return {"message": "fields is null", "code": 500}
@@ -71,10 +73,16 @@ async def export_data(request_data: dict, db=Depends(get_mongo_db), _: dict = De
         return {"code": 200, "data": {"field": FIELD[index]}}
 
 
-async def fetch_data(db, collection, query, quantity):
+async def fetch_data(db, collection, query, quantity, fields):
     # 预先构造替换映射
     # project_map = {original_value: new_value for new_value, original_value in project_list.items()}
-
+    fields_dict = {}
+    if collection == "asset":
+        fields_dict["type"] = 1
+    for i in fields:
+        fields_dict[i] = 1
+    fields_dict["_id"] = 0
+    fields_dict["vulnid"] = 0
     # 使用 $cond 和 $in 来避免复杂的数组索引操作
     pipeline = [
         {"$match": query},
@@ -100,7 +108,7 @@ async def fetch_data(db, collection, query, quantity):
         #         }
         #     }
         # }},
-        {"$project": {"_id": 0, "vulnid": 0}}
+        {"$project": fields_dict}
     ]
 
     cursor = db[collection].aggregate(pipeline)
@@ -135,8 +143,11 @@ async def export_data_from_mongodb2(quantity, query, file_name, index, file_type
             #     await get_project(db)
             cursor = await fetch_data(db, index, query, quantity)
             result = await cursor.to_list(length=None)
-            relative_path = f'file/{file_name}.xlsx'
+            relative_path = f'file/{file_name}.{file_type}'
             file_path = os.path.join(os.getcwd(), relative_path)
+            async for document in cursor:
+                print("")
+
             wb = Workbook()
             if index == "asset":
                 http_columns = {
