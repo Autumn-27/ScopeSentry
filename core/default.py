@@ -613,7 +613,7 @@ SCANTEMPLATE = {
 }
 
 FIELD = {
-    "asset": ['time', 'lastScanTime', 'tls', 'hash', 'cdnname', 'port', 'url', 'title', 'type', 'error', 'body', 'host', 'ip', 'favicon', 'faviconpath', 'rawheaders', 'jarm', 'technologies', 'statuscode', 'contentlength', 'cdn', 'webcheck', 'project', 'iconcontent', 'domain', 'taskName', 'webServer', 'service', 'rootDomain', 'tag', 'faviconmmh3', 'screenshot', 'tags', 'transport', 'version', 'metadata'],
+    "asset": ["time", "lastScanTime", "host", "ip", "port", "service", "tls", "transport", "version", "metadata", "project", "type", "tags", "taskName", "rootDomain", "urlPath", "hash", "cdnname", "url", "title", "error", "body", "screenshot", "faviconmmh3", "faviconpath", "rawheaders", "jarm", "technologies", "statuscode", "contentlength", "cdn", "webcheck", "iconcontent", "domain", "webServer"],
     "crawler": ['url', 'method', 'body', 'project', 'taskName', 'resultId', 'rootDomain', 'time', 'tags'],
     "DirScanResult": ['url', 'status', 'msg', 'project', 'length', 'taskName', 'rootDomain', 'tags'],
     "SensitiveResult": ['url', 'urlid', 'sid', 'match', 'project', 'color', 'time', 'md5', 'taskName', 'rootDomain', 'tags', 'status'],
