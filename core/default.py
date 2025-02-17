@@ -621,4 +621,6 @@ FIELD = {
     "SubdoaminTakerResult": ['input', 'value', 'cname', 'response', 'project', 'taskName', 'rootDomain', 'tags'],
     "UrlScan": ['input', 'source', 'outputtype', 'output', 'status', 'length', 'time', 'body', 'project', 'taskName', 'resultId', 'rootDomain', 'tags'],
     "vulnerability": ['url', 'vulnid', 'vulname', 'matched', 'project', 'level', 'time', 'request', 'response', 'taskName', 'rootdomain', 'tags', 'status'],
+    "httpAsset": ["time", "lastScanTime", "tls", "hash", "cdnname", "port", "url", "title", "type", "error", "body", "host", "ip", "screenshot", "faviconmmh3", "faviconpath", "rawheaders", "jarm", "technologies", "statuscode", "contentlength", "cdn", "webcheck", "project", "iconcontent", "domain", "taskName", "webServer", "service", "rootDomain", "tags"],
+    "otherAsset": ["time", "lastScanTime", "host", "ip", "port", "service", "tls", "transport", "version", "metadata", "project", "type", "tags", "taskName", "rootDomain", "urlPath"]
 }
