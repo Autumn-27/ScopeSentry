@@ -219,12 +219,19 @@ async def search_to_mongodb(expression_raw, keyword):
                             tmp_nor['$nor'].append({v: {"$regex": value, "$options": "i"}})
                         stack.append(tmp_nor)
                     else:
-                        tmp_nor = {"$nor": []}
                         if type(value) is int:
-                            tmp_nor['$nor'].append({keyword[key]: {"$eq": value}})
+                            stack.append({keyword[key]: {"$ne": value}})
                         else:
-                            tmp_nor['$nor'].append({keyword[key]: {"$regex": value, "$options": "i"}})
-                        stack.append(tmp_nor)
+                            if value == '':
+                                stack.append({
+                                                '$and': [
+                                                    {keyword[key]: {"$ne": ''}},  # 排除空字符串
+                                                    {keyword[key]: {"$ne": None}},  # 排除 null 和 undefined
+                                                    {keyword[key]: {"$not": {"$size": 0}}}
+                                                ]
+                                            })
+                            else:
+                                stack.append({keyword[key]: {"$not":{"$regex": value, "$options": "i"}}})
             elif "==" in expr:
                 key, value = expr.split("==", 1)
                 key = key.strip()
