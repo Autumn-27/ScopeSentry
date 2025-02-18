@@ -339,7 +339,8 @@ async def progress_info(request_data: dict, _: dict = Depends(verify_token), red
             "DirScan": ["", ""],
             "VulnerabilityScan": ["", ""],
             "All": ["", ""],
-            "target": t
+            "target": t,
+            "node": ""
         }
         if len(tg_key[t]) == 0:
             result_list.append(progress_result)
@@ -347,6 +348,7 @@ async def progress_info(request_data: dict, _: dict = Depends(verify_token), red
             if len(tg_key[t]) == 1:
                 if tg_key[t][0] in redis_result_dict:
                     if redis_result_dict[tg_key[t][0]]:
+                        progress_result["node"] = redis_result_dict[tg_key[t][0]].get("node", "")
                         progress_result['TargetHandler'][0] = redis_result_dict[tg_key[t][0]].get("TargetHandler_start", "")
                         progress_result['TargetHandler'][1] = redis_result_dict[tg_key[t][0]].get("TargetHandler_start", "")
 
