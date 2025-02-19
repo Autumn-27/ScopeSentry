@@ -351,6 +351,43 @@ async def get_sensitive_result_names(request_data: dict, db=Depends(get_mongo_db
         }
 
 
+@router.post("/result/info")
+async def get_sensitive_result_info(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    sid = request_data.get("sid", "")
+    if sid == "":
+        return {"message": "sid is null", "code": 500}
+    query = await get_search_query("SensitiveResult", request_data)
+    if query == "":
+        return {"message": "Search condition parsing error", "code": 500}
+    query["sid"] = sid
+    pipeline = [
+        {
+            "$match": query
+        },
+        {
+            "$project": {
+                "match": 1  # 只保留 match 字段
+            }
+        },
+        {
+            "$unwind": "$match"  # 将 match 数组展开为多个文档
+        },
+        {
+            "$group": {
+                "_id": None,
+                "unique_matches": {"$addToSet": "$match"}  # 使用 $addToSet 去重
+            }
+        }
+    ]
+    result = await db['SensitiveResult'].aggregate(pipeline).to_list(None)
+    return {
+        "code": 200,
+        "data": {
+            'list': result[0]["unique_matches"]
+        }
+    }
+
+
 @router.post("/result/body")
 async def get_sensitive_result_body_rules(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:

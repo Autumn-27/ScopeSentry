@@ -23,6 +23,7 @@ from loguru import logger
 async def insert_task(request_data, db):
     targetList = await get_target_list(request_data['target'], request_data.get("ignore", ""))
     taskNum = len(targetList)
+    del request_data["_id"]
     request_data['taskNum'] = taskNum
     request_data['target'] = request_data['target'].strip("\n").strip("\r").strip()
     request_data['progress'] = 0
@@ -38,8 +39,8 @@ async def insert_task(request_data, db):
 
 async def create_scan_task(request_data, id, stop_to_start = False):
     logger.info(f"[create_scan_task] begin: {id}")
-    async for db in get_mongo_db():
-            async for redis_con in get_redis_pool():
+    async with get_mongo_db() as db:
+            async with get_redis_pool() as redis_con:
                 request_data["id"] = str(id)
                 if request_data['allNode']:
                     all_node = await get_node_all(redis_con)
