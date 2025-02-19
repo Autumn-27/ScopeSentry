@@ -19,11 +19,12 @@ from core.redis_handler import get_redis_pool, get_redis_online_data
 from core.util import get_now_time
 from loguru import logger
 
-
+running_tasks = set()
 async def insert_task(request_data, db):
     targetList = await get_target_list(request_data['target'], request_data.get("ignore", ""))
     taskNum = len(targetList)
-    del request_data["_id"]
+    if "_id" in request_data:
+        del request_data["_id"]
     request_data['taskNum'] = taskNum
     request_data['target'] = request_data['target'].strip("\n").strip("\r").strip()
     request_data['progress'] = 0
@@ -33,14 +34,16 @@ async def insert_task(request_data, db):
     request_data["type"] = request_data.get("tp", "scan")
     result = await db.task.insert_one(request_data)
     if result.inserted_id:
-        asyncio.create_task(create_scan_task(request_data, str(result.inserted_id)))
+        task = asyncio.create_task(create_scan_task(request_data, str(result.inserted_id)))
+        running_tasks.add(task)
+        task.add_done_callback(lambda t: running_tasks.remove(t))
         return result.inserted_id
 
 
 async def create_scan_task(request_data, id, stop_to_start = False):
     logger.info(f"[create_scan_task] begin: {id}")
-    async with get_mongo_db() as db:
-            async with get_redis_pool() as redis_con:
+    async for db in get_mongo_db():
+            async for redis_con in get_redis_pool():
                 request_data["id"] = str(id)
                 if request_data['allNode']:
                     all_node = await get_node_all(redis_con)

@@ -54,6 +54,7 @@ async def get_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict = 
         }
 
     except Exception as e:
+        logger.error(traceback.format_exc())
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
@@ -86,7 +87,7 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
                 targetIds = request_data.get("targetIds", [])
                 if len(targetIds) == 0:
                     return {"code": 400, "message": "targetIds is null"}
-                target = get_target_ids(targetIds, index)
+                target = await get_target_ids(targetIds, index, db)
                 request_data["target"] = target
         else:
             # 正常创建任务
@@ -114,6 +115,7 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         else:
             return {"code": 400, "message": "Failed to add Task"}
     except Exception as e:
+        logger.error(traceback.format_exc())
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
@@ -152,8 +154,26 @@ async def get_target_search(query, number, index, db):
     return target
 
 
-async def get_target_ids(ids, index):
-    return ""
+async def get_target_ids(ids, index, db):
+    key = ["asset", "UrlScan", "subdomain"]
+    if index not in key:
+        return {"code": 404, "message": "Data not found"}
+    obj_ids = []
+    for data_id in ids:
+        obj_ids.append(ObjectId(data_id))
+    cursor = db[index].find({"_id": {"$in": obj_ids}})
+    target = ''
+    async for doc in cursor:
+        if index == "asset":
+            if doc["type"] == "http":
+                target += doc.get("url", "") + "\n"
+            else:
+                target += doc.get("service", "http") + "://" + doc["host"] + ":" + str(doc["port"]) + "\n"
+        elif index == "subdomain":
+            target += doc.get("host", "") + "\n"
+        elif index == "UrlScan":
+            target += doc.get("output", "") + "\n"
+    return target
 
 
 @router.post("/detail")
