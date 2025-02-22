@@ -149,7 +149,7 @@ Discord:
 
 QQ:
 
-<img src="docs/images/qq.png" alt="QQ" width="200"/>
+<img src="docs/images/qq.jpg" alt="QQ" width="200"/>
 
 WX:
 
