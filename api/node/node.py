@@ -161,3 +161,12 @@ async def get_node_plugin(request_data: dict, _: dict = Depends(verify_token), r
         # Handle exceptions as needed
         return {"message": "Error retrieving logs", "code": 500}
 
+
+@router.post("/restart")
+async def restart_node(request_data: dict, _: dict = Depends(verify_token), redis_con=Depends(get_redis_pool), db=Depends(get_mongo_db)):
+    node_name = request_data.get("name")
+    if not node_name:
+        return {"message": "Node name is required", "code": 400}
+
+    await refresh_config(node_name, 'restart')
+    return {"message": "Node restart successfully", "code": 200}
