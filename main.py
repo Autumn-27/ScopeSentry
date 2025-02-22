@@ -9,7 +9,7 @@ from starlette.middleware.gzip import GZipMiddleware
 from starlette.staticfiles import StaticFiles
 
 from core.config import *
-from core.update import update14, update15
+from core.update import update14, update15, update16
 
 set_config()
 
@@ -50,6 +50,8 @@ async def update():
                 await update14(db)
             if version < LooseVersion("1.5"):
                 await update15(db)
+            if version < LooseVersion("1.6"):
+                await update16(db)
             await db.config.update_one({"name": "version"}, {"$set": {"version": VERSION, "update": True}})
 
 

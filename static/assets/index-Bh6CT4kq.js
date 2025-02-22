@@ -1,0 +1,1 @@
+import{r as a}from"./index-CnCQNuY4.js";const r=r=>a.get({url:"/mock/example/list",params:r}),s=r=>a.get({url:"/mock/card/list",params:r}),e=r=>a.get({url:"/mock/example/treeList",params:r});export{r as a,e as b,s as g};

@@ -174,7 +174,7 @@ async def create_database():
             db['asset'].create_index([('host', ASCENDING)])
             db['asset'].create_index([('ip', ASCENDING)])
             db['asset'].create_index([('port', ASCENDING)])
-            db['asset'].create_index([('host', ASCENDING)],('port', ASCENDING))
+            db['asset'].create_index([('host', ASCENDING), ('port', ASCENDING)])
             logger.success("Project initialization successful")
         else:
             collection = db["config"]
