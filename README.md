@@ -154,4 +154,6 @@ QQ:
 WX:
 
 <img src="docs/images/wx-2.jpg" alt="WX" width="200"/>
+
+群满可以关注公众号后台私信拉群
 <img src="docs/images/wx.png" alt="WX" width="200"/>
