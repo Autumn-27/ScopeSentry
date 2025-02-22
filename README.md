@@ -37,7 +37,7 @@ Scope Sentry是一款具有分布式资产测绘、子域名枚举、信息泄�
 - 资产识别
 - 目录扫描
 - 漏洞扫描
-- 敏感信息泄露检测
+- 敏感信息泄露检测(支持扫描pdf)
 - URL提取
 - 爬虫
 - 页面监控
@@ -46,6 +46,7 @@ Scope Sentry是一款具有分布式资产测绘、子域名枚举、信息泄�
 - 资产分组
 - 多节点扫描
 - webhook
+- 数据导出
 
 ## To DO
 - 弱口令爆破
@@ -63,10 +64,10 @@ Scope Sentry是一款具有分布式资产测绘、子域名枚举、信息泄�
 
 paypal.me/autumn5520
 
+https://afdian.com/a/ScopeSentry
+
 <img src="docs/images/zfb.png" alt="WX" width="200"/>
 <img src="docs/images/wx.jpg" alt="WX" width="200"/>
-
-另~ 因本人精力有限，寻求合作
 
 
 
@@ -85,6 +86,8 @@ paypal.me/autumn5520
 ## 资产数据
 ### 资产
 ![alt text](docs/images/asset-cn.png)
+![alt text](docs/images/screenshot1.png)
+![alt text](docs/images/screenshot2.png)
 
 ### 快捷语法搜索：
 ![alt text](docs/images/search.gif)
