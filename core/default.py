@@ -376,6 +376,7 @@ PLUGINSMODULES = [
     "WebCrawler",
     "DirScan",
     "VulnerabilityScan",
+    "PassiveScan"
 ]
 
 PLUGINS = [
