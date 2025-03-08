@@ -27,6 +27,9 @@ Front-end：vue - vue-element-plus-admin
 - Plugin Market: [Plugin Market](https://plugin.scope-sentry.top/en)
 - Plugin Template：[https://github.com/Autumn-27/ScopeSentry-Plugin-Template](https://github.com/Autumn-27/ScopeSentry-Plugin-Template)
 
+## Plugin Flowchart
+
+<img src="流程图.svg"/>
 
 ## Current Features
 - Plugin System (Add any tool through extension)
