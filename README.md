@@ -2,158 +2,140 @@
 	<img src="docs/images/favicon.ico"/>
 </div>
 
-中文 | [English](./README_EN.md)
+English | [中文](./README_CN.md)
 
-## 编程语言
-服务端：python - FastApi
+## Introduction
+Scope Sentry is a tool with functions such as asset mapping, subdomain enumeration, information leakage detection, vulnerability scanning, directory scanning, subdomain takeover, crawler, and page monitoring. By building multiple nodes, users can freely choose nodes to run scanning tasks. When new vulnerabilities emerge, it can quickly check whether the concerned assets have related components.
 
-扫描端：go
+## Discord:
 
-前端：vue - vue-element-plus-admin
+[https://discord.gg/GWVwSBBm48](https://discord.gg/GWVwSBBm48)
 
-## 网址
+## Language
+Server：python - FastApi
 
-- 官网&安装教程：[https://www.scope-sentry.top](https://www.scope-sentry.top)
+Scan：go
+
+Front-end：vue - vue-element-plus-admin
+
+## Website
+
+- Official Website: [https://www.scope-sentry.top](https://www.scope-sentry.top/en/)
 - Github: [https://github.com/Autumn-27/ScopeSentry](https://github.com/Autumn-27/ScopeSentry)
-- 扫描端源码：[https://github.com/Autumn-27/ScopeSentry-Scan](https://github.com/Autumn-27/ScopeSentry-Scan)
-- 前端源码：[https://github.com/Autumn-27/ScopeSentry-UI](https://github.com/Autumn-27/ScopeSentry-UI)
-- 插件市场: [插件市场](https://plugin.scope-sentry.top/)
-- 插件模板：[https://github.com/Autumn-27/ScopeSentry-Plugin-Template](https://github.com/Autumn-27/ScopeSentry-Plugin-Template)
-
-## 介绍
-Scope Sentry是一款具有分布式资产测绘、子域名枚举、信息泄露检测、漏洞扫描、目录扫描、子域名接管、爬虫、页面监控功能的工具，通过构建多个节点，自由选择节点运行扫描任务。当出现新漏洞时可以快速排查关注资产是否存在相关组件。
+- Scanner source code: [https://github.com/Autumn-27/ScopeSentry-Scan](https://github.com/Autumn-27/ScopeSentry-Scan)
+- UI source code: [https://github.com/Autumn-27/ScopeSentry-UI](https://github.com/Autumn-27/ScopeSentry-UI)
+- Plugin Market: [Plugin Market](https://plugin.scope-sentry.top/en)
+- Plugin Template：[https://github.com/Autumn-27/ScopeSentry-Plugin-Template](https://github.com/Autumn-27/ScopeSentry-Plugin-Template)
 
 
-## 插件流程图
+## Current Features
+- Plugin System (Add any tool through extension)
+- Subdomain Enumeration
+- Subdomain Takeover Detection
+- Port Scanning
+- Asset Identification
+- Directory Scanning
+- Vulnerability Scanning
+- Sensitive Information Leakage Detection
+- URL Extraction
+- Crawler
+- Page Monitoring
+- Custom WEB Fingerprint
+- POC Import
+- Asset Grouping
+- Multi-Node Scanning
+- Webhook
 
-<img src="流程图.svg"/>
+## To Do
+- Weak Password Cracking
+- 
+## Installation
 
+For installation instructions, see the [official website](https://www.scope-sentry.top)
 
-## 目前功能
-- 插件系统（通过拓展的方式加入任何工具）
-- 子域名枚举
-- 子域名接管检测
-- 端口扫描
-- 资产识别
-- 目录扫描
-- 漏洞扫描
-- 敏感信息泄露检测(支持扫描pdf)
-- URL提取
-- 爬虫
-- 页面监控
-- 自定义WEB指纹
-- POC导入
-- 资产分组
-- 多节点扫描
-- webhook
-- 数据导出
+## Communication
 
-## To DO
-- 弱口令爆破
-- 关系图
+Discord:
 
-## 安装
-
-安装教程见[官网](https://www.scope-sentry.top)
-
-## 交流
-联系方式见下方
-
-## 赞助 && 合作
-如果项目对您有帮助，赞助作者一杯咖啡吧~
-
-paypal.me/autumn5520
-
-https://afdian.com/a/ScopeSentry
-
-<img src="docs/images/zfb.png" alt="WX" width="200"/>
-<img src="docs/images/wx.jpg" alt="WX" width="200"/>
+[https://discord.gg/agsYdAyN](https://discord.gg/agsYdAyN)
 
 
+## Sponsorship
+If the project is helpful to you, sponsor the author for a cup of coffee~
 
-## 截图
+https://www.paypal.com/paypalme/autumn5520
 
-### 登录
+
+## Screenshots
+
+### Login
 
 ![alt text](docs/images/login.png)
 
-### 首页面板
-![alt text](docs/images/index-cn.png)
+### Homepage Dashboard
+![alt text](docs/images/index-en.png)
 
-## 插件系统
+## Plugin System
 ![alt text](docs/images/plugin-cn.png)
+![alt text](docs/images/plugin-m-en.png)
+## Asset Data
+### Assets
+![alt text](docs/images/asset-en.png)
+![alt text](docs/images/asset-s-en.png)
+![alt text](docs/images/asset-s2-en.png)
 
-## 资产数据
-### 资产
-![alt text](docs/images/asset-cn.png)
-![alt text](docs/images/screenshot1.png)
-![alt text](docs/images/screenshot2.png)
-
-### 快捷语法搜索：
+### Quick syntax search：
 ![alt text](docs/images/search.gif)
-### 子域名
-![alt text](docs/images/subdomain-cn.png)
 
-### 子域名接管
-![alt text](docs/images/subt-cn.png)
+### Subdomains
+![alt text](docs/images/subdomain-en.png)
+
+### Subdomain Takeover
+![alt text](docs/images/subt-en.png)
 
 ### URL
-![alt text](docs/images/url-cn.png)
-
-### 爬虫
 ![alt text](docs/images/craw-cn.png)
 
-### 敏感信息
+### Crawler
+![alt text](docs/images/craw-en.png)
+
+### Sensitive Information
 ![alt text](docs/images/sns-cn.png)
 
-### 目录扫描
+### Directory Scanning
 ![alt text](docs/images/dir-cn.png)
 
-### 漏洞
-![alt text](docs/images/vul-cn.png)
+### Vulnerabilities
+![alt text](docs/images/vul-en.png)
 
-### 页面监控
-![alt text](docs/images/page-cn.png)
-
-## 项目
+### Page Monitoring
+![alt text](docs/images/page-en.png)
+![alt text](docs/images/page-change.png)
+## Projects
 
 ![](docs/images/project-cn.png)
 
-
-## 项目资产聚合
-### 面板-概况
+## Project asset aggregation
+### Panel - Overview
 ![](docs/images/project-dsh.png)
-### 子域名
+### Subdomains
 ![](docs/images/project-subdomain.png)
-### 端口
+### Port
 ![](docs/images/project-port.png)
-### 服务
+### Service
 ![](docs/images/project-server.png)
 
-## 任务
+## Tasks
 
-![](docs/images/task-cn.png)
+![](docs/images/task-en.png)
 
-## 任务进度
+## Task Progress
 
-![](docs/images/task-pg-cn.png)
+![](docs/images/task-pg-en.png)
 
-## 节点
+## Nodes
 
 ![](docs/images/node-cn.png)
 
 
-Discord:
 
-[https://discord.gg/GWVwSBBm48](https://discord.gg/GWVwSBBm48)
-
-QQ:
-
-<img src="docs/images/qq.jpg" alt="QQ" width="200"/>
-
-WX:
-
-<img src="docs/images/wx-2.jpg" alt="WX" width="200"/>
-
-群满可以关注公众号后台私信拉群
-<img src="docs/images/wx.png" alt="WX" width="200"/>
