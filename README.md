@@ -141,4 +141,10 @@ https://www.paypal.com/paypalme/autumn5520
 ![](docs/images/node-cn.png)
 
 
+#License
 
+All branches of this project follow AGPL-3.0, and additional terms need to be followed:
+1. The commercial use of this software requires a separate commercial license.
+2. Companies, organizations, and for-profit entities must obtain a commercial license before using, distributing, or modifying this software.
+Individuals and non-profit organizations are free to use this software in accordance with the terms of AGPL-3.0.
+4. If you have any commercial license inquiries, please contact rainy-autumn@outlook.com .
