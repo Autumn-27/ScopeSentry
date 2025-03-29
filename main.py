@@ -52,6 +52,8 @@ async def update():
                 await update15(db)
             if version < LooseVersion("1.6"):
                 await update16(db)
+            if version < LooseVersion("1.6.1"):
+                await update161(db)
             await db.config.update_one({"name": "version"}, {"$set": {"version": VERSION, "update": True}})
 
 
