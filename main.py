@@ -9,7 +9,7 @@ from starlette.middleware.gzip import GZipMiddleware
 from starlette.staticfiles import StaticFiles
 
 from core.config import *
-from core.update import update14, update15, update16
+from core.update import update14, update15, update16, update161
 
 set_config()
 

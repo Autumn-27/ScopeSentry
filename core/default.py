@@ -528,7 +528,7 @@ PLUGINS = [
         "name": "trufflehog",
         "hash": "1aa212b9578dc3fb1409ee8de8ed005e",
         "parameter": "-pdf false -verify false",
-        "help": "-pdf 开启pdf检测 -exclude 排除提取的规则 -verify 是否进行验证（验证通过再统计结果）",
+        "help": "-pdf 开启pdf检测 -exclude 排除提取的规则(name1,name2) -verify 是否进行验证（验证通过再统计结果）",
         "introduction": "trufflehog密钥提取",
         "isSystem": True,
         "version": "1.0",
