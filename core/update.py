@@ -287,3 +287,5 @@ async def update161(db):
         "version": "1.0",
         "source": ""
     }])
+    await db['asset'].create_index([('project', ASCENDING)])
+    await db['asset'].create_index([('taskName', ASCENDING)])

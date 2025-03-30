@@ -186,6 +186,7 @@ def string_to_postfix(expression):
 async def search_to_mongodb(expression_raw, keyword):
     try:
         keyword["task"] = "taskName"
+        keyword["rootDomain"] = "rootDomain"
         keyword["tag"] = "tags"
         if expression_raw == "":
             return [{}]
