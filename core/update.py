@@ -282,7 +282,7 @@ async def update161(db):
         "hash": "1aa212b9578dc3fb1409ee8de8ed005e",
         "parameter": "-pdf false -verify false",
         "help": "-pdf 开启pdf检测 -exclude 排除提取的规则(name1,name2) -verify 是否进行验证（验证通过再统计结果）",
-        "introduction": "trufflehog密钥提取",
+        "introduction": "trufflehog密钥提取，如果设置了排除规则，需要重新安装才能重新启用被排除的规则",
         "isSystem": True,
         "version": "1.0",
         "source": ""
