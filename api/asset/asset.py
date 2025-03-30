@@ -27,7 +27,7 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
         query = await get_search_query("asset", request_data)
         if query == "":
             return {"message": "Search condition parsing error", "code": 500}
-        total_count = await db['asset'].count_documents(query)
+        # total_count = await db['asset'].count_documents(query)
         cursor: AsyncIOMotorCursor = db['asset'].find(query, {"_id": 0,
                                           "id": {"$toString": "$_id"},
                                           "host": 1,
@@ -94,7 +94,6 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
             "code": 200,
             "data": {
                 'list': result_list,
-                'total': total_count
             }
         }
     except Exception as e:

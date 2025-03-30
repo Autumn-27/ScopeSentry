@@ -111,3 +111,22 @@ async def delete_tag(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
+
+
+@router.post("/total")
+async def total_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    index = request_data.get("index", "")
+    key = ["asset", "DirScanResult", "SensitiveResult", "SubdoaminTakerResult", "UrlScan", "crawler", "subdomain",
+           "vulnerability", "PageMonitoring"]
+    if index not in key:
+        return {"code": 404, "message": "Data not found"}
+    query = await get_search_query(index, request_data)
+    if query == "":
+        return {"message": "Search condition parsing error", "code": 500}
+    total_count = await db['asset'].count_documents(query)
+    return {
+        "code": 200,
+        "data": {
+            'total': total_count
+        }
+    }

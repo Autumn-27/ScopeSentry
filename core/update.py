@@ -289,3 +289,28 @@ async def update161(db):
     }])
     await db['asset'].create_index([('project', ASCENDING)])
     await db['asset'].create_index([('taskName', ASCENDING)])
+    await db['asset'].create_index([('rootDomain', ASCENDING)])
+
+    await db['subdomain'].create_index([('project', ASCENDING)])
+    await db['subdomain'].create_index([('taskName', ASCENDING)])
+    await db['subdomain'].create_index([('rootDomain', ASCENDING)])
+
+    await db['UrlScan'].create_index([('project', ASCENDING)])
+    await db['UrlScan'].create_index([('taskName', ASCENDING)])
+    await db['UrlScan'].create_index([('rootDomain', ASCENDING)])
+
+    await db['crawler'].create_index([('project', ASCENDING)])
+    await db['crawler'].create_index([('taskName', ASCENDING)])
+    await db['crawler'].create_index([('rootDomain', ASCENDING)])
+
+    await db['SensitiveResult'].create_index([('project', ASCENDING)])
+    await db['SensitiveResult'].create_index([('taskName', ASCENDING)])
+    await db['SensitiveResult'].create_index([('rootDomain', ASCENDING)])
+
+    await db['DirScanResult'].create_index([('project', ASCENDING)])
+    await db['DirScanResult'].create_index([('taskName', ASCENDING)])
+    await db['DirScanResult'].create_index([('rootDomain', ASCENDING)])
+
+    await db['vulnerability'].create_index([('project', ASCENDING)])
+    await db['vulnerability'].create_index([('taskName', ASCENDING)])
+    await db['vulnerability'].create_index([('rootDomain', ASCENDING)])

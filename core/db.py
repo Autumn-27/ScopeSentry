@@ -177,6 +177,31 @@ async def create_database():
             db['asset'].create_index([('host', ASCENDING), ('port', ASCENDING)])
             db['asset'].create_index([('project', ASCENDING)])
             db['asset'].create_index([('taskName', ASCENDING)])
+            db['asset'].create_index([('rootDomain', ASCENDING)])
+
+            db['subdomain'].create_index([('project', ASCENDING)])
+            db['subdomain'].create_index([('taskName', ASCENDING)])
+            db['subdomain'].create_index([('rootDomain', ASCENDING)])
+
+            db['UrlScan'].create_index([('project', ASCENDING)])
+            db['UrlScan'].create_index([('taskName', ASCENDING)])
+            db['UrlScan'].create_index([('rootDomain', ASCENDING)])
+
+            db['crawler'].create_index([('project', ASCENDING)])
+            db['crawler'].create_index([('taskName', ASCENDING)])
+            db['crawler'].create_index([('rootDomain', ASCENDING)])
+
+            db['SensitiveResult'].create_index([('project', ASCENDING)])
+            db['SensitiveResult'].create_index([('taskName', ASCENDING)])
+            db['SensitiveResult'].create_index([('rootDomain', ASCENDING)])
+
+            db['DirScanResult'].create_index([('project', ASCENDING)])
+            db['DirScanResult'].create_index([('taskName', ASCENDING)])
+            db['DirScanResult'].create_index([('rootDomain', ASCENDING)])
+
+            db['vulnerability'].create_index([('project', ASCENDING)])
+            db['vulnerability'].create_index([('taskName', ASCENDING)])
+            db['vulnerability'].create_index([('rootDomain', ASCENDING)])
             logger.success("Project initialization successful")
         else:
             collection = db["config"]
