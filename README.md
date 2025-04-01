@@ -7,6 +7,10 @@ English | [中文](./README_CN.md)
 ## Introduction
 Scope Sentry is a tool with functions such as asset mapping, subdomain enumeration, information leakage detection, vulnerability scanning, directory scanning, subdomain takeover, crawler, and page monitoring. By building multiple nodes, users can freely choose nodes to run scanning tasks. When new vulnerabilities emerge, it can quickly check whether the concerned assets have related components.
 
+Distributed Implementation Reference Articles: [https://mp.weixin.qq.com/s/xfgRxUjljoQ8KzacblktxA](https://mp.weixin.qq.com/s/xfgRxUjljoQ8KzacblktxA)
+
+Server Recommendation: [lightnode](https://www.lightnode.com/?inviteCode=CQ11JU&promoteWay=LINK)
+
 ## Discord:
 
 [https://discord.gg/GWVwSBBm48](https://discord.gg/GWVwSBBm48)
