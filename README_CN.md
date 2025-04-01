@@ -7,6 +7,10 @@
 ## 介绍
 Scope Sentry是一款具有分布式资产测绘、子域名枚举、信息泄露检测、漏洞扫描、目录扫描、子域名接管、爬虫、页面监控功能的工具，通过构建多个节点，自由选择节点运行扫描任务。当出现新漏洞时可以快速排查关注资产是否存在相关组件。
 
+分布式搭建参考文章：[https://mp.weixin.qq.com/s/xfgRxUjljoQ8KzacblktxA](https://mp.weixin.qq.com/s/xfgRxUjljoQ8KzacblktxA)
+
+服务器推荐：[lightnode](https://www.lightnode.com/?inviteCode=CQ11JU&promoteWay=LINK)
+
 ## 编程语言
 服务端：python - FastApi
 
