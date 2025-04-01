@@ -168,6 +168,8 @@ async def create_database():
             # 创建页面监控文档，url不重复
             db['PageMonitoring'].create_index([('url', ASCENDING)], unique=True)
             db['PageMonitoringBody'].create_index([('md5', ASCENDING)], unique=True)
+            # 创建RootDomain
+            db['PageMonitoringBody'].create_index([('domain', ASCENDING)], unique=True)
             # 创建asset集合索引
             db['asset'].create_index([('time', ASCENDING)])
             db['asset'].create_index([('url', ASCENDING)])
