@@ -314,3 +314,13 @@ async def update161(db):
     await db['vulnerability'].create_index([('project', ASCENDING)])
     await db['vulnerability'].create_index([('taskName', ASCENDING)])
     await db['vulnerability'].create_index([('rootDomain', ASCENDING)])
+
+    await db['RootDomain'].create_index([('project', ASCENDING)])
+    await db['RootDomain'].create_index([('taskName', ASCENDING)])
+    await db['RootDomain'].create_index([('domain', ASCENDING)])
+
+    await db['APP'].create_index([('project', ASCENDING)])
+    await db['APP'].create_index([('taskName', ASCENDING)])
+
+    await db['MP'].create_index([('project', ASCENDING)])
+    await db['MP'].create_index([('taskName', ASCENDING)])

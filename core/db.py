@@ -204,6 +204,17 @@ async def create_database():
             db['vulnerability'].create_index([('project', ASCENDING)])
             db['vulnerability'].create_index([('taskName', ASCENDING)])
             db['vulnerability'].create_index([('rootDomain', ASCENDING)])
+
+            db['RootDomain'].create_index([('project', ASCENDING)])
+            db['RootDomain'].create_index([('taskName', ASCENDING)])
+            db['RootDomain'].create_index([('domain', ASCENDING)])
+
+            db['APP'].create_index([('project', ASCENDING)])
+            db['APP'].create_index([('taskName', ASCENDING)])
+
+            db['MP'].create_index([('project', ASCENDING)])
+            db['MP'].create_index([('taskName', ASCENDING)])
+
             logger.success("Project initialization successful")
         else:
             collection = db["config"]
