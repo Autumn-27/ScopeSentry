@@ -123,7 +123,10 @@ async def total_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
     query = await get_search_query(index, request_data)
     if query == "":
         return {"message": "Search condition parsing error", "code": 500}
-    total_count = await db['asset'].count_documents(query)
+    if len(query) == 0:
+        total_count = await db['asset'].count_documents({"_id": {"$exists": True}})
+    else:
+        total_count = await db['asset'].count_documents(query)
     return {
         "code": 200,
         "data": {

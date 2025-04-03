@@ -95,11 +95,9 @@ SEARCHKEY = {
             'sname': 'sid',
             "body": "body",
             "info": "match",
-            'project': 'project',
             'md5': 'md5'
         },
         'DirScanResult': {
-            'project': 'project',
             'statuscode': 'status',
             'url': 'url',
             'redirect': 'msg',
@@ -108,7 +106,6 @@ SEARCHKEY = {
         'vulnerability': {
             'url': 'url',
             'vulname': 'vulname',
-            'project': 'project',
             'matched': 'matched',
             'request': 'request',
             'response': 'response',
@@ -118,14 +115,12 @@ SEARCHKEY = {
             'domain': 'host',
             'ip': 'ip',
             'type': 'type',
-            'project': 'project',
             'value': 'value'
         },
         'asset': {
             'app': 'technologies',
             'body': 'body',
             'header': 'rawheaders',
-            'project': 'project',
             'title': 'title',
             'statuscode': 'statuscode',
             'icon': 'faviconmmh3',
@@ -141,11 +136,9 @@ SEARCHKEY = {
             'value': 'value',
             'type': 'cname',
             'response': 'response',
-            'project': 'project',
         },
         'UrlScan': {
             'url': 'output',
-            'project': 'project',
             'input': 'input',
             'source': 'source',
             "resultId": 'resultId',
@@ -153,7 +146,6 @@ SEARCHKEY = {
         },
         'PageMonitoring': {
             'url': 'url',
-            'project': 'project',
             'hash': 'hash',
             'diff': 'diff',
             'response': 'response'
@@ -162,8 +154,12 @@ SEARCHKEY = {
             'url': 'url',
             'method': 'method',
             'body': 'body',
-            'project': 'project',
             "resultId": 'resultId',
+        },
+        'RootDomain': {
+            'domain': 'domain',
+            'icp': 'icp',
+            'company': 'company'
         }
     }
 

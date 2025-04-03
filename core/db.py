@@ -184,6 +184,7 @@ async def create_database():
             db['subdomain'].create_index([('project', ASCENDING)])
             db['subdomain'].create_index([('taskName', ASCENDING)])
             db['subdomain'].create_index([('rootDomain', ASCENDING)])
+            db['subdomain'].create_index([('time', ASCENDING)])
 
             db['UrlScan'].create_index([('project', ASCENDING)])
             db['UrlScan'].create_index([('taskName', ASCENDING)])
@@ -208,6 +209,7 @@ async def create_database():
             db['RootDomain'].create_index([('project', ASCENDING)])
             db['RootDomain'].create_index([('taskName', ASCENDING)])
             db['RootDomain'].create_index([('domain', ASCENDING)])
+            db['RootDomain'].create_index([('time', ASCENDING)])
 
             db['APP'].create_index([('project', ASCENDING)])
             db['APP'].create_index([('taskName', ASCENDING)])
