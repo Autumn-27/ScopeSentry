@@ -303,7 +303,7 @@ async def update_project_data(request_data: dict, db=Depends(get_mongo_db), _: d
             request_data["target"] = target
             request_data["name"] = request_data["name"] + "-project-" + time_now
             await insert_task(request_data, db)
-        background_tasks.add_task(update_project, root_domains, pro_id, False)
+        background_tasks.add_task(update_project, root_domains, pro_id, True)
         await refresh_config('all', 'project', pro_id)
         Project_List[request_data.get("name")] = pro_id
         return {"code": 200, "message": "successfully"}

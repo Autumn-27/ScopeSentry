@@ -18,7 +18,9 @@ async def update_project(root_domain, project_id, change=False):
                         'PageMonitoring': ["url"],
                         'SensitiveResult': ["url"],
                         'UrlScan': ["input"],
-                        'crawler': ["url"]}
+                        'crawler': ["url"],
+                        'RootDomain': ['domain', 'icp', 'company']
+    }
     async for db in get_mongo_db():
         for a in asset_collection_list:
             if change:
@@ -29,9 +31,18 @@ async def update_project(root_domain, project_id, change=False):
 
 async def asset_add_project(root_domain, doc_name, db, project_id):
     # 构建查询条件
-    query = {
-        "rootDomain": {"$in": root_domain}
-    }
+    if doc_name == "RootDomain":
+        query = {
+                    "$or": [
+                        {"domain": {"$in": root_domain}},
+                        {"icp": {"$in": root_domain}},
+                        {"company": {"$in": root_domain}}
+                    ]
+                }
+    else:
+        query = {
+            "rootDomain": {"$in": root_domain}
+        }
     update_query = {
         "$set": {
             "project": project_id
@@ -44,12 +55,22 @@ async def asset_add_project(root_domain, doc_name, db, project_id):
 
 async def asset_update_project(root_domain, db_key, doc_name, db, project_id):
     # 构建查询条件
-    query = {
-                "$and": [
-                    {"project": project_id},
-                    {"rootDomain": {"$nin": root_domain}}
-                ]
-            }
+    if doc_name == "RootDomain":
+        query = {
+            "$and": [
+                {"project": project_id},
+                {"domain": {"$nin": root_domain}},
+                {"icp": {"$nin": root_domain}},
+                {"company": {"$nin": root_domain}},
+            ]
+        }
+    else:
+        query = {
+                    "$and": [
+                        {"project": project_id},
+                        {"rootDomain": {"$nin": root_domain}}
+                    ]
+                }
     update_query = {
         "$set": {
             "project": ""
