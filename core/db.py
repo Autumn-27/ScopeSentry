@@ -208,7 +208,7 @@ async def create_database():
 
             db['RootDomain'].create_index([('project', ASCENDING)])
             db['RootDomain'].create_index([('taskName', ASCENDING)])
-            db['RootDomain'].create_index([('domain', ASCENDING)])
+            db['RootDomain'].create_index([('domain', ASCENDING)], unique=True)
             db['RootDomain'].create_index([('time', ASCENDING)])
 
             db['APP'].create_index([('project', ASCENDING)])
@@ -267,4 +267,5 @@ async def get_project(client):
     cursor = collection.find({}, {"_id": 1, "name": 1})
     async for document in cursor:
         document['id'] = str(document['_id'])
-        Project_List[document['name'].lower()] = document['id']
+        # Project_List[document['name'].lower()] = document['id']
+        Project_List[document['id']] = document['name']

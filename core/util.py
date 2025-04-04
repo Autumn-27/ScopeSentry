@@ -211,9 +211,9 @@ async def search_to_mongodb(expression_raw, keyword):
                     value = value.strip("\"")
                     if key == 'statuscode' or key == 'length':
                         value = int(value)
-                    if key == 'project':
-                        if value.lower() in Project_List:
-                            value = Project_List[value.lower()]
+                    # if key == 'project':
+                    #     if value.lower() in Project_List:
+                    #         value = Project_List[value.lower()]
                     if type(keyword[key]) is list:
                         tmp_nor = {"$nor": []}
                         for v in keyword[key]:
@@ -241,9 +241,9 @@ async def search_to_mongodb(expression_raw, keyword):
                     value = value.strip("\"")
                     if key == 'statuscode' or key == 'length':
                         value = int(value)
-                    if key == 'project':
-                        if value.lower() in Project_List:
-                            value = Project_List[value.lower()]
+                    # if key == 'project':
+                    #     if value.lower() in Project_List:
+                    #         value = Project_List[value.lower()]
                     if type(keyword[key]) is list:
                         tmp_or = {"$or": []}
                         for v in keyword[key]:
@@ -258,9 +258,9 @@ async def search_to_mongodb(expression_raw, keyword):
                 if key in keyword:
                     value = value.strip()
                     value = value.strip("\"")
-                    if key == 'project':
-                        if value.lower() in Project_List:
-                            value = Project_List[value.lower()]
+                    # if key == 'project':
+                    #     if value.lower() in Project_List:
+                    #         value = Project_List[value.lower()]
                     if type(keyword[key]) is list:
                         tmp_or = {"$or": []}
                         for v in keyword[key]:

@@ -210,7 +210,8 @@ async def add_project_rule(request_data: dict, db=Depends(get_mongo_db), _: dict
             await insert_task(request_data, db)
         background_tasks.add_task(update_project, root_domains, str(result.inserted_id), False)
         await refresh_config('all', 'project', str(result.inserted_id))
-        Project_List[name] = str(result.inserted_id)
+        # Project_List[name] = str(result.inserted_id)
+        Project_List[str(result.inserted_id)] = name
         return {"code": 200, "message": "Project added successfully"}
     else:
         return {"code": 400, "message": "Failed to add Project"}
@@ -234,10 +235,11 @@ async def delete_project_rules(request_data: dict, db=Depends(get_mongo_db), _: 
                 if job:
                     scheduler.remove_job(pro_id)
                 background_tasks.add_task(delete_asset_project_handler, pro_id)
-                for project_id in Project_List:
-                    if pro_id == Project_List[project_id]:
-                        del Project_List[project_id]
-                        break
+                del Project_List[pro_id]
+                # for project_id in Project_List:
+                #     if pro_id == Project_List[project_id]:
+                #         del Project_List[project_id]
+                #         break
             await db.ScheduledTasks.delete_many({"id": {"$in": pro_ids}})
             return {"code": 200, "message": "Project deleted successfully"}
         else:
@@ -305,7 +307,8 @@ async def update_project_data(request_data: dict, db=Depends(get_mongo_db), _: d
             await insert_task(request_data, db)
         background_tasks.add_task(update_project, root_domains, pro_id, True)
         await refresh_config('all', 'project', pro_id)
-        Project_List[request_data.get("name")] = pro_id
+        # Project_List[request_data.get("name")] = pro_id
+        Project_List[pro_id] = request_data.get("name")
         return {"code": 200, "message": "successfully"}
     except Exception as e:
         logger.error(str(e))

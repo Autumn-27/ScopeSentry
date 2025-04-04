@@ -42,10 +42,9 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
                                   .sort([("time", DESCENDING)]))
     result = await cursor.to_list(length=None)
     result_list = []
-    reversed_dict = {v: k for k, v in Project_List.items()}
     for i in result:
-        if i["project"] in reversed_dict:
-            i["project"] = reversed_dict[i["project"]]
+        if i["project"] in Project_List:
+            i["project"] = Project_List[i["project"]]
         else:
             i["project"] = ""
         result_list.append(i)
