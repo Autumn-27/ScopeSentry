@@ -279,7 +279,7 @@ async def get_search_query(name, request_data):
     search_query = request_data.get("search", "")
     search_key_v = SEARCHKEY
     keyword = search_key_v[name]
-    keyword["project"] = "project"
+    # keyword["project"] = "project"
     query = await search_to_mongodb(search_query, keyword)
     if query == "" or query is None:
         return ""
