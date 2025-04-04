@@ -4,6 +4,8 @@
 # @contact   : rainy-autumn@outlook.com
 # @time      : 2024/10/29 21:00
 # -------------------------------------------
+import re
+
 from core.db import get_mongo_db
 from loguru import logger
 
@@ -32,10 +34,11 @@ async def update_project(root_domain, project_id, change=False):
 async def asset_add_project(root_domain, doc_name, db, project_id):
     # 构建查询条件
     if doc_name == "RootDomain":
+        regex_patterns = [f"^{re.escape(item)}" for item in root_domain]
         query = {
                     "$or": [
                         {"domain": {"$in": root_domain}},
-                        {"icp": {"$in": root_domain}},
+                        {"icp": {"$regex": "|".join(regex_patterns), "$options": "i"}},
                         {"company": {"$in": root_domain}}
                     ]
                 }
@@ -56,11 +59,17 @@ async def asset_add_project(root_domain, doc_name, db, project_id):
 async def asset_update_project(root_domain, db_key, doc_name, db, project_id):
     # 构建查询条件
     if doc_name == "RootDomain":
+        regex_patterns = [f"^{re.escape(item)}" for item in root_domain]
         query = {
             "$and": [
                 {"project": project_id},
                 {"domain": {"$nin": root_domain}},
-                {"icp": {"$nin": root_domain}},
+                {
+                    "icp": {
+                        "$nin": root_domain,
+                        "$not": {"$regex": "|".join(regex_patterns), "$options": "i"}
+                    }
+                },
                 {"company": {"$nin": root_domain}},
             ]
         }

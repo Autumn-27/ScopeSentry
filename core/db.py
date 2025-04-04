@@ -176,7 +176,7 @@ async def create_database():
             db['asset'].create_index([('host', ASCENDING)])
             db['asset'].create_index([('ip', ASCENDING)])
             db['asset'].create_index([('port', ASCENDING)])
-            db['asset'].create_index([('host', ASCENDING), ('port', ASCENDING)])
+            db['asset'].create_index([('host', ASCENDING), ('port', ASCENDING)], unique=True)
             db['asset'].create_index([('project', ASCENDING)])
             db['asset'].create_index([('taskName', ASCENDING)])
             db['asset'].create_index([('rootDomain', ASCENDING)])
