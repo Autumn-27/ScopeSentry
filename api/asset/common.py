@@ -52,7 +52,7 @@ async def add_tag(request_data: dict, db=Depends(get_mongo_db), _: dict = Depend
         id = request_data.get("id", "")
         tag = request_data.get("tag", "")
         key = ["asset", "DirScanResult", "SensitiveResult", "SubdoaminTakerResult", "UrlScan", "crawler", "subdomain",
-               "vulnerability", "PageMonitoring"]
+               "vulnerability", "PageMonitoring", "RootDomain", "app", "mp"]
         if tp not in key or id == "" or tag == "":
             return {"code": 404, "message": "Data not found"}
         query = {"_id": ObjectId(id)}

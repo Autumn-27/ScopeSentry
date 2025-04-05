@@ -160,6 +160,15 @@ SEARCHKEY = {
             'domain': 'domain',
             'icp': 'icp',
             'company': 'company'
+        },
+        'app': {
+            'name': 'name',
+            'icp': 'icp',
+            'company': 'company',
+            'category': 'category',
+            'description': 'description',
+            'url': 'url',
+            'apk': 'apk'
         }
     }
 

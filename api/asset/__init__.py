@@ -18,6 +18,7 @@ from .SubdoaminTaker import router as subdoamintaker_route
 from .vulnerability import router as vulnerability_route
 from .statistics import router as statistics_route
 from .root_domain import router as root_domain_route
+from .app import router as app_route
 router = APIRouter()
 
 router.include_router(asset_routeer, prefix="/asset")
@@ -32,3 +33,4 @@ router.include_router(dirscan_route, prefix="/dirscan/result")
 router.include_router(subdoamintaker_route, prefix="/subdomaintaker")
 router.include_router(vulnerability_route, prefix="/vul")
 router.include_router(root_domain_route, prefix="/root/domain")
+router.include_router(app_route, prefix="/app")
