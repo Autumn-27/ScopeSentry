@@ -211,11 +211,13 @@ async def create_database():
             db['RootDomain'].create_index([('domain', ASCENDING)], unique=True)
             db['RootDomain'].create_index([('time', ASCENDING)])
 
-            db['APP'].create_index([('project', ASCENDING)])
-            db['APP'].create_index([('taskName', ASCENDING)])
+            db['app'].create_index([('project', ASCENDING)])
+            db['app'].create_index([('taskName', ASCENDING)])
+            db['app'].create_index([('time', ASCENDING)])
 
-            db['MP'].create_index([('project', ASCENDING)])
-            db['MP'].create_index([('taskName', ASCENDING)])
+            db['mp'].create_index([('project', ASCENDING)])
+            db['mp'].create_index([('taskName', ASCENDING)])
+            db['mp'].create_index([('time', ASCENDING)])
 
             logger.success("Project initialization successful")
         else:

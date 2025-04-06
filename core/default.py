@@ -169,6 +169,14 @@ SEARCHKEY = {
             'description': 'description',
             'url': 'url',
             'apk': 'apk'
+        },
+        'mp': {
+            'name': 'name',
+            'icp': 'icp',
+            'company': 'company',
+            'category': 'category',
+            'description': 'description',
+            'url': 'url',
         }
     }
 

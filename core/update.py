@@ -321,8 +321,10 @@ async def update161(db):
     await db['RootDomain'].create_index([('domain', ASCENDING)], unique=True)
     await db['RootDomain'].create_index([('time', ASCENDING)])
 
-    await db['APP'].create_index([('project', ASCENDING)])
-    await db['APP'].create_index([('taskName', ASCENDING)])
+    await db['app'].create_index([('project', ASCENDING)])
+    await db['app'].create_index([('taskName', ASCENDING)])
+    await db['app'].create_index([('time', ASCENDING)])
 
-    await db['MP'].create_index([('project', ASCENDING)])
-    await db['MP'].create_index([('taskName', ASCENDING)])
+    await db['mp'].create_index([('project', ASCENDING)])
+    await db['mp'].create_index([('taskName', ASCENDING)])
+    await db['mp'].create_index([('time', ASCENDING)])
