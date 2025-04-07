@@ -214,10 +214,12 @@ async def create_database():
             db['app'].create_index([('project', ASCENDING)])
             db['app'].create_index([('taskName', ASCENDING)])
             db['app'].create_index([('time', ASCENDING)])
+            db['app'].create_index([('name', ASCENDING)])
 
             db['mp'].create_index([('project', ASCENDING)])
             db['mp'].create_index([('taskName', ASCENDING)])
             db['mp'].create_index([('time', ASCENDING)])
+            db['mp'].create_index([('name', ASCENDING)])
 
             logger.success("Project initialization successful")
         else:

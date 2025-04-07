@@ -324,7 +324,9 @@ async def update161(db):
     await db['app'].create_index([('project', ASCENDING)])
     await db['app'].create_index([('taskName', ASCENDING)])
     await db['app'].create_index([('time', ASCENDING)])
+    await db['app'].create_index([('name', ASCENDING)])
 
     await db['mp'].create_index([('project', ASCENDING)])
     await db['mp'].create_index([('taskName', ASCENDING)])
     await db['mp'].create_index([('time', ASCENDING)])
+    await db['mp'].create_index([('name', ASCENDING)])

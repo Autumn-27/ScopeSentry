@@ -21,7 +21,7 @@ async def delete_data(request_data: dict, db=Depends(get_mongo_db), _: dict = De
     try:
         data_ids = request_data.get("ids", [])
         index = request_data.get("index", "")
-        key = ["asset", "DirScanResult", "SensitiveResult", "SubdoaminTakerResult", "UrlScan", "crawler", "subdomain", "vulnerability", "PageMonitoring"]
+        key = ["asset", "DirScanResult", "SensitiveResult", "SubdoaminTakerResult", "UrlScan", "crawler", "subdomain", "vulnerability", "PageMonitoring", "app", "RootDomain", "mp"]
         if index not in key:
             return {"code": 404, "message": "Data not found"}
         obj_ids = []
