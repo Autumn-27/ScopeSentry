@@ -90,7 +90,7 @@ async def subscribe_log_channel():
                         message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=3)
                         if message is not None:
                             data = json.loads(message["data"])
-                            logger.info("Received message:" + json.dumps(data))
+                            # logger.info("Received message:" + json.dumps(data))
                             log_name = data["name"]
                             if log_name in GET_LOG_NAME:
                                 if log_name not in LOG_INFO:
