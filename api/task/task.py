@@ -106,31 +106,6 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
             query = await get_search_query(targetSource, request_data)
             target = await get_target_search(query, 0, targetSource, db)
             request_data["target"] = target
-        # elif targetSource == "asset":
-        #     # 从资产创建
-        #     project_ids = request_data.get("project", [])
-        #     request_data["filter"] = {"project": project_ids}
-        #     query = await get_search_query("asset", request_data)
-        #     target = await get_target_search(query, 0, "asset", db)
-        #     request_data["target"] = target
-        # elif targetSource == "RootDomain":
-        #     project_ids = request_data.get("project", [])
-        #     request_data["filter"] = {"project": project_ids}
-        #     query = await get_search_query("RootDomain", request_data)
-        #     target = await get_target_search(query, 0, "RootDomain", db)
-        #     request_data["target"] = target
-        # elif targetSource == "subdomain":
-        #     project_ids = request_data.get("project", [])
-        #     request_data["filter"] = {"project": project_ids}
-        #     query = await get_search_query("subdomain", request_data)
-        #     target = await get_target_search(query, 0, "subdomain", db)
-        #     request_data["target"] = target
-        # if targetSource == "general":
-        #     # 正常创建任务
-        #     target = request_data.get("target", "")
-        # elif targetSource == "project":
-        #     print("")
-
         node = request_data.get("node")
         if name == "" or target == "" or node == []:
             return {"message": "target is Null", "code": 500}

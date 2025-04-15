@@ -21,7 +21,9 @@ async def update_project(root_domain, project_id, change=False):
                         'SensitiveResult': ["url"],
                         'UrlScan': ["input"],
                         'crawler': ["url"],
-                        'RootDomain': ['domain', 'icp', 'company']
+                        'RootDomain': ['domain', 'icp', 'company'],
+                        'app': ['name', 'bundleID', 'company', 'icp'],
+                        'mp': ['company', 'icp']
     }
     async for db in get_mongo_db():
         for a in asset_collection_list:
@@ -38,10 +40,28 @@ async def asset_add_project(root_domain, doc_name, db, project_id):
         query = {
                     "$or": [
                         {"domain": {"$in": root_domain}},
-                        {"icp": {"$regex": "|".join(regex_patterns), "$options": "i"}},
-                        {"company": {"$in": root_domain}}
+                        {"company": {"$in": root_domain}},
+                        {"icp": {"$regex": "|".join(regex_patterns), "$options": "i"}}
                     ]
                 }
+    elif doc_name == "app":
+        regex_patterns = [f"^{re.escape(item)}" for item in root_domain]
+        query = {
+            "$or": [
+                {"name": {"$in": root_domain}},
+                {"bundleID": {"$in": root_domain}},
+                {"company": {"$in": root_domain}},
+                {"icp": {"$regex": "|".join(regex_patterns), "$options": "i"}},
+            ]
+        }
+    elif doc_name == "mp":
+        regex_patterns = [f"^{re.escape(item)}" for item in root_domain]
+        query = {
+            "$or": [
+                {"company": {"$in": root_domain}},
+                {"icp": {"$regex": "|".join(regex_patterns), "$options": "i"}}
+            ]
+        }
     else:
         query = {
             "rootDomain": {"$in": root_domain}
@@ -64,13 +84,43 @@ async def asset_update_project(root_domain, db_key, doc_name, db, project_id):
             "$and": [
                 {"project": project_id},
                 {"domain": {"$nin": root_domain}},
+                {"company": {"$nin": root_domain}},
                 {
                     "icp": {
                         "$nin": root_domain,
                         "$not": {"$regex": "|".join(regex_patterns), "$options": "i"}
                     }
-                },
+                }
+            ]
+        }
+    elif doc_name == "app":
+        regex_patterns = [f"^{re.escape(item)}" for item in root_domain]
+        query = {
+            "$and": [
+                {"project": project_id},
                 {"company": {"$nin": root_domain}},
+                {
+                    "icp": {
+                        "$nin": root_domain,
+                        "$not": {"$regex": "|".join(regex_patterns), "$options": "i"}
+                    }
+                }
+            ]
+        }
+    elif doc_name == "mp":
+        regex_patterns = [f"^{re.escape(item)}" for item in root_domain]
+        query = {
+            "$and": [
+                {"project": project_id},
+                {"name": {"$nin": root_domain}},
+                {"company": {"$nin": root_domain}},
+                {"bundleID": {"$nin": root_domain}},
+                {
+                    "icp": {
+                        "$nin": root_domain,
+                        "$not": {"$regex": "|".join(regex_patterns), "$options": "i"}
+                    }
+                }
             ]
         }
     else:

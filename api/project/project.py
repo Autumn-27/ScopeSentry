@@ -179,7 +179,10 @@ async def add_project_rule(request_data: dict, db=Depends(get_mongo_db), _: dict
     root_domains = []
     target_list = await get_target_list(target, request_data.get("ignore", ""))
     for tg in target_list:
-        root_domain = get_root_domain(tg)
+        if "CMP:" in tg or "ICP:" in tg or "APP:" in tg or "APP-ID:" in tg:
+            root_domain = tg.replace("CMP:", "").replace("ICP:", "").replace("APP:", "").replace("APP-ID:", "")
+        else:
+            root_domain = get_root_domain(tg)
         if root_domain not in root_domains:
             root_domains.append(root_domain)
     request_data["root_domains"] = root_domains
@@ -276,7 +279,10 @@ async def update_project_data(request_data: dict, db=Depends(get_mongo_db), _: d
         root_domains = []
         target_list = await get_target_list(target, request_data.get("ignore", ""))
         for tg in target_list:
-            root_domain = get_root_domain(tg)
+            if "CMP:" in tg or "ICP:" in tg or "APP:" in tg or "APP-ID:" in tg:
+                root_domain = tg.replace("CMP:", "").replace("ICP:", "").replace("APP:", "").replace("APP-ID:", "")
+            else:
+                root_domain = get_root_domain(tg)
             if root_domain not in root_domains:
                 root_domains.append(root_domain)
         request_data["root_domains"] = root_domains
