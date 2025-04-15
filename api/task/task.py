@@ -69,10 +69,11 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         results = await cursor.to_list(length=None)
         if len(results) != 0:
             return {"code": 400, "message": "name already exists"}
-        dataSource = request_data.get("tp", "scan")
-        if "Source" in dataSource:
+        targetSource = request_data.get("tagertSource", "general")
+
+        if "Source" in targetSource:
             # 如果是从资产处选则数据进行创建任务
-            index = dataSource.replace("Source", "")
+            index = targetSource.replace("Source", "")
             targetTp = request_data.get("targetTp")
             if targetTp == "search":
                 # 如果是按照当前搜索条件进行搜索
@@ -89,9 +90,47 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
                     return {"code": 400, "message": "targetIds is null"}
                 target = await get_target_ids(targetIds, index, db)
                 request_data["target"] = target
-        else:
-            # 正常创建任务
+        elif targetSource == "general":
+            # 普通创建
             target = request_data.get("target", "")
+        elif targetSource == "project":
+            # 从项目创建
+            project_ids = request_data.get("project", [])
+            if len(project_ids) == 0:
+                return {"code": 400, "message": "project is null"}
+            target = await get_target_project(project_ids, db)
+            request_data["target"] = target
+        else:
+            project_ids = request_data.get("project", [])
+            request_data["filter"] = {"project": project_ids}
+            query = await get_search_query(targetSource, request_data)
+            target = await get_target_search(query, 0, targetSource, db)
+            request_data["target"] = target
+        # elif targetSource == "asset":
+        #     # 从资产创建
+        #     project_ids = request_data.get("project", [])
+        #     request_data["filter"] = {"project": project_ids}
+        #     query = await get_search_query("asset", request_data)
+        #     target = await get_target_search(query, 0, "asset", db)
+        #     request_data["target"] = target
+        # elif targetSource == "RootDomain":
+        #     project_ids = request_data.get("project", [])
+        #     request_data["filter"] = {"project": project_ids}
+        #     query = await get_search_query("RootDomain", request_data)
+        #     target = await get_target_search(query, 0, "RootDomain", db)
+        #     request_data["target"] = target
+        # elif targetSource == "subdomain":
+        #     project_ids = request_data.get("project", [])
+        #     request_data["filter"] = {"project": project_ids}
+        #     query = await get_search_query("subdomain", request_data)
+        #     target = await get_target_search(query, 0, "subdomain", db)
+        #     request_data["target"] = target
+        # if targetSource == "general":
+        #     # 正常创建任务
+        #     target = request_data.get("target", "")
+        # elif targetSource == "project":
+        #     print("")
+
         node = request_data.get("node")
         if name == "" or target == "" or node == []:
             return {"message": "target is Null", "code": 500}
@@ -121,6 +160,14 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         return {"message": "error", "code": 500}
 
 
+async def get_target_project(ids, db):
+    cursor: AsyncIOMotorCursor = db.ProjectTargetData.find({"id": {"$in": ids}})
+    targets = ""
+    async for doc in cursor:
+        targets += doc.get("target", "").strip() + "\n"
+    return targets.strip()
+
+
 async def get_target_search(query, number, index, db):
     displayKey = {
         'subdomain': {
@@ -136,10 +183,16 @@ async def get_target_search(query, number, index, db):
         'UrlScan': {
             'output': 1,
         },
+        'RootDomain': {
+            'domain': 1
+        }
     }
     if index not in displayKey:
         return ""
-    cursor: AsyncIOMotorCursor = db[index].find(query, displayKey[index]).limit(number).sort([("time", DESCENDING)])
+    if number == 0:
+        cursor: AsyncIOMotorCursor = db[index].find(query, displayKey[index])
+    else:
+        cursor: AsyncIOMotorCursor = db[index].find(query, displayKey[index]).limit(number).sort([("time", DESCENDING)])
     target = ""
     async for doc in cursor:
         if index == "asset":
@@ -151,6 +204,8 @@ async def get_target_search(query, number, index, db):
             target += doc.get("host", "") + "\n"
         elif index == "UrlScan":
             target += doc.get("output", "") + "\n"
+        elif index == "RootDomain":
+            target += doc.get("domain", "") + "\n"
     return target
 
 

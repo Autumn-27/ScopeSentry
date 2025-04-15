@@ -26,7 +26,7 @@ async def insert_task(request_data, db):
     if "_id" in request_data:
         del request_data["_id"]
     request_data['taskNum'] = taskNum
-    request_data['target'] = request_data['target'].strip("\n").strip("\r").strip()
+    request_data['target'] = "\n".join(targetList)
     request_data['progress'] = 0
     request_data["creatTime"] = get_now_time()
     request_data["endTime"] = ""

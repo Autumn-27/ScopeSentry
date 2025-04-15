@@ -67,8 +67,6 @@ Scope Sentry是一款具有分布式资产测绘、子域名枚举、信息泄�
 ## 赞助 && 合作
 如果项目对您有帮助，赞助作者一杯咖啡吧~
 
-https://www.paypal.com/paypalme/autumn5520
-
 <img src="docs/images/zfb.png" alt="WX" width="200"/>
 <img src="docs/images/wx.jpg" alt="WX" width="200"/>
 

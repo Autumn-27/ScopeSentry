@@ -67,12 +67,6 @@ Discord:
 [https://discord.gg/agsYdAyN](https://discord.gg/agsYdAyN)
 
 
-## Sponsorship
-If the project is helpful to you, sponsor the author for a cup of coffee~
-
-https://www.paypal.com/paypalme/autumn5520
-
-
 ## Screenshots
 
 ### Login
