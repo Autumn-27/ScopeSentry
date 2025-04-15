@@ -9,6 +9,7 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends, BackgroundTasks
 from pymongo import DESCENDING
 
+from api.project.handler import update_project
 from api.task.handler import insert_task, scheduler_scan_task, create_scan_task
 from api.task.util import task_progress, delete_asset, get_target_list
 from api.users import verify_token
@@ -42,7 +43,8 @@ async def get_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict = 
         result = await cursor.to_list(length=None)
         # Process the result as needed
         response_data = [
-            {"id": str(doc["_id"]),"status": doc["status"], "name": doc["name"], "taskNum": doc["taskNum"], "progress": doc["progress"],
+            {"id": str(doc["_id"]), "status": doc["status"], "name": doc["name"], "taskNum": doc["taskNum"],
+             "progress": doc["progress"],
              "creatTime": doc["creatTime"], "endTime": doc["endTime"]} for doc in result]
 
         return {
@@ -62,7 +64,7 @@ async def get_task_data(request_data: dict, db=Depends(get_mongo_db), _: dict = 
 
 @router.post("/add")
 async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token),
-                   redis_con=Depends(get_redis_pool)):
+                   redis_con=Depends(get_redis_pool), background_tasks: BackgroundTasks = BackgroundTasks()):
     try:
         name = request_data.get("name")
         cursor = db.task.find({"name": {"$eq": name}}, {"_id": 1})
@@ -90,9 +92,11 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
                     return {"code": 400, "message": "targetIds is null"}
                 target = await get_target_ids(targetIds, index, db)
                 request_data["target"] = target
+                request_data["filter"] = {"project": []}
         elif targetSource == "general":
             # 普通创建
             target = request_data.get("target", "")
+            request_data["filter"] = {"project": []}
         elif targetSource == "project":
             # 从项目创建
             project_ids = request_data.get("project", [])
@@ -100,6 +104,9 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
                 return {"code": 400, "message": "project is null"}
             target = await get_target_project(project_ids, db)
             request_data["target"] = target
+            request_data["filter"] = {"project": project_ids}
+            if len(project_ids) == 1:
+                request_data["bindProject"] = project_ids[0]
         else:
             project_ids = request_data.get("project", [])
             request_data["filter"] = {"project": project_ids}
@@ -109,6 +116,21 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         node = request_data.get("node")
         if name == "" or target == "" or node == []:
             return {"message": "target is Null", "code": 500}
+        # 绑定项目修改判断
+        if "project" not in request_data["filter"]:
+            request_data["filter"]["project"] = []
+        if len(request_data["filter"]["project"]) >= 2:
+            request_data["bindProject"] = None
+
+        # 如果绑定项目不为空 并且targetSource 不等于project  则对项目进行更新
+        if request_data["bindProject"] is not None and targetSource != "project":
+            # 如果任务是有选择筛选项目时  说明该任务的所有目标已经有项目归属了 不需要对项目进行更新
+            if len(request_data["filter"]["project"]) != 1:
+                f = await update_project_by_target(request_data["target"], request_data.get("ignore", ""),
+                                               request_data["bindProject"], db, background_tasks)
+                if f is False:
+                    return {"message": "project is Null", "code": 400}
+
         scheduledTasks = request_data.get("scheduledTasks", False)
         hour = request_data.get("hour", 24)
         task_id = await insert_task(request_data, db)
@@ -133,6 +155,44 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
+
+
+async def update_project_by_target(target, ignore, id, db, background_tasks):
+    target_list = await get_target_list(target, ignore)
+    root_domains = []
+    for tg in target_list:
+        if "CMP:" in tg or "ICP:" in tg or "APP:" in tg or "APP-ID:" in tg:
+            root_domain = tg.replace("CMP:", "").replace("ICP:", "").replace("APP:", "").replace("APP-ID:", "")
+        else:
+            root_domain = get_root_domain(tg)
+        if root_domain not in root_domains:
+            root_domains.append(root_domain)
+    doc = await db.project.find_one({"_id": ObjectId(id)})
+    if not doc:
+        # 未找到项目
+        return False
+    rootDomains = doc["root_domains"]
+    tmp_root_domain = []
+    for i in root_domains:
+        if i not in rootDomains:
+            tmp_root_domain.append(i)
+    if len(tmp_root_domain) == 0:
+        # 该项目没有需要更新的目标
+        return True
+    all_root_domain = rootDomains + tmp_root_domain
+    update_document = {
+        "$set": {
+            "root_domains": all_root_domain
+        }
+    }
+    await db.project.update_one({"_id": ObjectId(id)}, update_document)
+    doc = await db.ProjectTargetData.find_one({"id": id})
+    targets = doc["target"].strip() + "\n" + "\n".join(tmp_root_domain).strip()
+    await db.ProjectTargetData.update_one({"id": id}, {"$set": {"target": targets}})
+    await refresh_config('all', 'project', id)
+    # 更新已有的资产归属
+    background_tasks.add_task(update_project, all_root_domain, id, True)
+    return True
 
 
 async def get_target_project(ids, db):
@@ -399,25 +459,36 @@ async def progress_info(request_data: dict, _: dict = Depends(verify_token), red
                 if tg_key[t][0] in redis_result_dict:
                     if redis_result_dict[tg_key[t][0]]:
                         progress_result["node"] = redis_result_dict[tg_key[t][0]].get("node", "")
-                        progress_result['TargetHandler'][0] = redis_result_dict[tg_key[t][0]].get("TargetHandler_start", "")
-                        progress_result['TargetHandler'][1] = redis_result_dict[tg_key[t][0]].get("TargetHandler_start", "")
+                        progress_result['TargetHandler'][0] = redis_result_dict[tg_key[t][0]].get("TargetHandler_start",
+                                                                                                  "")
+                        progress_result['TargetHandler'][1] = redis_result_dict[tg_key[t][0]].get("TargetHandler_start",
+                                                                                                  "")
 
-                        progress_result['SubdomainScan'][0] = redis_result_dict[tg_key[t][0]].get("SubdomainScan_start", "")
-                        progress_result['SubdomainScan'][1] = redis_result_dict[tg_key[t][0]].get("SubdomainScan_end", "")
+                        progress_result['SubdomainScan'][0] = redis_result_dict[tg_key[t][0]].get("SubdomainScan_start",
+                                                                                                  "")
+                        progress_result['SubdomainScan'][1] = redis_result_dict[tg_key[t][0]].get("SubdomainScan_end",
+                                                                                                  "")
 
-                        progress_result['SubdomainSecurity'][0] = redis_result_dict[tg_key[t][0]].get("SubdomainSecurity_start", "")
-                        progress_result['SubdomainSecurity'][1] = redis_result_dict[tg_key[t][0]].get("SubdomainSecurity_end", "")
+                        progress_result['SubdomainSecurity'][0] = redis_result_dict[tg_key[t][0]].get(
+                            "SubdomainSecurity_start", "")
+                        progress_result['SubdomainSecurity'][1] = redis_result_dict[tg_key[t][0]].get(
+                            "SubdomainSecurity_end", "")
 
-                        progress_result['PortScanPreparation'][0] = redis_result_dict[tg_key[t][0]].get("PortScanPreparation_start", "")
-                        progress_result['PortScanPreparation'][1] = redis_result_dict[tg_key[t][0]].get("PortScanPreparation_end", "")
+                        progress_result['PortScanPreparation'][0] = redis_result_dict[tg_key[t][0]].get(
+                            "PortScanPreparation_start", "")
+                        progress_result['PortScanPreparation'][1] = redis_result_dict[tg_key[t][0]].get(
+                            "PortScanPreparation_end", "")
 
                         progress_result['PortScan'][0] = redis_result_dict[tg_key[t][0]].get("PortScan_start", "")
                         progress_result['PortScan'][1] = redis_result_dict[tg_key[t][0]].get("PortScan_end", "")
 
-                        progress_result['PortFingerprint'][0] = redis_result_dict[tg_key[t][0]].get("PortFingerprint_start", "")
-                        progress_result['PortFingerprint'][1] = redis_result_dict[tg_key[t][0]].get("PortFingerprint_end", "")
+                        progress_result['PortFingerprint'][0] = redis_result_dict[tg_key[t][0]].get(
+                            "PortFingerprint_start", "")
+                        progress_result['PortFingerprint'][1] = redis_result_dict[tg_key[t][0]].get(
+                            "PortFingerprint_end", "")
 
-                        progress_result['AssetMapping'][0] = redis_result_dict[tg_key[t][0]].get("AssetMapping_start", "")
+                        progress_result['AssetMapping'][0] = redis_result_dict[tg_key[t][0]].get("AssetMapping_start",
+                                                                                                 "")
                         progress_result['AssetMapping'][1] = redis_result_dict[tg_key[t][0]].get("AssetMapping_end", "")
 
                         progress_result['AssetHandle'][0] = redis_result_dict[tg_key[t][0]].get("AssetHandle_start", "")
@@ -435,8 +506,10 @@ async def progress_info(request_data: dict, _: dict = Depends(verify_token), red
                         progress_result['DirScan'][0] = redis_result_dict[tg_key[t][0]].get("DirScan_start", "")
                         progress_result['DirScan'][1] = redis_result_dict[tg_key[t][0]].get("DirScan_end", "")
 
-                        progress_result['VulnerabilityScan'][0] = redis_result_dict[tg_key[t][0]].get("VulnerabilityScan_start", "")
-                        progress_result['VulnerabilityScan'][1] = redis_result_dict[tg_key[t][0]].get("VulnerabilityScan_end", "")
+                        progress_result['VulnerabilityScan'][0] = redis_result_dict[tg_key[t][0]].get(
+                            "VulnerabilityScan_start", "")
+                        progress_result['VulnerabilityScan'][1] = redis_result_dict[tg_key[t][0]].get(
+                            "VulnerabilityScan_end", "")
 
                         progress_result['All'][0] = redis_result_dict[tg_key[t][0]].get("scan_start", "")
                         progress_result['All'][1] = redis_result_dict[tg_key[t][0]].get("scan_end", "")
@@ -497,8 +570,8 @@ async def progress_info(request_data: dict, _: dict = Depends(verify_token), red
                     tmp['DirScan'][0] = redis_result_dict[son_target].get("DirScan_start", "")
                     tmp['DirScan'][1] = redis_result_dict[son_target].get("DirScan_end", "")
 
-                    tmp['VulnerabilityScan'][0] = redis_result_dict[son_target].get("VulnerabilityScan_start","")
-                    tmp['VulnerabilityScan'][1] = redis_result_dict[son_target].get("VulnerabilityScan_end","")
+                    tmp['VulnerabilityScan'][0] = redis_result_dict[son_target].get("VulnerabilityScan_start", "")
+                    tmp['VulnerabilityScan'][1] = redis_result_dict[son_target].get("VulnerabilityScan_end", "")
 
                     tmp['All'][0] = redis_result_dict[son_target].get("scan_start", "")
                     tmp['All'][1] = redis_result_dict[son_target].get("scan_end", "")
