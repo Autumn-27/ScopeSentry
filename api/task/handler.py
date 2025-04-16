@@ -22,6 +22,8 @@ from core.util import get_now_time, get_search_query
 from loguru import logger
 
 running_tasks = set()
+
+
 async def insert_task(request_data, db):
     # 解析多种来源设置target
     targetSource = request_data.get("tagertSource", "general")
