@@ -107,6 +107,9 @@ async def task_progress():
                         time_key = f"TaskInfo:time:{id}"
                         time_value = await redis.get(time_key)
                         await db.task.update_one({"_id": r["_id"]}, {"$set": {"endTime": time_value, "status": 3}})
+                        # 任务结束 删除统计信息
+                        await redis.delete(key)
+                        await redis.delete(time_key)
                     await db.task.update_one({"_id": r["_id"]}, {"$set": {"progress": progress_tmp}})
                 else:
                     await db.task.update_one({"_id": r["_id"]}, {"$set": {"progress": 0}})

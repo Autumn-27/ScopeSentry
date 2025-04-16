@@ -92,11 +92,9 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
                     return {"code": 400, "message": "targetIds is null"}
                 target = await get_target_ids(targetIds, index, db)
                 request_data["target"] = target
-                request_data["filter"] = {"project": []}
         elif targetSource == "general":
             # 普通创建
             target = request_data.get("target", "")
-            request_data["filter"] = {"project": []}
         elif targetSource == "project":
             # 从项目创建
             project_ids = request_data.get("project", [])
@@ -116,20 +114,6 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         node = request_data.get("node")
         if name == "" or target == "" or node == []:
             return {"message": "target is Null", "code": 500}
-        # 绑定项目修改判断
-        if "project" not in request_data["filter"]:
-            request_data["filter"]["project"] = []
-        if len(request_data["filter"]["project"]) >= 2:
-            request_data["bindProject"] = None
-
-        # 如果绑定项目不为空 并且targetSource 不等于project  则对项目进行更新
-        if request_data["bindProject"] is not None and targetSource != "project":
-            # 如果任务是有选择筛选项目时  说明该任务的所有目标已经有项目归属了 不需要对项目进行更新
-            if len(request_data["filter"]["project"]) != 1:
-                f = await update_project_by_target(request_data["target"], request_data.get("ignore", ""),
-                                               request_data["bindProject"], db, background_tasks)
-                if f is False:
-                    return {"message": "project is Null", "code": 400}
 
         scheduledTasks = request_data.get("scheduledTasks", False)
         hour = request_data.get("hour", 24)
