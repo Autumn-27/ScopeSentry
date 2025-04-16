@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, BackgroundTasks
 from pymongo import DESCENDING
 
 from api.project.handler import update_project
-from api.task.handler import insert_task, scheduler_scan_task, create_scan_task
+from api.task.handler import insert_task, create_scan_task, insert_scheduled_tasks
 from api.task.util import task_progress, delete_asset, get_target_list
 from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor
@@ -71,66 +71,18 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         results = await cursor.to_list(length=None)
         if len(results) != 0:
             return {"code": 400, "message": "name already exists"}
-        targetSource = request_data.get("tagertSource", "general")
 
-        if "Source" in targetSource:
-            # 如果是从资产处选则数据进行创建任务
-            index = targetSource.replace("Source", "")
-            targetTp = request_data.get("targetTp")
-            if targetTp == "search":
-                # 如果是按照当前搜索条件进行搜索
-                targetNumber = int(request_data.get("targetNumber", 0))
-                if targetNumber == 0:
-                    return {"code": 400, "message": "targetNumber is 0"}
-                query = await get_search_query(index, request_data)
-                target = await get_target_search(query, targetNumber, index, db)
-                request_data["target"] = target
-            else:
-                # 按照选择的数据进行创建任务
-                targetIds = request_data.get("targetIds", [])
-                if len(targetIds) == 0:
-                    return {"code": 400, "message": "targetIds is null"}
-                target = await get_target_ids(targetIds, index, db)
-                request_data["target"] = target
-        elif targetSource == "general":
-            # 普通创建
-            target = request_data.get("target", "")
-        elif targetSource == "project":
-            # 从项目创建
-            project_ids = request_data.get("project", [])
-            if len(project_ids) == 0:
-                return {"code": 400, "message": "project is null"}
-            target = await get_target_project(project_ids, db)
-            request_data["target"] = target
-            request_data["filter"] = {"project": project_ids}
-            if len(project_ids) == 1:
-                request_data["bindProject"] = project_ids[0]
-        else:
-            project_ids = request_data.get("project", [])
-            request_data["filter"] = {"project": project_ids}
-            query = await get_search_query(targetSource, request_data)
-            target = await get_target_search(query, 0, targetSource, db)
-            request_data["target"] = target
         node = request_data.get("node")
-        if name == "" or target == "" or node == []:
+        if name == "" or node == []:
             return {"message": "target is Null", "code": 500}
 
         scheduledTasks = request_data.get("scheduledTasks", False)
-        hour = request_data.get("hour", 24)
         task_id = await insert_task(request_data, db)
         if task_id:
             if scheduledTasks:
-                scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[str(task_id), "scan"],
-                                  id=str(task_id), jobstore='mongo')
-                next_time = scheduler.get_job(str(task_id)).next_run_time
-                formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
-                # 插入计划任务管理
                 request_data["type"] = "scan"
                 request_data["state"] = True
-                request_data["lastTime"] = ""
-                request_data["nextTime"] = formatted_time
-                request_data["id"] = str(task_id)
-                await db.ScheduledTasks.insert_one(request_data)
+                await insert_scheduled_tasks(request_data, db)
             return {"code": 200, "message": "Task added successfully"}
         else:
             return {"code": 400, "message": "Failed to add Task"}
@@ -179,75 +131,7 @@ async def update_project_by_target(target, ignore, id, db, background_tasks):
     return True
 
 
-async def get_target_project(ids, db):
-    cursor: AsyncIOMotorCursor = db.ProjectTargetData.find({"id": {"$in": ids}})
-    targets = ""
-    async for doc in cursor:
-        targets += doc.get("target", "").strip() + "\n"
-    return targets.strip()
 
-
-async def get_target_search(query, number, index, db):
-    displayKey = {
-        'subdomain': {
-            'host': 1,
-        },
-        'asset': {
-            'url': 1,
-            'host': 1,
-            'port': 1,
-            'service': 1,
-            'type': 1,
-        },
-        'UrlScan': {
-            'output': 1,
-        },
-        'RootDomain': {
-            'domain': 1
-        }
-    }
-    if index not in displayKey:
-        return ""
-    if number == 0:
-        cursor: AsyncIOMotorCursor = db[index].find(query, displayKey[index])
-    else:
-        cursor: AsyncIOMotorCursor = db[index].find(query, displayKey[index]).limit(number).sort([("time", DESCENDING)])
-    target = ""
-    async for doc in cursor:
-        if index == "asset":
-            if doc["type"] == "http":
-                target += doc.get("url", "") + "\n"
-            else:
-                target += doc.get("service", "http") + "://" + doc["host"] + ":" + str(doc["port"]) + "\n"
-        elif index == "subdomain":
-            target += doc.get("host", "") + "\n"
-        elif index == "UrlScan":
-            target += doc.get("output", "") + "\n"
-        elif index == "RootDomain":
-            target += doc.get("domain", "") + "\n"
-    return target
-
-
-async def get_target_ids(ids, index, db):
-    key = ["asset", "UrlScan", "subdomain"]
-    if index not in key:
-        return {"code": 404, "message": "Data not found"}
-    obj_ids = []
-    for data_id in ids:
-        obj_ids.append(ObjectId(data_id))
-    cursor = db[index].find({"_id": {"$in": obj_ids}})
-    target = ''
-    async for doc in cursor:
-        if index == "asset":
-            if doc["type"] == "http":
-                target += doc.get("url", "") + "\n"
-            else:
-                target += doc.get("service", "http") + "://" + doc["host"] + ":" + str(doc["port"]) + "\n"
-        elif index == "subdomain":
-            target += doc.get("host", "") + "\n"
-        elif index == "UrlScan":
-            target += doc.get("output", "") + "\n"
-    return target
 
 
 @router.post("/detail")

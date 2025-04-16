@@ -8,6 +8,8 @@ import asyncio
 import json
 
 from bson import ObjectId
+from motor.motor_asyncio import AsyncIOMotorCursor
+from pymongo import DESCENDING
 
 from api.asset.page_monitoring import get_page_monitoring_data
 from api.node.handler import get_node_all
@@ -16,11 +18,51 @@ from api.task.util import get_target_list
 from core.db import get_mongo_db
 from core.handler.task import get_task_data
 from core.redis_handler import get_redis_pool, get_redis_online_data
-from core.util import get_now_time
+from core.util import get_now_time, get_search_query
 from loguru import logger
 
 running_tasks = set()
 async def insert_task(request_data, db):
+    # 解析多种来源设置target
+    targetSource = request_data.get("tagertSource", "general")
+    if "Source" in targetSource:
+        # 如果是从资产处选则数据进行创建任务
+        index = targetSource.replace("Source", "")
+        targetTp = request_data.get("targetTp")
+        if targetTp == "search":
+            # 如果是按照当前搜索条件进行搜索
+            targetNumber = int(request_data.get("targetNumber", 0))
+            if targetNumber == 0:
+                return {"code": 400, "message": "targetNumber is 0"}
+            query = await get_search_query(index, request_data)
+            target = await get_target_search(query, targetNumber, index, db)
+            request_data["target"] = target
+        else:
+            # 按照选择的数据进行创建任务
+            targetIds = request_data.get("targetIds", [])
+            if len(targetIds) == 0:
+                return {"code": 400, "message": "targetIds is null"}
+            target = await get_target_ids(targetIds, index, db)
+            request_data["target"] = target
+    elif targetSource == "general":
+        # 普通创建
+        target = request_data.get("target", "")
+    elif targetSource == "project":
+        # 从项目创建
+        project_ids = request_data.get("project", [])
+        if len(project_ids) == 0:
+            return {"code": 400, "message": "project is null"}
+        target = await get_target_project(project_ids, db)
+        request_data["target"] = target
+        request_data["filter"] = {"project": project_ids}
+        if len(project_ids) == 1:
+            request_data["bindProject"] = project_ids[0]
+    else:
+        project_ids = request_data.get("project", [])
+        request_data["filter"] = {"project": project_ids}
+        query = await get_search_query(targetSource, request_data)
+        target = await get_target_search(query, 0, targetSource, db)
+        request_data["target"] = target
     targetList = await get_target_list(request_data['target'], request_data.get("ignore", ""))
     taskNum = len(targetList)
     if "_id" in request_data:
@@ -53,6 +95,7 @@ async def create_scan_task(request_data, id, stop_to_start = False):
 
                 # 如果是暂停之后重新开始的，则不需要删除缓存和填入目标
                 if stop_to_start is False:
+
                     # 删除可能存在缓存
                     keys_to_delete = [
                         f"TaskInfo:tmp:{id}",
@@ -76,6 +119,76 @@ async def create_scan_task(request_data, id, stop_to_start = False):
                 logger.info(f"[create_scan_task] end: {id}")
                 return True
 
+async def get_target_project(ids, db):
+    cursor: AsyncIOMotorCursor = db.ProjectTargetData.find({"id": {"$in": ids}})
+    targets = ""
+    async for doc in cursor:
+        targets += doc.get("target", "").strip() + "\n"
+    return targets.strip()
+
+
+async def get_target_search(query, number, index, db):
+    displayKey = {
+        'subdomain': {
+            'host': 1,
+        },
+        'asset': {
+            'url': 1,
+            'host': 1,
+            'port': 1,
+            'service': 1,
+            'type': 1,
+        },
+        'UrlScan': {
+            'output': 1,
+        },
+        'RootDomain': {
+            'domain': 1
+        }
+    }
+    if index not in displayKey:
+        return ""
+    if number == 0:
+        cursor: AsyncIOMotorCursor = db[index].find(query, displayKey[index])
+    else:
+        cursor: AsyncIOMotorCursor = db[index].find(query, displayKey[index]).limit(number).sort([("time", DESCENDING)])
+    target = ""
+    async for doc in cursor:
+        if index == "asset":
+            if doc["type"] == "http":
+                target += doc.get("url", "") + "\n"
+            else:
+                target += doc.get("service", "http") + "://" + doc["host"] + ":" + str(doc["port"]) + "\n"
+        elif index == "subdomain":
+            target += doc.get("host", "") + "\n"
+        elif index == "UrlScan":
+            target += doc.get("output", "") + "\n"
+        elif index == "RootDomain":
+            target += doc.get("domain", "") + "\n"
+    return target
+
+
+async def get_target_ids(ids, index, db):
+    key = ["asset", "UrlScan", "subdomain"]
+    if index not in key:
+        return {"code": 404, "message": "Data not found"}
+    obj_ids = []
+    for data_id in ids:
+        obj_ids.append(ObjectId(data_id))
+    cursor = db[index].find({"_id": {"$in": obj_ids}})
+    target = ''
+    async for doc in cursor:
+        if index == "asset":
+            if doc["type"] == "http":
+                target += doc.get("url", "") + "\n"
+            else:
+                target += doc.get("service", "http") + "://" + doc["host"] + ":" + str(doc["port"]) + "\n"
+        elif index == "subdomain":
+            target += doc.get("host", "") + "\n"
+        elif index == "UrlScan":
+            target += doc.get("output", "") + "\n"
+    return target
+
 
 async def scheduler_scan_task(id, tp):
     logger.info(f"Scheduler scan {id}")
@@ -91,7 +204,7 @@ async def scheduler_scan_task(id, tp):
         }
         await db.ScheduledTasks.update_one({"id": id}, update_document)
         doc = await db.ScheduledTasks.find_one({"id": id})
-        doc["name"] = doc["name"] + f"-{tp}-" + time_now
+        doc["name"] = doc["name"] + f"-{doc.get('tagertSource', 'None')}-" + time_now
         await insert_task(doc, db)
 
 
@@ -134,3 +247,73 @@ async def create_page_monitoring_task():
             }
             for name in name_list:
                 await redis.rpush(f"NodeTask:{name}", json.dumps(add_redis_task_data))
+
+
+async def insert_scheduled_tasks(request_data, db):
+    cycle_type = request_data['cycleType']
+    if cycle_type == "":
+        return
+    result = await db.ScheduledTasks.insert_one(request_data)
+    if result.inserted_id:
+        task_id = str(result.inserted_id)
+    else:
+        return
+    week = request_data.get("week", 1)
+    day = int(request_data.get("day", 1))
+    hour = int(request_data.get("hour", 0))
+    minute = int(request_data.get("minute", 0))
+    if cycle_type == "daily":
+        # 每天固定时间执行
+        scheduler.add_job(
+            scheduler_scan_task, 'cron',
+            hour=hour, minute=minute,
+            args=[str(task_id), "scan"],
+            id=task_id, jobstore='mongo'
+        )
+    elif cycle_type == "ndays":
+        # 每 N 天执行一次
+        scheduler.add_job(
+            scheduler_scan_task, 'interval',
+            days=day, hours=hour, minutes=minute,
+            args=[str(task_id), "scan"],
+            id=task_id, jobstore='mongo'
+        )
+
+    elif cycle_type == "nhours":
+        # 每 N 小时执行一次
+        scheduler.add_job(
+            scheduler_scan_task, 'interval',
+            hours=hour, minutes=minute,
+            args=[str(task_id), "scan"],
+            id=task_id, jobstore='mongo'
+        )
+
+    elif cycle_type == "weekly":
+        # 每星期几执行一次
+        scheduler.add_job(
+            scheduler_scan_task, 'cron',
+            day_of_week=week,
+            hour=hour, minute=minute,
+            args=[str(task_id), "scan"],
+            id=task_id, jobstore='mongo'
+        )
+
+    elif cycle_type == "monthly":
+        # 每月第几天固定时间执行
+        scheduler.add_job(
+            scheduler_scan_task, 'cron',
+            day=day, hour=hour, minute=minute,
+            args=[str(task_id), "scan"],
+            id=task_id, jobstore='mongo'
+        )
+    next_time = scheduler.get_job(str(task_id)).next_run_time
+    formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
+    update_document = {
+        "$set": {
+            "lastTime": "",
+            "nextTime": formatted_time,
+            "id": str(task_id)
+        }
+    }
+    await db.ScheduledTasks.update_one({"_id": result.inserted_id}, update_document)
+    return

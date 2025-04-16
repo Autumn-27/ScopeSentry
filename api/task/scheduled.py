@@ -50,7 +50,7 @@ async def get_scheduled_data(request_data: dict, db=Depends(get_mongo_db), _: di
         result_list = []
         for doc in result:
             tmp = {
-                "id": doc["id"],
+                "id": doc.get("id", str(doc["_id"])),
                 "name": doc["name"],
                 "type": doc["type"],
                 "lastTime": doc.get("lastTime", ""),
@@ -116,9 +116,14 @@ async def delete_task(request_data: dict, db=Depends(get_mongo_db), _: dict = De
 
         # Convert the provided rule_ids to ObjectId
         obj_ids = []
+        sched_ids = []
         for task_id in task_ids:
             if task_id != "page_monitoring":
                 obj_ids.append(task_id)
+                try:
+                    sched_ids.append(ObjectId(task_id))
+                except:
+                    logger.warning(f"Invalid task id {task_id}")
                 job = scheduler.get_job(task_id)
                 if job:
                     function_name = job.func.__name__ if hasattr(job.func, '__name__') else job.func
@@ -132,7 +137,12 @@ async def delete_task(request_data: dict, db=Depends(get_mongo_db), _: dict = De
                     else:
                         await db.project.update_one({"_id": ObjectId(task_id)}, update_document)
                     scheduler.remove_job(task_id)
-        result = await db.ScheduledTasks.delete_many({"id": {"$in": obj_ids}})
+        result = await db.ScheduledTasks.delete_many({
+                                                        "$or": [
+                                                            {"id": {"$in": obj_ids}},
+                                                            {"_id": {"$in": sched_ids}}
+                                                        ]
+                                                    })
 
         # Check if the deletion was successful
         if result.deleted_count > 0:
