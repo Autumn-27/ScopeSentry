@@ -26,7 +26,7 @@ running_tasks = set()
 
 async def insert_task(request_data, db):
     # 解析多种来源设置target
-    targetSource = request_data.get("tagertSource", "general")
+    targetSource = request_data.get("targetSource", "general")
     if "Source" in targetSource:
         # 如果是从资产处选则数据进行创建任务
         index = targetSource.replace("Source", "")
@@ -206,7 +206,7 @@ async def scheduler_scan_task(id, tp):
         }
         await db.ScheduledTasks.update_one({"id": id}, update_document)
         doc = await db.ScheduledTasks.find_one({"id": id})
-        doc["name"] = doc["name"] + f"-{doc.get('tagertSource', 'None')}-" + time_now
+        doc["name"] = doc["name"] + f"-{doc.get('targetSource', 'None')}-" + time_now
         await insert_task(doc, db)
 
 

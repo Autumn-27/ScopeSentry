@@ -56,10 +56,17 @@ async def get_scheduled_data(request_data: dict, db=Depends(get_mongo_db), _: di
                 "lastTime": doc.get("lastTime", ""),
                 "nextTime": doc.get("nextTime", ""),
                 "state": doc.get("state"),
-                "cycle": doc.get("hour"),
                 "node": doc.get("node", []),
                 "allNode": doc.get("allNode", True),
-                "runner_id": doc.get("runner_id", "")
+                "runner_id": doc.get("runner_id", ""),
+                "project": doc.get("project", []),
+                "tagertSource": doc.get("tagertSource", "general"),
+                "day": doc.get("day", 1),
+                "minute": doc.get("minute", 1),
+                "hour": doc.get("hour", 1),
+                "search": doc.get("search", ""),
+                "cycleType": doc.get("cycleType", "nhours"),
+                "scheduledTasks": doc.get("scheduledTasks", True)
             }
             result_list.append(tmp)
         return {
