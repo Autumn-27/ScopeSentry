@@ -84,42 +84,42 @@ async def insert_task(request_data, db):
         return result.inserted_id
 
 
-async def create_scan_task(request_data, id, stop_to_start = False):
+async def create_scan_task(request_data, id, stop_to_start=False):
     logger.info(f"[create_scan_task] begin: {id}")
     async for db in get_mongo_db():
-            async for redis_con in get_redis_pool():
-                request_data["id"] = str(id)
-                if request_data['allNode']:
-                    all_node = await get_node_all(redis_con)
-                    for node in all_node:
-                        if node not in request_data["node"]:
-                            request_data["node"].append(node)
+        async for redis_con in get_redis_pool():
+            request_data["id"] = str(id)
+            if request_data['allNode']:
+                all_node = await get_node_all(redis_con)
+                for node in all_node:
+                    if node not in request_data["node"]:
+                        request_data["node"].append(node)
 
-                # 如果是暂停之后重新开始的，则不需要删除缓存和填入目标
-                if stop_to_start is False:
+            # 如果是暂停之后重新开始的，则不需要删除缓存和填入目标
+            if stop_to_start is False:
+                # 删除可能存在缓存
+                keys_to_delete = [
+                    f"TaskInfo:tmp:{id}",
+                    f"TaskInfo:{id}",
+                    f"TaskInfo:time:{id}",
+                ]
+                progresskeys = await redis_con.keys(f"TaskInfo:progress:{id}:*")
+                keys_to_delete.extend(progresskeys)
+                progresskeys = await redis_con.keys(f"duplicates:{id}:*")
+                keys_to_delete.extend(progresskeys)
+                await redis_con.delete(*keys_to_delete)
+                # 原始的target生成target list
+                target_list = await get_target_list(request_data['target'], request_data.get("ignore", ""))
+                # 将任务目标插入redis中
+                await redis_con.lpush(f"TaskInfo:{id}", *target_list)
+            # 获取模板数据
+            template_data = await get_task_data(db, request_data, id)
+            # 分发任务
+            for name in request_data["node"]:
+                await redis_con.rpush(f"NodeTask:{name}", json.dumps(template_data))
+            logger.info(f"[create_scan_task] end: {id}")
+            return True
 
-                    # 删除可能存在缓存
-                    keys_to_delete = [
-                        f"TaskInfo:tmp:{id}",
-                        f"TaskInfo:{id}",
-                        f"TaskInfo:time:{id}",
-                    ]
-                    progresskeys = await redis_con.keys(f"TaskInfo:progress:{id}:*")
-                    keys_to_delete.extend(progresskeys)
-                    progresskeys = await redis_con.keys(f"duplicates:{id}:*")
-                    keys_to_delete.extend(progresskeys)
-                    await redis_con.delete(*keys_to_delete)
-                    # 原始的target生成target list
-                    target_list = await get_target_list(request_data['target'], request_data.get("ignore", ""))
-                    # 将任务目标插入redis中
-                    await redis_con.lpush(f"TaskInfo:{id}", *target_list)
-                # 获取模板数据
-                template_data = await get_task_data(db, request_data, id)
-                # 分发任务
-                for name in request_data["node"]:
-                    await redis_con.rpush(f"NodeTask:{name}", json.dumps(template_data))
-                logger.info(f"[create_scan_task] end: {id}")
-                return True
 
 async def get_target_project(ids, db):
     cursor: AsyncIOMotorCursor = db.ProjectTargetData.find({"id": {"$in": ids}})
@@ -251,15 +251,19 @@ async def create_page_monitoring_task():
                 await redis.rpush(f"NodeTask:{name}", json.dumps(add_redis_task_data))
 
 
-async def insert_scheduled_tasks(request_data, db):
+async def insert_scheduled_tasks(request_data, db, update=False, id=""):
     cycle_type = request_data['cycleType']
     if cycle_type == "":
         return
-    result = await db.ScheduledTasks.insert_one(request_data)
-    if result.inserted_id:
-        task_id = str(result.inserted_id)
+    task_id = ""
+    if update is False:
+        result = await db.ScheduledTasks.insert_one(request_data)
+        if result.inserted_id:
+            task_id = str(result.inserted_id)
+        else:
+            return
     else:
-        return
+        task_id = id
     week = request_data.get("week", 1)
     day = int(request_data.get("day", 1))
     hour = int(request_data.get("hour", 0))
@@ -317,5 +321,5 @@ async def insert_scheduled_tasks(request_data, db):
             "id": str(task_id)
         }
     }
-    await db.ScheduledTasks.update_one({"_id": result.inserted_id}, update_document)
+    await db.ScheduledTasks.update_one({"_id": ObjectId(task_id)}, update_document)
     return

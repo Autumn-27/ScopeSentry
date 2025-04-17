@@ -12,7 +12,7 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends
 from pytz import utc
 
-from api.task.handler import scheduler_scan_task, create_page_monitoring_task
+from api.task.handler import scheduler_scan_task, create_page_monitoring_task, insert_scheduled_tasks
 from api.users import verify_token
 from motor.motor_asyncio import AsyncIOMotorCursor
 
@@ -49,23 +49,43 @@ async def get_scheduled_data(request_data: dict, db=Depends(get_mongo_db), _: di
             }
         result_list = []
         for doc in result:
+            week = doc.get("week", 1)
+            day = doc.get("day", 1)
+            hour = doc.get("hour", 0)
+            minute = doc.get("minute", 0)
+            cycle_type = doc.get("cycleType", "nhours")
+            cycle = ""
+            if doc["id"] == "page_monitoring":
+                cycle = f'{hour} hour'
+            else:
+                if cycle_type == "daily":
+                    cycle = f'Every day at {hour}:{minute}'
+                elif cycle_type == "ndays":
+                    cycle = f'Every {day} days at {hour}:{minute}'
+                elif cycle_type == "nhours":
+                    cycle = f'Every {hour}h {minute}m'
+                elif cycle_type == "weekly":
+                    cycle = f'Every week on day {week} at {hour}:{minute}'
+                elif cycle_type == "monthly":
+                    cycle = f'Every month on day {day} at {hour}:{minute}'
             tmp = {
                 "id": doc.get("id", str(doc["_id"])),
                 "name": doc["name"],
                 "type": doc["type"],
                 "lastTime": doc.get("lastTime", ""),
                 "nextTime": doc.get("nextTime", ""),
-                "state": doc.get("state"),
+                "state": doc.get("scheduledTasks", doc.get("state", False)),
                 "node": doc.get("node", []),
+                "cycle": cycle,
                 "allNode": doc.get("allNode", True),
                 "runner_id": doc.get("runner_id", ""),
                 "project": doc.get("project", []),
-                "tagertSource": doc.get("tagertSource", "general"),
+                "targetSource": doc.get("targetSource", "general"),
                 "day": doc.get("day", 1),
                 "minute": doc.get("minute", 1),
                 "hour": doc.get("hour", 1),
                 "search": doc.get("search", ""),
-                "cycleType": doc.get("cycleType", "nhours"),
+                "cycleType": cycle_type,
                 "scheduledTasks": doc.get("scheduledTasks", True)
             }
             result_list.append(tmp)
@@ -81,6 +101,7 @@ async def get_scheduled_data(request_data: dict, db=Depends(get_mongo_db), _: di
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
+
 
 # @router.post("/scheduled/task/run")
 # async def scheduled_run(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token),
@@ -145,11 +166,11 @@ async def delete_task(request_data: dict, db=Depends(get_mongo_db), _: dict = De
                         await db.project.update_one({"_id": ObjectId(task_id)}, update_document)
                     scheduler.remove_job(task_id)
         result = await db.ScheduledTasks.delete_many({
-                                                        "$or": [
-                                                            {"id": {"$in": obj_ids}},
-                                                            {"_id": {"$in": sched_ids}}
-                                                        ]
-                                                    })
+            "$or": [
+                {"id": {"$in": obj_ids}},
+                {"_id": {"$in": sched_ids}}
+            ]
+        })
 
         # Check if the deletion was successful
         if result.deleted_count > 0:
@@ -164,7 +185,8 @@ async def delete_task(request_data: dict, db=Depends(get_mongo_db), _: dict = De
 
 
 @router.post("/pagemonit/data")
-async def get_scheduled_task_pagemonit_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+async def get_scheduled_task_pagemonit_data(request_data: dict, db=Depends(get_mongo_db),
+                                            _: dict = Depends(verify_token)):
     try:
         search_query = request_data.get("search", "")
         page_index = request_data.get("pageIndex", 1)
@@ -200,7 +222,8 @@ async def get_scheduled_task_pagemonit_data(request_data: dict, db=Depends(get_m
 
 
 @router.post("/pagemonit/update")
-async def update_scheduled_task_pagemonit_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+async def update_scheduled_task_pagemonit_data(request_data: dict, db=Depends(get_mongo_db),
+                                               _: dict = Depends(verify_token)):
     try:
         if not request_data:
             return {"message": "Data to update is missing in the request", "code": 400}
@@ -210,7 +233,8 @@ async def update_scheduled_task_pagemonit_data(request_data: dict, db=Depends(ge
         if state:
             if job:
                 scheduler.remove_job('page_monitoring')
-            scheduler.add_job(create_page_monitoring_task, 'interval', hours=request_data.get('hour', 24), id='page_monitoring', jobstore='mongo')
+            scheduler.add_job(create_page_monitoring_task, 'interval', hours=request_data.get('hour', 24),
+                              id='page_monitoring', jobstore='mongo')
             next_time = scheduler.get_job('page_monitoring').next_run_time
             formatted_time = next_time.strftime("%Y-%m-%d %H:%M:%S")
         else:
@@ -238,7 +262,8 @@ async def update_scheduled_task_pagemonit_data(request_data: dict, db=Depends(ge
 
 
 @router.post("/pagemonit/delete")
-async def delete_scheduled_task_pagemonit_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+async def delete_scheduled_task_pagemonit_data(request_data: dict, db=Depends(get_mongo_db),
+                                               _: dict = Depends(verify_token)):
     try:
         # Extract the list of IDs from the request_data dictionary
         url_ids = request_data.get("ids", [])
@@ -262,7 +287,8 @@ async def delete_scheduled_task_pagemonit_data(request_data: dict, db=Depends(ge
 
 
 @router.post("/pagemonit/add")
-async def add_scheduled_task_pagemonit_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+async def add_scheduled_task_pagemonit_data(request_data: dict, db=Depends(get_mongo_db),
+                                            _: dict = Depends(verify_token)):
     try:
         if not request_data:
             return {"message": "Data to add is missing in the request", "code": 400}
@@ -292,39 +318,14 @@ async def update_scheduled_data(request_data: dict, db=Depends(get_mongo_db), _:
     try:
         # Get the ID from the request data
         task_id = request_data.get("id")
-        hour = request_data.get("hour")
-        # Check if ID is provided
-        if not task_id:
-            return {"message": "ID is missing in the request data", "code": 400}
-        query = {"id": task_id}
-        doc = await db.ScheduledTasks.find_one(query)
-        oldScheduledTasks = doc["state"]
-        old_hour = doc["hour"]
-        newScheduledTasks = request_data.get("scheduledTasks")
-        if oldScheduledTasks is False:
-            # 原本是关闭的
-            # 如果重新开启，则开启计划任务
-            if newScheduledTasks:
-                scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[task_id, "scan"], id=str(task_id),
-                                  jobstore='mongo')
-                await db.ScheduledTasks.update_one({"id": task_id}, {"$set": {'state': True}})
-            # 如果新的还是关闭，则不用管
-        else:
-            # 原本是开启的
-            # 如果重新提交的是开启的
-            if newScheduledTasks:
-                # 如果旧的时间间隔和新的时间间隔不同删除旧的然后按照新的时间重新提交，否则无需改变
-                if old_hour != hour:
-                    scheduler.remove_job(task_id)
-                    scheduler.add_job(scheduler_scan_task, 'interval', hours=hour, args=[task_id, "scan"], id=str(task_id),
-                                      jobstore='mongo')
-            else:
-                # 重新提交的是关闭的，则移除计划任务
+        if task_id == "":
+            return {"message": "id is none", "code": 400}
+        scheduled_tasks = request_data.get("scheduledTasks", False)
+        if scheduled_tasks:
+            job = scheduler.get_job(task_id)
+            if job is not None:
                 scheduler.remove_job(task_id)
-                await db.ScheduledTasks.update_one({"id": task_id}, {"$set": {'state': False}})
-        if doc["type"] == "project":
-            await db.ProjectTargetData.update_one({"id": task_id}, {"$set": {"target": request_data.get("target")}})
-            await db.project.update_one({"_id": ObjectId(task_id)}, {"$set": {"ignore": request_data.get("ignore")}})
+            await insert_scheduled_tasks(request_data, db, True, task_id)
         request_data.pop("id")
         update_document = {
             "$set": request_data
@@ -362,10 +363,16 @@ async def scheduled_detail(request_data: dict, db=Depends(get_mongo_db), _: dict
             "ignore": doc.get("ignore", ""),
             "node": doc.get("node", []),
             "allNode": doc.get("allNode"),
-            "scheduledTasks": doc.get("scheduledTasks"),
             "hour": doc.get("hour"),
             "duplicates": doc.get("duplicates"),
-            "template": doc.get("template", "")
+            "template": doc.get("template", ""),
+            "project": doc.get("project", []),
+            "targetSource": doc.get("targetSource", "general"),
+            "day": doc.get("day", 1),
+            "minute": doc.get("minute", 1),
+            "search": doc.get("search", ""),
+            "cycleType": doc.get("cycleType", "nhours"),
+            "scheduledTasks": doc.get("scheduledTasks", True)
         }
         return {"code": 200, "data": result}
 
