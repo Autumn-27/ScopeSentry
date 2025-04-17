@@ -158,7 +158,12 @@ async def task_detail(request_data: dict, db=Depends(get_mongo_db), _: dict = De
             "scheduledTasks": doc.get("scheduledTasks"),
             "hour": doc.get("hour"),
             "duplicates": doc.get("duplicates"),
-            "template": doc.get("template", "")
+            "template": doc.get("template", ""),
+            "day": doc.get("day", 1),
+            "minute": doc.get("minute", 1),
+            "project": doc.get("project", []),
+            "search": doc.get("search", ""),
+            "cycleType": doc.get("cycleType", "nhours"),
         }
         return {"code": 200, "data": result}
 

@@ -26,81 +26,78 @@ router = APIRouter()
 
 @router.post("/data")
 async def get_scheduled_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
-    try:
-        search_query = request_data.get("search", "")
-        page_index = request_data.get("pageIndex", 1)
-        page_size = request_data.get("pageSize", 10)
-        # Fuzzy search based on the name field
-        query = {"name": {"$regex": search_query, "$options": "i"}}
+    search_query = request_data.get("search", "")
+    page_index = request_data.get("pageIndex", 1)
+    page_size = request_data.get("pageSize", 10)
+    # Fuzzy search based on the name field
+    query = {"name": {"$regex": search_query, "$options": "i"}}
 
-        # Get the total count of documents matching the search criteria
-        total_count = await db.ScheduledTasks.count_documents(query)
+    # Get the total count of documents matching the search criteria
+    total_count = await db.ScheduledTasks.count_documents(query)
 
-        # Perform pagination query
-        cursor: AsyncIOMotorCursor = db.ScheduledTasks.find(query).skip((page_index - 1) * page_size).limit(page_size)
-        result = await cursor.to_list(length=None)
-        if len(result) == 0:
-            return {
-                "code": 200,
-                "data": {
-                    'list': [],
-                    'total': 0
-                }
-            }
-        result_list = []
-        for doc in result:
-            week = doc.get("week", 1)
-            day = doc.get("day", 1)
-            hour = doc.get("hour", 0)
-            minute = doc.get("minute", 0)
-            cycle_type = doc.get("cycleType", "nhours")
-            cycle = ""
-            if doc["id"] == "page_monitoring":
-                cycle = f'{hour} hour'
-            else:
-                if cycle_type == "daily":
-                    cycle = f'Every day at {hour}:{minute}'
-                elif cycle_type == "ndays":
-                    cycle = f'Every {day} days at {hour}:{minute}'
-                elif cycle_type == "nhours":
-                    cycle = f'Every {hour}h {minute}m'
-                elif cycle_type == "weekly":
-                    cycle = f'Every week on day {week} at {hour}:{minute}'
-                elif cycle_type == "monthly":
-                    cycle = f'Every month on day {day} at {hour}:{minute}'
-            tmp = {
-                "id": doc.get("id", str(doc["_id"])),
-                "name": doc["name"],
-                "type": doc["type"],
-                "lastTime": doc.get("lastTime", ""),
-                "nextTime": doc.get("nextTime", ""),
-                "state": doc.get("scheduledTasks", doc.get("state", False)),
-                "node": doc.get("node", []),
-                "cycle": cycle,
-                "allNode": doc.get("allNode", True),
-                "runner_id": doc.get("runner_id", ""),
-                "project": doc.get("project", []),
-                "targetSource": doc.get("targetSource", "general"),
-                "day": doc.get("day", 1),
-                "minute": doc.get("minute", 1),
-                "hour": doc.get("hour", 1),
-                "search": doc.get("search", ""),
-                "cycleType": cycle_type,
-                "scheduledTasks": doc.get("scheduledTasks", True)
-            }
-            result_list.append(tmp)
+    # Perform pagination query
+    cursor: AsyncIOMotorCursor = db.ScheduledTasks.find(query).skip((page_index - 1) * page_size).limit(page_size)
+    result = await cursor.to_list(length=None)
+    if len(result) == 0:
         return {
             "code": 200,
             "data": {
-                'list': result_list,
-                'total': total_count
+                'list': [],
+                'total': 0
             }
         }
+    result_list = []
+    for doc in result:
+        week = doc.get("week", 1)
+        day = doc.get("day", 1)
+        hour = doc.get("hour", 0)
+        minute = doc.get("minute", 0)
+        cycle_type = doc.get("cycleType", "nhours")
+        cycle = ""
+        doc_id = str(doc["_id"])
+        id = doc.get("id", doc_id)
+        if id == "page_monitoring":
+            cycle = f'{hour} hour'
+        else:
+            if cycle_type == "daily":
+                cycle = f'Every day at {hour}:{minute}'
+            elif cycle_type == "ndays":
+                cycle = f'Every {day} days at {hour}:{minute}'
+            elif cycle_type == "nhours":
+                cycle = f'Every {hour}h {minute}m'
+            elif cycle_type == "weekly":
+                cycle = f'Every week on day {week} at {hour}:{minute}'
+            elif cycle_type == "monthly":
+                cycle = f'Every month on day {day} at {hour}:{minute}'
+        tmp = {
+            "id": id,
+            "name": doc["name"],
+            "type": doc.get("type", "scan"),
+            "lastTime": doc.get("lastTime", ""),
+            "nextTime": doc.get("nextTime", ""),
+            "state": doc.get("scheduledTasks", doc.get("state", False)),
+            "node": doc.get("node", []),
+            "cycle": cycle,
+            "allNode": doc.get("allNode", True),
+            "runner_id": doc.get("runner_id", ""),
+            "project": doc.get("project", []),
+            "targetSource": doc.get("targetSource", "general"),
+            "day": doc.get("day", 1),
+            "minute": doc.get("minute", 1),
+            "hour": doc.get("hour", 1),
+            "search": doc.get("search", ""),
+            "cycleType": cycle_type,
+            "scheduledTasks": doc.get("scheduledTasks", True)
+        }
+        result_list.append(tmp)
+    return {
+        "code": 200,
+        "data": {
+            'list': result_list,
+            'total': total_count
+        }
+    }
 
-    except Exception as e:
-        logger.error(str(e))
-        # Handle exceptions as needed
-        return {"message": "error", "code": 500}
 
 
 # @router.post("/scheduled/task/run")
@@ -342,6 +339,31 @@ async def update_scheduled_data(request_data: dict, db=Depends(get_mongo_db), _:
         return {"message": "error", "code": 500}
 
 
+@router.post("/add")
+async def add_scheduled_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    try:
+        name = request_data.get("name")
+        cursor = db.ScheduledTasks.find({"name": {"$eq": name}}, {"_id": 1})
+        results = await cursor.to_list(length=None)
+        if len(results) != 0:
+            return {"code": 400, "message": "name already exists"}
+        node = request_data.get("node")
+        if name == "" or node == []:
+            return {"message": "target is Null", "code": 500}
+
+        scheduled_tasks = request_data.get("scheduledTasks", False)
+        if scheduled_tasks:
+            await insert_scheduled_tasks(request_data, db)
+        else:
+            await db.ScheduledTasks.insert_one(request_data)
+        return {"message": "Task updated successfully", "code": 200}
+
+    except Exception as e:
+        logger.error(str(e))
+        logger.error(traceback.format_exc())
+        return {"message": "error", "code": 500}
+
+
 @router.post("/detail")
 async def scheduled_detail(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
@@ -353,7 +375,10 @@ async def scheduled_detail(request_data: dict, db=Depends(get_mongo_db), _: dict
             return {"message": "ID is missing in the request data", "code": 400}
 
         # Query the database for content based on ID
-        query = {"id": task_id}
+        query = {"$or": [
+        {"id": task_id},
+        {"_id": ObjectId(task_id)}  # 你可以替换为你想要的条件
+    ]}
         doc = await db.ScheduledTasks.find_one(query)
         if not doc:
             return {"message": "Content not found for the provided ID", "code": 404}
