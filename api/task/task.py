@@ -131,9 +131,6 @@ async def update_project_by_target(target, ignore, id, db, background_tasks):
     return True
 
 
-
-
-
 @router.post("/detail")
 async def task_detail(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
@@ -465,9 +462,10 @@ async def progress_info(request_data: dict, _: dict = Depends(verify_token), red
 async def stop_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         # Get the ID from the request data
-        task_id = request_data.get("id")
-        await refresh_config("all", "stop_task", task_id)
-        await db.task.update_one({"_id": ObjectId(task_id)}, {"$set": {"status": 2}})
+        task_ids = request_data.get("ids")
+        for task_id in task_ids:
+            await refresh_config("all", "stop_task", task_id)
+            await db.task.update_one({"_id": ObjectId(task_id)}, {"$set": {"status": 2}})
         return {"message": "success", "code": 200}
     except Exception as e:
         logger.error(str(e))
@@ -479,16 +477,65 @@ async def stop_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depe
 async def start_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     try:
         # Get the ID from the request data
-        task_id = request_data.get("id")
-        query = {"_id": ObjectId(task_id)}
-        doc = await db.task.find_one(query)
-        if not doc:
-            return {"message": "Content not found for the provided ID", "code": 404}
-        doc["IsStart"] = True
-        await create_scan_task(doc, task_id, True)
-        await db.task.update_one({"_id": ObjectId(task_id)}, {"$set": {"status": 1}})
+        task_ids = request_data.get("ids")
+        for task_id in task_ids:
+            query = {"_id": ObjectId(task_id)}
+            doc = await db.task.find_one(query)
+            if not doc:
+                # return {"message": "Content not found for the provided ID", "code": 404}
+                continue
+            doc["IsStart"] = True
+            await create_scan_task(doc, task_id, True)
+            await db.task.update_one({"_id": ObjectId(task_id)}, {"$set": {"status": 1}})
         return {"message": "success", "code": 200}
     except Exception as e:
         logger.error(str(e))
         # Handle exceptions as needed
         return {"message": "error", "code": 500}
+
+def get_before_last_dash(s: str) -> str:
+    index = s.rfind('-')  # 查找最后一个 '-' 的位置
+    if index != -1:
+        return s[:index]  # 截取从开头到最后一个 '-' 前的内容
+    return s  # 如果没有 '-'，返回原字符串
+
+@router.post("/sync")
+async def sync_project_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+    task_ids = request_data.get("ids", [])
+    option = request_data.get("option", "")
+    project = request_data.get("project", "")
+    if len(task_ids) == 0 or option == "" or project == "":
+        return {"message": "ids or option error", "code": 404}
+    obj_ids = []
+    for task_id in task_ids:
+        obj_ids.append(ObjectId(task_id))
+    # 获取任务target
+    cursor: AsyncIOMotorCursor = db['task'].find({"_id": {"$in": obj_ids}})
+    result = await cursor.to_list(length=None)
+    targets = ""
+    ignore = ""
+    task_name = []
+    for i in result:
+        targets += i["target"]
+        ignore += i["ignore"]
+        task_name = task_name.append(i["name"])
+    targets = targets.strip()
+    # 获取扫描出来的根域名
+    cursor: AsyncIOMotorCursor = db['RootDomain'].find({"taskName": {"$in": task_name}}, {"domain": 1, "icp": 1, "company": 1})
+    result = await cursor.to_list(length=None)
+    for i in result:
+        if i["domain"] != "":
+            targets += i["domain"] + "\n"
+        if i["icp"] != "":
+            icp = get_before_last_dash(i["icp"])
+            if icp not in targets:
+                targets += icp + "\n"
+        if i["company"] != "":
+            if i["company"] not in targets:
+                targets += i["company"] + "\n"
+    if option == "existing":
+        # 同步到已有项目
+        print("d")
+    else:
+        # 新建项目
+        print("d")
