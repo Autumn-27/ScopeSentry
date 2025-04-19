@@ -75,7 +75,7 @@ async def insert_task(request_data, db):
     request_data["creatTime"] = get_now_time()
     request_data["endTime"] = ""
     request_data["status"] = 1
-    request_data["type"] = request_data.get("tp", "scan")
+    request_data["type"] = request_data.get("targetSource", "scan")
     result = await db.task.insert_one(request_data)
     if result.inserted_id:
         task = asyncio.create_task(create_scan_task(request_data, str(result.inserted_id)))
