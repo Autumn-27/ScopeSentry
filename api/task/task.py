@@ -93,42 +93,7 @@ async def add_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depen
         return {"message": "error", "code": 500}
 
 
-async def update_project_by_target(target, ignore, id, db, background_tasks):
-    target_list = await get_target_list(target, ignore)
-    root_domains = []
-    for tg in target_list:
-        if "CMP:" in tg or "ICP:" in tg or "APP:" in tg or "APP-ID:" in tg:
-            root_domain = tg.replace("CMP:", "").replace("ICP:", "").replace("APP:", "").replace("APP-ID:", "")
-        else:
-            root_domain = get_root_domain(tg)
-        if root_domain not in root_domains:
-            root_domains.append(root_domain)
-    doc = await db.project.find_one({"_id": ObjectId(id)})
-    if not doc:
-        # 未找到项目
-        return False
-    rootDomains = doc["root_domains"]
-    tmp_root_domain = []
-    for i in root_domains:
-        if i not in rootDomains:
-            tmp_root_domain.append(i)
-    if len(tmp_root_domain) == 0:
-        # 该项目没有需要更新的目标
-        return True
-    all_root_domain = rootDomains + tmp_root_domain
-    update_document = {
-        "$set": {
-            "root_domains": all_root_domain
-        }
-    }
-    await db.project.update_one({"_id": ObjectId(id)}, update_document)
-    doc = await db.ProjectTargetData.find_one({"id": id})
-    targets = doc["target"].strip() + "\n" + "\n".join(tmp_root_domain).strip()
-    await db.ProjectTargetData.update_one({"id": id}, {"$set": {"target": targets}})
-    await refresh_config('all', 'project', id)
-    # 更新已有的资产归属
-    background_tasks.add_task(update_project, all_root_domain, id, True)
-    return True
+
 
 
 @router.post("/detail")
@@ -484,6 +449,8 @@ async def start_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
             if not doc:
                 # return {"message": "Content not found for the provided ID", "code": 404}
                 continue
+            if doc["progress"] == 100:
+                continue
             doc["IsStart"] = True
             await create_scan_task(doc, task_id, True)
             await db.task.update_one({"_id": ObjectId(task_id)}, {"$set": {"status": 1}})
@@ -499,13 +466,16 @@ def get_before_last_dash(s: str) -> str:
         return s[:index]  # 截取从开头到最后一个 '-' 前的内容
     return s  # 如果没有 '-'，返回原字符串
 
+
 @router.post("/sync")
-async def sync_project_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
+async def sync_project_task(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token), background_tasks: BackgroundTasks = BackgroundTasks()):
     task_ids = request_data.get("ids", [])
     option = request_data.get("option", "")
     project = request_data.get("project", "")
-    if len(task_ids) == 0 or option == "" or project == "":
-        return {"message": "ids or option error", "code": 404}
+    tag = request_data.get("tag", "")
+    name = request_data.get("name", "")
+    if len(task_ids) == 0 or option == "":
+        return {"message": "ids or option or project error", "code": 404}
     obj_ids = []
     for task_id in task_ids:
         obj_ids.append(ObjectId(task_id))
@@ -518,8 +488,9 @@ async def sync_project_task(request_data: dict, db=Depends(get_mongo_db), _: dic
     for i in result:
         targets += i["target"]
         ignore += i["ignore"]
-        task_name = task_name.append(i["name"])
+        task_name.append(i["name"])
     targets = targets.strip()
+    ignore = ignore.strip()
     # 获取扫描出来的根域名
     cursor: AsyncIOMotorCursor = db['RootDomain'].find({"taskName": {"$in": task_name}}, {"domain": 1, "icp": 1, "company": 1})
     result = await cursor.to_list(length=None)
@@ -534,8 +505,77 @@ async def sync_project_task(request_data: dict, db=Depends(get_mongo_db), _: dic
             if i["company"] not in targets:
                 targets += i["company"] + "\n"
     if option == "existing":
-        # 同步到已有项目
-        print("d")
+        if project == "":
+            return {"message": "ids or option or project error", "code": 404}
+        await update_project_by_target(targets, ignore, project, db, background_tasks)
     else:
         # 新建项目
-        print("d")
+        if tag == "" or name == "":
+            return {"message": "tag error", "code": 404}
+        cursor = db.project.find({"name": {"$eq": name}}, {"_id": 1})
+        results = await cursor.to_list(length=None)
+        if len(results) != 0:
+            return {"code": 400, "message": "name already exists"}
+        root_domains = []
+        target_list = await get_target_list(targets, "")
+        for tg in target_list:
+            if "CMP:" in tg or "ICP:" in tg or "APP:" in tg or "APP-ID:" in tg:
+                root_domain = tg.replace("CMP:", "").replace("ICP:", "").replace("APP:", "").replace("APP-ID:", "")
+            else:
+                root_domain = get_root_domain(tg)
+            if root_domain not in root_domains:
+                root_domains.append(root_domain)
+        project_obj = {
+            "name": name,
+            "tp": "project",
+            "root_domains": root_domains,
+            "ignore": ignore,
+            "logo": "",
+            "tag": tag
+        }
+        result = await db.project.insert_one(project_obj)
+        if result.inserted_id:
+            await db.ProjectTargetData.insert_one({"id": str(result.inserted_id), "target": targets})
+            background_tasks.add_task(update_project, root_domains, str(result.inserted_id), False)
+
+    return {"message": "success", "code": 200}
+
+
+
+
+async def update_project_by_target(target, ignore, id, db, background_tasks):
+    target_list = await get_target_list(target, ignore)
+    root_domains = []
+    for tg in target_list:
+        if "CMP:" in tg or "ICP:" in tg or "APP:" in tg or "APP-ID:" in tg:
+            root_domain = tg.replace("CMP:", "").replace("ICP:", "").replace("APP:", "").replace("APP-ID:", "")
+        else:
+            root_domain = get_root_domain(tg)
+        if root_domain not in root_domains:
+            root_domains.append(root_domain)
+    doc = await db.project.find_one({"_id": ObjectId(id)})
+    if not doc:
+        # 未找到项目
+        return False
+    rootDomains = doc["root_domains"]
+    tmp_root_domain = []
+    for i in root_domains:
+        if i not in rootDomains:
+            tmp_root_domain.append(i)
+    if len(tmp_root_domain) == 0:
+        # 该项目没有需要更新的目标
+        return True
+    all_root_domain = rootDomains + tmp_root_domain
+    update_document = {
+        "$set": {
+            "root_domains": all_root_domain
+        }
+    }
+    await db.project.update_one({"_id": ObjectId(id)}, update_document)
+    doc = await db.ProjectTargetData.find_one({"id": id})
+    targets = doc["target"].strip() + "\n" + "\n".join(tmp_root_domain).strip()
+    await db.ProjectTargetData.update_one({"id": id}, {"$set": {"target": targets}})
+    await refresh_config('all', 'project', id)
+    # 更新已有的资产归属
+    background_tasks.add_task(update_project, all_root_domain, id, True)
+    return True

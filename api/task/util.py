@@ -88,7 +88,7 @@ async def generate_ignore(ignore):
 async def task_progress():
     async for db in get_mongo_db():
         async for redis in get_redis_pool():
-            query = {"progress": {"$ne": 100}}
+            query = {"progress": {"$ne": 100}, "status": 1}
             cursor: AsyncIOMotorCursor = db.task.find(query)
             result = await cursor.to_list(length=None)
             if len(result) == 0:
@@ -98,7 +98,7 @@ async def task_progress():
                 key = f"TaskInfo:tmp:{id}"
                 exists = await redis.exists(key)
                 if exists:
-                    count = await redis.llen(key)
+                    count = await redis.scard(key)
                     progress_tmp = round(count / r['taskNum'], 2)
                     progress_tmp = round(progress_tmp * 100, 1)
                     if progress_tmp > 100:
