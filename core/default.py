@@ -627,10 +627,9 @@ SCANTEMPLATE = {
   ],
   "WebCrawler": [],
   "URLSecurity": [
-    "2949994c04a4e124b9c98383489510f0"
+    "1aa212b9578dc3fb1409ee8de8ed005e"
   ],
   "DirScan": [
-    "920546788addc6d29ea63e4a314a1b85"
   ],
   "VulnerabilityScan": [],
   "name": "default",
