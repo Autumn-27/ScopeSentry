@@ -323,6 +323,10 @@ async def update_scheduled_data(request_data: dict, db=Depends(get_mongo_db), _:
             if job is not None:
                 scheduler.remove_job(task_id)
             await insert_scheduled_tasks(request_data, db, True, task_id)
+        else:
+            job = scheduler.get_job(task_id)
+            if job is not None:
+                scheduler.remove_job(task_id)
         request_data.pop("id")
         update_document = {
             "$set": request_data

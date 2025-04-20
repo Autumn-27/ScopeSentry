@@ -76,6 +76,10 @@ services:
     network_mode: host
     container_name: scopesentry-scan
     restart: always
+    ulimits:
+      core:
+        soft: 0
+        hard: 0
     environment:
       NodeName: node-test
       TimeZoneName: Asia/Shanghai

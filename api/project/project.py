@@ -160,6 +160,12 @@ async def get_project_content(request_data: dict, db=Depends(get_mongo_db), _: d
     }
     return {"code": 200, "data": result}
 
+def get_before_last_dash(s: str) -> str:
+    index = s.rfind('-')  # 查找最后一个 '-' 的位置
+    if index != -1:
+        return s[:index]  # 截取从开头到最后一个 '-' 前的内容
+    return s  # 如果没有 '-'，返回原字符串
+
 
 @router.post("/add")
 async def add_project_rule(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token),
@@ -181,6 +187,8 @@ async def add_project_rule(request_data: dict, db=Depends(get_mongo_db), _: dict
     for tg in target_list:
         if "CMP:" in tg or "ICP:" in tg or "APP:" in tg or "APP-ID:" in tg:
             root_domain = tg.replace("CMP:", "").replace("ICP:", "").replace("APP:", "").replace("APP-ID:", "")
+            if "ICP:" in tg:
+                root_domain = get_before_last_dash(root_domain)
         else:
             root_domain = get_root_domain(tg)
         if root_domain not in root_domains:

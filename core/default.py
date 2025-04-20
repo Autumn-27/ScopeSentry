@@ -237,10 +237,10 @@ domain_headers:                   # 请求头配置:[]{domain,map[headerKey]Head
 - domain: '*'                     # 为哪些域名设置header，glob语法
   headers: {}                     # 请求头，map[key]value
 max_depth: 5                     # 最大页面深度限制
-navigate_timeout_second: 10       # 访问超时时间，单位秒
-load_timeout_second: 10           # 加载超时时间，单位秒
+navigate_timeout_second: 5       # 访问超时时间，单位秒
+load_timeout_second: 5           # 加载超时时间，单位秒
 retry: 0                          # 页面访问失败后的重试次数
-page_analyze_timeout_second: 30  # 页面分析超时时间，单位秒
+page_analyze_timeout_second: 10  # 页面分析超时时间，单位秒
 max_interactive: 100             # 单个页面最大交互次数
 max_interactive_depth: 5         # 页面交互深度限制
 max_page_concurrent: 5           # 最大页面并发（不大于10）
