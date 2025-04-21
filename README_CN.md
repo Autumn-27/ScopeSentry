@@ -145,7 +145,7 @@ Scope Sentry是一款具有分布式资产测绘、子域名枚举、信息泄�
 
 ## 任务
 
-![](docs/images/task-cn.png)
+![](docs/images/create-task-cn.png)
 
 ## 任务进度
 

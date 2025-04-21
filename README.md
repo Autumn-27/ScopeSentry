@@ -137,7 +137,7 @@ Discord:
 
 ## Tasks
 
-![](docs/images/task-en.png)
+![](docs/images/create-task-en.png)
 
 ## Task Progress
 
