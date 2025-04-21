@@ -88,11 +88,20 @@ Discord:
 ### Quick syntax search：
 ![alt text](docs/images/search.gif)
 
+## Root Domain
+![alt text](docs/images/rootdomain-cn.png)
+
 ### Subdomains
 ![alt text](docs/images/subdomain-en.png)
 
 ### Subdomain Takeover
 ![alt text](docs/images/subt-en.png)
+
+### APP
+![alt text](docs/images/app-cn.png)
+
+### 小程序
+![alt text](docs/images/mp-cn.png)
 
 ### URL
 ![alt text](docs/images/craw-cn.png)

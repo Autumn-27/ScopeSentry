@@ -39,6 +39,9 @@ Scope Sentry是一款具有分布式资产测绘、子域名枚举、信息泄�
 - 子域名枚举
 - 子域名接管检测
 - 端口扫描
+- ICP自动化收集
+- APP自动化收集
+- 小程序自动化收集
 - 资产识别
 - 目录扫描
 - 漏洞扫描
@@ -92,11 +95,20 @@ Scope Sentry是一款具有分布式资产测绘、子域名枚举、信息泄�
 ![alt text](docs/images/asset-change.png)
 ### 快捷语法搜索：
 ![alt text](docs/images/search.gif)
+
+## 根域名
+![alt text](docs/images/rootdomain-cn.png)
 ### 子域名
 ![alt text](docs/images/subdomain-cn.png)
 
 ### 子域名接管
 ![alt text](docs/images/subt-cn.png)
+
+### APP
+![alt text](docs/images/app-cn.png)
+
+### 小程序
+![alt text](docs/images/mp-cn.png)
 
 ### URL
 ![alt text](docs/images/url-cn.png)
