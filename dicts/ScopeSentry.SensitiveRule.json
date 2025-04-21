@@ -5,7 +5,7 @@
   "name": "JSON Web Token",
   "regular": "ey[A-Za-z0-9_-]*\\.[A-Za-z0-9_-]*\\.[A-Za-z0-9_\\-\\/.+=]*",
   "color": "green",
-  "state": true
+  "state": false
 },
 {
   "_id": {
@@ -41,7 +41,7 @@
   "name": "URL As A Value",
   "regular": "=(https?)(://|%3a%2f%2f)",
   "color": "cyan",
-  "state": true
+  "state": false
 },
 {
   "_id": {
