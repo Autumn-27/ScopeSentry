@@ -489,7 +489,7 @@ async def sync_project_task(request_data: dict, db=Depends(get_mongo_db), _: dic
         targets += i["target"]
         ignore += i["ignore"]
         task_name.append(i["name"])
-    targets = targets.strip()
+    targets = targets.strip() + "\n"
     ignore = ignore.strip()
     # 获取扫描出来的根域名
     cursor: AsyncIOMotorCursor = db['RootDomain'].find({"taskName": {"$in": task_name}}, {"domain": 1, "icp": 1, "company": 1})
@@ -500,10 +500,10 @@ async def sync_project_task(request_data: dict, db=Depends(get_mongo_db), _: dic
         if i["icp"] != "":
             icp = get_before_last_dash(i["icp"])
             if icp not in targets:
-                targets += icp + "\n"
+                targets += "ICP:" + icp + "\n"
         if i["company"] != "":
             if i["company"] not in targets:
-                targets += i["company"] + "\n"
+                targets += "CMP:" + i["company"] + "\n"
     if option == "existing":
         if project == "":
             return {"message": "ids or option or project error", "code": 404}
@@ -573,7 +573,7 @@ async def update_project_by_target(target, ignore, id, db, background_tasks):
     }
     await db.project.update_one({"_id": ObjectId(id)}, update_document)
     doc = await db.ProjectTargetData.find_one({"id": id})
-    targets = doc["target"].strip() + "\n" + "\n".join(tmp_root_domain).strip()
+    targets = doc["target"].strip() + "\n" + "\n".join(target_list).strip()
     await db.ProjectTargetData.update_one({"id": id}, {"$set": {"target": targets}})
     await refresh_config('all', 'project', id)
     # 更新已有的资产归属
