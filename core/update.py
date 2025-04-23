@@ -275,7 +275,7 @@ async def update16(db):
     await db['asset'].create_index([('host', ASCENDING), ('port', ASCENDING)])
 
 
-async def update161(db):
+async def update17(db):
     await db["plugins"].insert_many([{
         "module": "URLSecurity",
         "name": "trufflehog",
