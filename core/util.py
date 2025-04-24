@@ -6,7 +6,7 @@ import hashlib, random
 import re
 import string
 import sys
-
+import tldextract
 from loguru import logger
 from core.config import TIMEZONE, APP, Project_List
 from datetime import timezone
@@ -350,19 +350,37 @@ def get_root_domain(url):
         pass
 
     domain_parts = parsed_url.netloc.split('.')
-
     # 复合域名列表
     compound_domains = [
-        'com.cn', 'net.cn', 'org.cn', 'gov.cn', 'edu.cn', 'ac.cn', 'mil.cn',
+        'com.cn', 'net.cn', 'org.cn', 'gov.cn', 'edu.cn', 'ac.cn', 'mil.cn', 'hk.cn', 'cn.com',
         'co.uk', 'org.uk', 'net.uk', 'gov.uk', 'ac.uk', 'sch.uk',
         'co.jp', 'ne.jp', 'or.jp', 'go.jp', 'ac.jp', 'ad.jp',
         'com.de', 'org.de', 'net.de', 'gov.de',
         'com.ca', 'net.ca', 'org.ca', 'gov.ca',
         'com.au', 'net.au', 'org.au', 'gov.au', 'edu.au',
         'com.fr', 'net.fr', 'org.fr', 'gov.fr',
-        'com.br', 'com.mx', 'com.ar', 'com.ru',
+        'com.br', 'com.mx', 'com.ar', 'com.ru', 'in.th'
         'co.in', 'co.za',
-        'co.kr', 'com.tw'
+        'co.kr', 'com.tw',
+        'co.nz', 'org.nz', 'govt.nz', 'edu.nz',  # 新西兰
+        'co.sg', 'org.sg', 'gov.sg',  # 新加坡
+        'com.it', 'net.it', 'org.it', 'gov.it',  # 意大利
+        'com.es', 'net.es', 'org.es', 'gob.es',  # 西班牙
+        'co.za', 'gov.za', 'org.za',  # 南非
+        'com.hk', 'org.hk', 'gov.hk',  # 香港
+        'com.my', 'net.my', 'org.my', 'gov.my',  # 马来西亚
+        'com.ph', 'net.ph', 'org.ph', 'gov.ph',  # 菲律宾
+        'com.vn', 'net.vn', 'org.vn', 'gov.vn',  # 越南
+        'com.co', 'org.co', 'gov.co',  # 哥伦比亚
+        'com.sa', 'net.sa', 'org.sa', 'gov.sa',  # 沙特阿拉伯
+        'com.eg', 'net.eg', 'org.eg', 'gov.eg',  # 埃及
+        'com.ua', 'org.ua', 'net.ua', 'gov.ua',  # 乌克兰
+        'com.pk', 'org.pk', 'gov.pk',  # 巴基斯坦
+        'com.id', 'net.id', 'org.id', 'co.id',  # 印度尼西亚
+        'com.th', 'net.th', 'org.th', 'co.th',  # 泰国
+        'com.ke', 'org.ke', 'co.ke', 'gov.ke',  # 肯尼亚
+        'com.ng', 'org.ng', 'gov.ng',  # 尼日利亚
+        'com.tw', 'org.tw', 'gov.tw',  # 台湾
     ]
 
     # 检查是否为复合域名

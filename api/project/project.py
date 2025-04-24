@@ -186,9 +186,11 @@ async def add_project_rule(request_data: dict, db=Depends(get_mongo_db), _: dict
     target_list = await get_target_list(target, request_data.get("ignore", ""))
     for tg in target_list:
         if "CMP:" in tg or "ICP:" in tg or "APP:" in tg or "APP-ID:" in tg:
-            root_domain = tg.replace("CMP:", "").replace("ICP:", "").replace("APP:", "").replace("APP-ID:", "")
             if "ICP:" in tg:
-                root_domain = get_before_last_dash(root_domain)
+                root_domain = get_before_last_dash(tg.replace("ICP:", ""))
+                root_domain = "ICP:" + root_domain
+            else:
+                root_domain = tg
         else:
             root_domain = get_root_domain(tg)
         if root_domain not in root_domains:
@@ -288,7 +290,11 @@ async def update_project_data(request_data: dict, db=Depends(get_mongo_db), _: d
         target_list = await get_target_list(target, request_data.get("ignore", ""))
         for tg in target_list:
             if "CMP:" in tg or "ICP:" in tg or "APP:" in tg or "APP-ID:" in tg:
-                root_domain = tg.replace("CMP:", "").replace("ICP:", "").replace("APP:", "").replace("APP-ID:", "")
+                if "ICP:" in tg:
+                    root_domain = get_before_last_dash(tg.replace("ICP:", ""))
+                    root_domain = "ICP:" + root_domain
+                else:
+                    root_domain = tg
             else:
                 root_domain = get_root_domain(tg)
             if root_domain not in root_domains:
