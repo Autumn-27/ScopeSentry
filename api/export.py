@@ -339,7 +339,7 @@ async def export_data_from_mongodb(quantity, query, file_name, index):
                 if index == "subdomain":
                     columns = {'host': '域名', 'type': '解析类型', 'value': '解析值', 'ip': '解析IP', 'project': '项目',
                                'time': '时间', "taskName": "任务", "tags": "tags", "rootDomain": "根域名"}
-                if index == "SubdoaminTakerResult":
+                if index == "SubdomainTakerResult":
                     columns = {
                         'input': '源域名', 'value': '解析值', 'cname': '接管类型', 'response': '响应体',
                         'project': '项目', "taskName": "任务", "tags": "tags", "rootDomain": "根域名"

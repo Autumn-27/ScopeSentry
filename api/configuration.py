@@ -199,7 +199,7 @@ async def do_asset_deduplication():
               #     "filters": [],
               #     "groups": ["url"]
               # },
-              "SubdoaminTakerResult": {
+              "SubdomainTakerResult": {
                   "filters": {},
                   "groups": ["input", "value"]
               },

@@ -118,7 +118,7 @@ async def task_progress():
 
 async def delete_asset(task_ids, is_project=False):
     async for db in get_mongo_db():
-        key = ["asset", "subdomain", "SubdoaminTakerResult", "UrlScan", "crawler", "SensitiveResult", "DirScanResult",
+        key = ["asset", "subdomain", "SubdomainTakerResult", "UrlScan", "crawler", "SensitiveResult", "DirScanResult",
                "vulnerability", "PageMonitoring"]
         del_query = {"taskName": {"$in": task_ids}}
         if is_project:

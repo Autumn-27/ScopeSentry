@@ -199,7 +199,7 @@ async def update15(db):
     print_progress_bar(5, 11)
     # 修改任务字段
     doc_names = ["DirScanResult", "PageMonitoring",
-                 "SubdoaminTakerResult",
+                 "SubdomainTakerResult",
                  "UrlScan",
                  "crawler",
                  "subdomain"]

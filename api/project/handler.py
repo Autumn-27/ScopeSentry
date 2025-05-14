@@ -16,7 +16,7 @@ async def update_project(root_domain, project_id, change=False):
                         'subdomain': ["host", "ip"],
                         'DirScanResult': ["url"],
                         'vulnerability': ["url"],
-                        'SubdoaminTakerResult': ["input"],
+                        'SubdomainTakerResult': ["input"],
                         'PageMonitoring': ["url"],
                         'SensitiveResult': ["url"],
                         'UrlScan': ["input"],
@@ -166,7 +166,7 @@ async def delete_asset_project(db, collection, project_id):
 
 async def delete_asset_project_handler(project_id):
     async for db in get_mongo_db():
-        asset_collection_list = ['asset', 'subdomain', 'DirScanResult', 'vulnerability', 'SubdoaminTakerResult',
+        asset_collection_list = ['asset', 'subdomain', 'DirScanResult', 'vulnerability', 'SubdomainTakerResult',
                                  'PageMonitoring', 'SensitiveResult', 'UrlScan', 'crawler']
         for c in asset_collection_list:
             await delete_asset_project(db, c, project_id)

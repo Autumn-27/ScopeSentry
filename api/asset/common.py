@@ -21,7 +21,7 @@ async def delete_data(request_data: dict, db=Depends(get_mongo_db), _: dict = De
     try:
         data_ids = request_data.get("ids", [])
         index = request_data.get("index", "")
-        key = ["asset", "DirScanResult", "SensitiveResult", "SubdoaminTakerResult", "UrlScan", "crawler", "subdomain", "vulnerability", "PageMonitoring", "app", "RootDomain", "mp"]
+        key = ["asset", "DirScanResult", "SensitiveResult", "SubdomainTakerResult", "UrlScan", "crawler", "subdomain", "vulnerability", "PageMonitoring", "app", "RootDomain", "mp"]
         if index not in key:
             return {"code": 404, "message": "Data not found"}
         obj_ids = []
@@ -51,7 +51,7 @@ async def add_tag(request_data: dict, db=Depends(get_mongo_db), _: dict = Depend
         tp = request_data.get("tp", "")
         id = request_data.get("id", "")
         tag = request_data.get("tag", "")
-        key = ["asset", "DirScanResult", "SensitiveResult", "SubdoaminTakerResult", "UrlScan", "crawler", "subdomain",
+        key = ["asset", "DirScanResult", "SensitiveResult", "SubdomainTakerResult", "UrlScan", "crawler", "subdomain",
                "vulnerability", "PageMonitoring", "RootDomain", "app", "mp"]
         if tp not in key or id == "" or tag == "":
             return {"code": 404, "message": "Data not found"}
@@ -78,7 +78,7 @@ async def delete_tag(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
         tp = request_data.get("tp", "")
         id = request_data.get("id", "")
         tag = request_data.get("tag", "")
-        key = ["asset", "DirScanResult", "SensitiveResult", "SubdoaminTakerResult", "UrlScan", "crawler", "subdomain",
+        key = ["asset", "DirScanResult", "SensitiveResult", "SubdomainTakerResult", "UrlScan", "crawler", "subdomain",
                "vulnerability", "PageMonitoring"]
         if tp not in key or id == "" or tag == "":
             return {"code": 404, "message": "Data not found"}
@@ -116,7 +116,7 @@ async def delete_tag(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
 @router.post("/total")
 async def total_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Depends(verify_token)):
     index = request_data.get("index", "")
-    key = ["asset", "DirScanResult", "SensitiveResult", "SubdoaminTakerResult", "UrlScan", "crawler", "subdomain",
+    key = ["asset", "DirScanResult", "SensitiveResult", "SubdomainTakerResult", "UrlScan", "crawler", "subdomain",
            "vulnerability", "PageMonitoring"]
     if index not in key:
         return {"code": 404, "message": "Data not found"}

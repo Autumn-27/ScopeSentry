@@ -21,11 +21,11 @@ async def get_subdomaintaker_data(request_data: dict, db=Depends(get_mongo_db), 
         page_size = request_data.get("pageSize", 10)
         # MongoDB collection for SensitiveRule
         # Fuzzy search based on the name field
-        query = await get_search_query("SubdoaminTakerResult", request_data)
+        query = await get_search_query("SubdomainTakerResult", request_data)
         if query == "":
             return {"message": "Search condition parsing error", "code": 500}
         # Get the total count of documents matching the search criteria
-        total_count = await db.SubdoaminTakerResult.count_documents(query)
+        total_count = await db.SubdomainTakerResult.count_documents(query)
         if total_count == 0:
             return {
             "code": 200,
@@ -35,7 +35,7 @@ async def get_subdomaintaker_data(request_data: dict, db=Depends(get_mongo_db), 
             }
         }
         # Perform pagination query
-        cursor: AsyncIOMotorCursor = db.SubdoaminTakerResult.find(query).skip((page_index - 1) * page_size).limit(page_size)
+        cursor: AsyncIOMotorCursor = db.SubdomainTakerResult.find(query).skip((page_index - 1) * page_size).limit(page_size)
         result = await cursor.to_list(length=None)
         # Process the result as needed
         response_data = []
