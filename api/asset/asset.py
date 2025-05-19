@@ -64,18 +64,7 @@ async def asset_data(request_data: dict, db=Depends(get_mongo_db), _: dict = Dep
             if r['type'] == 'other':
                 tmp['title'] = ""
                 tmp['status'] = None
-                tmp['banner'] = ""
-                try:
-                    if r['metadata'] is not None:
-                        raw_data = json.loads(r['metadata'].decode('utf-8'))
-                        for k in raw_data:
-                            tmp['banner'] += k + ":" + str(raw_data[k]).strip("\n") + "\n"
-                except:
-                    try:
-                        raw_data = r['metadata'].decode('utf-8')
-                        tmp['banner'] = raw_data
-                    except:
-                        tmp['banner'] = ""
+                tmp['banner'] = r['metadata']
                 tmp['products'] = []
             else:
                 tmp["screenshot"] = r.get("screenshot", "")

@@ -128,7 +128,7 @@ SEARCHKEY = {
             'domain': "host",
             'port': 'port',
             'service': "service",
-            'banner': 'raw',
+            'banner': 'metadata',
             'type': 'type',
         },
         'SubdomainTakerResult': {
