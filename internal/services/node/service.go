@@ -78,7 +78,7 @@ func (s *service) GetNodeData(ctx context.Context, online bool) ([]models.NodeDa
 
 			if timeDiff > NodeTimeout {
 				// 异步更新节点状态
-				go s.updateNodeState(ctx, nodeData.Name)
+				go s.updateNodeState(context.Background(), nodeData.Name)
 				nodeData.State = "3"
 			}
 		}
