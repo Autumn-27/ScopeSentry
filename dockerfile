@@ -13,7 +13,7 @@ RUN apt-get update && \
 WORKDIR /opt/ScopeSentry/
 
 # 复制 ScopeSentry 项目文件到工作目录
-COPY dist/ScopeSentry-go_linux_amd64_v1/ScopeSentry /opt/ScopeSentry/
+COPY dist/ScopeSentry_linux_amd64_v1/ScopeSentry /opt/ScopeSentry/
 
 RUN chmod +x /opt/ScopeSentry/ScopeSentry
 
