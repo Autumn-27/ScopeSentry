@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"context"
+	"fmt"
 	"github.com/Autumn-27/ScopeSentry-go/internal/database/mongodb"
 	"log"
 	"time"
@@ -52,6 +53,10 @@ func init() {
 	//	return redis.Init()
 	//})
 
+	RegisterStartupEvent(func(ctx context.Context) error {
+		return Banner()
+	})
+
 	//// 初始化数据库
 	RegisterStartupEvent(func(ctx context.Context) error {
 		return mongodb.CreateDatabase()
@@ -64,4 +69,10 @@ func init() {
 		log.Fatalf("Error during startup events: %v", err)
 		return
 	}
+}
+
+func Banner() error {
+	banner := "   _____                         _____            _              \n  / ____|                       / ____|          | |             \n | (___   ___ ___  _ __   ___  | (___   ___ _ __ | |_ _ __ _   _ \n  \\___ \\ / __/ _ \\| '_ \\ / _ \\  \\___ \\ / _ \\ '_ \\| __| '__| | | |\n  ____) | (_| (_) | |_) |  __/  ____) |  __/ | | | |_| |  | |_| |\n |_____/ \\___\\___/| .__/ \\___| |_____/ \\___|_| |_|\\__|_|   \\__, |\n                  | |                                       __/ |\n                  |_|                                      |___/ "
+	fmt.Println(banner)
+	return nil
 }
