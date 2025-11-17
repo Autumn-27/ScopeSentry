@@ -15,8 +15,16 @@ builds:
       - darwin
     goarch:
       - amd64
+    env:
+      - GOAMD64=v1
     main: ./cmd/main/main.go
     binary: "ScopeSentry"
     ldflags: "-s -w"
+archives:
+  - id: ss-archive
+    builds:
+      - ss
+    format: tar.gz
+    name_template: "ScopeSentry_{{ .Os }}_{{ .Arch }}"
 
 dist: ./dist
