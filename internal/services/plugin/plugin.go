@@ -87,7 +87,11 @@ func (s *service) List(ctx *gin.Context, req *models.PluginListRequest) (*models
 
 // ListByModule 根据模块获取插件列表
 func (s *service) ListByModule(ctx *gin.Context, module string) ([]models.Plugin, error) {
-	return s.repo.FindByModule(ctx, module)
+	result, err := s.repo.FindByModule(ctx, module)
+	if result == nil {
+		return []models.Plugin{}, err
+	}
+	return result, err
 }
 
 // Detail 获取插件详情
