@@ -1,0 +1,22 @@
+{
+    "api.bad_request": "请求参数错误",
+    "api.bad_request.id": "无效的ID参数",
+    "api.bad_request.page": "无效的页码参数",
+    "api.bad_request.size": "无效的分页大小参数",
+    "api.unauthorized": "未授权访问",
+    "api.forbidden": "禁止访问",
+    "api.not_found": "资源不存在",
+    "api.server_error": "服务器内部错误",
+    "api.role.name.exists": "角色名称已存在",
+    "api.role.not_found": "角色不存在",
+    "api.role.create.success": "角色创建成功",
+    "api.role.create.failed": "角色创建失败",
+    "api.role.update.success": "角色更新成功",
+    "api.role.update.failed": "角色更新失败",
+    "api.role.delete.success": "角色删除成功",
+    "api.role.delete.failed": "角色删除失败",
+    "api.role.list.success": "获取角色列表成功",
+    "api.role.list.failed": "获取角色列表失败",
+    "api.role.get.success": "获取角色详情成功",
+    "api.role.get.failed": "获取角色详情失败"
+}

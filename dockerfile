@@ -13,13 +13,11 @@ RUN apt-get update && \
 WORKDIR /opt/ScopeSentry/
 
 # 复制 ScopeSentry 项目文件到工作目录
-COPY ./ScopeSentry /opt/ScopeSentry/
+COPY dist/ScopeSentry-go_linux_amd64_v1/ScopeSentry /opt/ScopeSentry/
 
-# 安装 Python 依赖包
-RUN pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir
+RUN chmod +x /opt/ScopeSentry/ScopeSentry
 
-# # Python 应用
-CMD python main.py
+ENTRYPOINT ["/opt/ScopeSentry/ScopeSentry"]
 
 # # 复制 start.sh 脚本到容器
 # RUN cp /opt/ScopeSentry/start.sh /usr/local/bin/start.sh

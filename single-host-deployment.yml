@@ -68,6 +68,10 @@ services:
         condition: service_healthy
       mongodb:
         condition: service_healthy
+    volumes:
+      - ./data/files:/opt/ScopeSentry/files
+      - ./data/images:/opt/ScopeSentry/images
+      - ./data/uploads:/opt/ScopeSentry/uploads
     networks:
       - scopesentry-network
 

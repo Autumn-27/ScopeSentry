@@ -1,0 +1,22 @@
+{
+    "api.bad_request": "Invalid request parameters",
+    "api.bad_request.id": "Invalid ID parameter",
+    "api.bad_request.page": "Invalid page parameter",
+    "api.bad_request.size": "Invalid page size parameter",
+    "api.unauthorized": "Unauthorized access",
+    "api.forbidden": "Access forbidden",
+    "api.not_found": "Resource not found",
+    "api.server_error": "Internal server error",
+    "api.role.name.exists": "Role name already exists",
+    "api.role.not_found": "Role not found",
+    "api.role.create.success": "Role created successfully",
+    "api.role.create.failed": "Failed to create role",
+    "api.role.update.success": "Role updated successfully",
+    "api.role.update.failed": "Failed to update role",
+    "api.role.delete.success": "Role deleted successfully",
+    "api.role.delete.failed": "Failed to delete role",
+    "api.role.list.success": "Role list retrieved successfully",
+    "api.role.list.failed": "Failed to retrieve role list",
+    "api.role.get.success": "Role details retrieved successfully",
+    "api.role.get.failed": "Failed to retrieve role details"
+}

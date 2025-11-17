@@ -1,0 +1,191 @@
+// @title           ScopeSentry API
+// @version         1.0
+// @description     ScopeSentry 是一个安全扫描平台
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    http://www.swagger.io/support
+// @contact.email  support@swagger.io
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8082
+// @BasePath  /api
+
+// @securityDefinitions.apikey  ApiKeyAuth
+// @in                         header
+// @name                       Authorization
+// @description               Bearer token for authentication
+
+package main
+
+import (
+	"context"
+	"embed"
+	"fmt"
+	"github.com/Autumn-27/ScopeSentry-go/internal/worker"
+	"io/fs"
+	"strings"
+
+	"github.com/Autumn-27/ScopeSentry-go/internal/bootstrap"
+	"github.com/Autumn-27/ScopeSentry-go/internal/config"
+	"github.com/Autumn-27/ScopeSentry-go/internal/scheduler"
+	"github.com/Autumn-27/ScopeSentry-go/internal/update"
+
+	"github.com/Autumn-27/ScopeSentry-go/internal/logger"
+
+	_ "github.com/Autumn-27/ScopeSentry-go/internal/database/mongodb"
+
+	_ "github.com/Autumn-27/ScopeSentry-go/internal/database/redis"
+
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/Autumn-27/ScopeSentry-go/internal/constants"
+
+	_ "github.com/Autumn-27/ScopeSentry-go/internal/bootstrap"
+
+	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes"
+	redisLogSubscriber "github.com/Autumn-27/ScopeSentry-go/internal/services/redis_log_subscriber"
+
+	"github.com/Autumn-27/ScopeSentry-go/docs"
+	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"go.uber.org/zap"
+)
+
+//go:embed static/*
+var embeddedFiles embed.FS
+
+func main() {
+	Banner()
+	// 设置 Gin 模式
+	if config.GlobalConfig.Server.Mode == "debug" {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
+	err := os.Setenv("TZ", config.GlobalConfig.System.Timezone)
+	if err != nil {
+		return
+	}
+	constants.Version = "1.7"
+	fmt.Printf("version: %v\n", constants.Version)
+	PrintPlugin()
+	err = update.Update()
+	if err != nil {
+		logger.Error("Update failed", zap.Error(err))
+	}
+	bootstrap.GetProjectList()
+	// 初始化计划任务
+	scheduler.InitializeGlobalScheduler()
+	scheduler.GetGlobalScheduler().Start()
+	defer scheduler.GetGlobalScheduler().Stop()
+
+	// 启动 Redis 日志订阅服务（在后台运行）
+	go redisLogSubscriber.SubscribeLogChannel()
+	// 创建路由
+	router := routes.SetupRouter()
+	gin.DisableConsoleColor()
+	//router.Use(logger.GinLogger(), logger.GinRecovery())
+
+	// 准备前端文件系统
+	frontendFS, _ := fs.Sub(embeddedFiles, "static")
+	// 准备静态资源文件系统（assets目录）
+	assetsFS, _ := fs.Sub(embeddedFiles, "static/assets")
+
+	// 注册 Swagger 路由（在静态文件之前，避免冲突）
+	docs.SwaggerInfo.BasePath = "/api"
+	router.GET("/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// 注册静态资源路由（/assets 映射到 static/assets 目录）
+	router.StaticFS("/assets", http.FS(assetsFS)) // /assets 对应前端 js/css
+
+	// 注册上传文件静态路由（/images 映射到外部 uploads 目录）
+	router.Static("/images", config.GlobalConfig.System.ImgDir) // /uploads 对应上传的图片文件
+
+	// 注册根路径路由，直接返回文件内容，避免重定向
+	router.GET("/", func(c *gin.Context) {
+		data, err := fs.ReadFile(frontendFS, "index.html")
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Failed to read index.html")
+			return
+		}
+		c.Data(http.StatusOK, "text/html; charset=utf-8", data)
+	})
+
+	// 处理所有未匹配的路由，返回前端首页（用于SPA路由）
+	router.NoRoute(func(c *gin.Context) {
+		path := c.Request.URL.Path
+		// 排除 API 路径和静态资源路径
+		if strings.HasPrefix(path, "/api") {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+			return
+		}
+		// 如果请求的是静态资源但未找到，返回404而不是首页
+		if strings.HasPrefix(path, "/assets") || strings.HasPrefix(path, "/uploads") {
+			c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
+			return
+		}
+		// 其他路径返回前端首页（SPA路由）
+		data, err := fs.ReadFile(frontendFS, "index.html")
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Failed to read index.html")
+			return
+		}
+		c.Data(http.StatusOK, "text/html; charset=utf-8", data)
+	})
+
+	// 创建 HTTP 服务器
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%d", config.GlobalConfig.Server.Port),
+		Handler: router,
+	}
+
+	// 运行资产处理
+	worker.Run()
+
+	// 在 goroutine 中启动服务器
+	go func() {
+		logger.Info("Starting server", zap.Int("port", config.GlobalConfig.Server.Port))
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Fatal("Failed to start server", zap.Error(err))
+		}
+	}()
+
+	// 等待中断信号
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	logger.Info("Shutting down server...")
+
+	// 设置关闭超时
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// 优雅关闭服务器
+	if err := srv.Shutdown(ctx); err != nil {
+		logger.Fatal("Server forced to shutdown", zap.Error(err))
+	}
+
+	logger.Info("Server exiting")
+}
+
+func Banner() {
+	banner := "   _____                         _____            _              \n  / ____|                       / ____|          | |             \n | (___   ___ ___  _ __   ___  | (___   ___ _ __ | |_ _ __ _   _ \n  \\___ \\ / __/ _ \\| '_ \\ / _ \\  \\___ \\ / _ \\ '_ \\| __| '__| | | |\n  ____) | (_| (_) | |_) |  __/  ____) |  __/ | | | |_| |  | |_| |\n |_____/ \\___\\___/| .__/ \\___| |_____/ \\___|_| |_|\\__|_|   \\__, |\n                  | |                                       __/ |\n                  |_|                                      |___/ "
+	fmt.Println(banner)
+}
+
+func PrintPlugin() {
+	fmt.Println(strings.Repeat("=", 50))
+	fmt.Println("✨✨✨ IMPORTANT NOTICE: Please review the Plugin Key below ✨✨✨")
+	fmt.Println(strings.Repeat("=", 50))
+	fmt.Printf("🔑 Plugin Key: %s\n", config.GlobalConfig.System.PluginKey)
+	fmt.Println(strings.Repeat("=", 50))
+	fmt.Println("✅ Ensure the Plugin Key is correctly copied!")
+}

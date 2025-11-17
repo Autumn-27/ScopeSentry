@@ -1,7 +1,8 @@
-.idea
+.idea/
 __pycache__/
 __pycache__
 config.yaml
 file/
 .env
 PLUGINKEY
+dist/

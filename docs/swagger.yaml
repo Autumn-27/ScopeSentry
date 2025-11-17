@@ -1,0 +1,1193 @@
+basePath: /api
+definitions:
+  github_com_Autumn-27_ScopeSentry-go_internal_api_response.BadRequestResponse:
+    properties:
+      code:
+        description: 请求错误状态码
+        example: 400
+        type: integer
+      message:
+        description: 错误消息
+        example: 请求错误
+        type: string
+    type: object
+  github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse:
+    properties:
+      code:
+        description: 服务器错误状态码
+        example: 500
+        type: integer
+      message:
+        description: 错误消息
+        example: 服务器内部错误
+        type: string
+    type: object
+  github_com_Autumn-27_ScopeSentry-go_internal_api_response.NotFoundResponse:
+    properties:
+      code:
+        description: 未找到状态码
+        example: 404
+        type: integer
+      message:
+        description: 错误消息
+        example: 资源未找到
+        type: string
+    type: object
+  github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse:
+    properties:
+      code:
+        description: 成功状态码
+        example: 200
+        type: integer
+      data:
+        description: 响应数据
+      message:
+        description: 成功消息
+        example: 操作成功
+        type: string
+    type: object
+  github_com_Autumn-27_ScopeSentry-go_internal_api_response.UnauthorizedResponse:
+    properties:
+      code:
+        description: 未授权状态码
+        example: 401
+        type: integer
+      message:
+        description: 错误消息
+        example: 未授权访问
+        type: string
+    type: object
+  github_com_Autumn-27_ScopeSentry-go_internal_models.Asset:
+    properties:
+      body:
+        type: string
+      contentlength:
+        type: integer
+      faviconmmh3:
+        type: string
+      hashes:
+        additionalProperties:
+          type: string
+        type: object
+      host:
+        type: string
+      id:
+        type: string
+      ip:
+        type: string
+      jarm:
+        type: string
+      lastScanTime:
+        type: string
+      port:
+        type: string
+      project:
+        type: string
+      rawheaders:
+        type: string
+      rootDomain:
+        type: string
+      screenshot:
+        type: string
+      service:
+        type: string
+      statuscode:
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+      taskName:
+        type: string
+      technologies:
+        items:
+          type: string
+        type: array
+      time:
+        type: string
+      title:
+        type: string
+      tlsdata:
+        additionalProperties:
+          type: string
+        type: object
+      type:
+        type: string
+      url:
+        type: string
+    type: object
+  github_com_Autumn-27_ScopeSentry-go_internal_models.AssetChangeLog:
+    properties:
+      assetid:
+        type: string
+      field:
+        type: string
+      id:
+        type: string
+      newValue: {}
+      oldValue: {}
+      operation:
+        type: string
+      time:
+        type: string
+    type: object
+  github_com_Autumn-27_ScopeSentry-go_internal_models.NodeData:
+    properties:
+      cpuNum:
+        type: string
+      finished:
+        type: string
+      maxTaskNum:
+        type: string
+      memNum:
+        type: string
+      name:
+        type: string
+      running:
+        type: string
+      state:
+        type: string
+      updateTime:
+        type: string
+      version:
+        type: string
+    type: object
+  github_com_Autumn-27_ScopeSentry-go_internal_models.PageMonitoring:
+    properties:
+      content:
+        items:
+          type: string
+        type: array
+      created_at:
+        type: string
+      hash:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      updated_at:
+        type: string
+      url:
+        type: string
+    type: object
+  github_com_Autumn-27_ScopeSentry-go_internal_models.PageMonitoringBody:
+    properties:
+      content:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      md5:
+        type: string
+    type: object
+  github_com_Autumn-27_ScopeSentry-go_internal_models.PageMonitoringContentRequest:
+    properties:
+      flag:
+        description: '1: 获取上一次响应, 2: 获取当前响应'
+        type: string
+      id:
+        type: string
+    type: object
+  github_com_Autumn-27_ScopeSentry-go_internal_models.PageMonitoringDiffRequest:
+    properties:
+      id:
+        type: string
+    type: object
+  github_com_Autumn-27_ScopeSentry-go_internal_models.PageMonitoringHistoryRequest:
+    properties:
+      id:
+        type: string
+    type: object
+  github_com_Autumn-27_ScopeSentry-go_internal_models.SearchRequest:
+    properties:
+      filters:
+        additionalProperties:
+          items:
+            type: string
+          type: array
+        description: Filter 过滤条件
+        type: object
+      pageIndex:
+        type: integer
+      pageSize:
+        type: integer
+      search:
+        description: SearchExpression 搜索表达式，如 "url=example.com && statuscode=200"
+        type: string
+      searchType:
+        description: SearchType 搜索类型，对应SearchKey中的key
+        type: string
+      sort:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  github_com_Autumn-27_ScopeSentry-go_internal_models.Task:
+    properties:
+      _id:
+        type: string
+      allNode:
+        type: boolean
+      bindProject: {}
+      creatTime:
+        type: string
+      cycleType:
+        type: string
+      day:
+        type: integer
+      duplicates:
+        type: string
+      endTime:
+        type: string
+      filter:
+        additionalProperties: true
+        type: object
+      hour:
+        type: integer
+      ignore:
+        type: string
+      minute:
+        type: integer
+      name:
+        type: string
+      node:
+        items:
+          type: string
+        type: array
+      progress:
+        type: integer
+      project:
+        items:
+          type: string
+        type: array
+      scheduledTasks:
+        type: boolean
+      search:
+        type: string
+      status:
+        type: integer
+      target:
+        type: string
+      targetIds:
+        items:
+          type: string
+        type: array
+      targetNumber:
+        type: integer
+      targetSource:
+        type: string
+      targetTp:
+        type: string
+      taskNum:
+        type: integer
+      template:
+        type: string
+      type:
+        type: string
+      week:
+        type: integer
+    type: object
+  github_com_Autumn-27_ScopeSentry-go_internal_models.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      role:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  internal_api_handlers_system.VersionInfo:
+    properties:
+      cversion:
+        type: string
+      lversion:
+        type: string
+      msg:
+        type: string
+      name:
+        type: string
+    type: object
+  internal_api_handlers_system.VersionListResponse:
+    description: 版本信息列表
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/internal_api_handlers_system.VersionInfo'
+        type: array
+    type: object
+  internal_api_handlers_user.LoginRequest:
+    properties:
+      password:
+        example: password123
+        type: string
+      username:
+        example: admin
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  internal_api_handlers_user.RegisterRequest:
+    properties:
+      email:
+        example: admin@example.com
+        type: string
+      password:
+        example: password123
+        type: string
+      role:
+        example: admin
+        type: string
+      username:
+        example: admin
+        type: string
+    required:
+    - email
+    - password
+    - role
+    - username
+    type: object
+  internal_api_handlers_user.UpdateRequest:
+    properties:
+      email:
+        example: admin@example.com
+        type: string
+      role:
+        example: admin
+        type: string
+    type: object
+  task.ListRequest:
+    properties:
+      pageIndex:
+        example: 1
+        minimum: 1
+        type: integer
+      pageSize:
+        example: 10
+        maximum: 100
+        minimum: 1
+        type: integer
+      search:
+        example: 测试
+        type: string
+    required:
+    - pageIndex
+    - pageSize
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: ScopeSentry 是一个安全扫描和资产管理平台
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: ScopeSentry API
+  version: "1.0"
+paths:
+  /api/assets:
+    post:
+      consumes:
+      - application/json
+      description: 创建新的资产
+      parameters:
+      - description: 资产信息
+        in: body
+        name: asset
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.Asset'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.Asset'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.BadRequestResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      summary: 创建资产
+      tags:
+      - 资产
+  /api/assets/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定ID的资产
+      parameters:
+      - description: 资产ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.BadRequestResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      summary: 删除资产
+      tags:
+      - 资产
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取单个资产的详细信息
+      parameters:
+      - description: 资产ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.Asset'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.BadRequestResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      summary: 获取单个资产
+      tags:
+      - 资产
+    put:
+      consumes:
+      - application/json
+      description: 更新指定ID的资产信息
+      parameters:
+      - description: 资产ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 资产信息
+        in: body
+        name: asset
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.Asset'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.Asset'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.BadRequestResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      summary: 更新资产
+      tags:
+      - 资产
+  /api/assets/{id}/changelog:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定ID资产的变更历史记录
+      parameters:
+      - description: 资产ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.AssetChangeLog'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.BadRequestResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      summary: 获取资产变更日志
+      tags:
+      - 资产
+  /api/assets/{id}/screenshot:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定ID资产的截图
+      parameters:
+      - description: 资产ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.BadRequestResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      summary: 获取资产截图
+      tags:
+      - 资产
+  /api/assets/asset:
+    post:
+      consumes:
+      - application/json
+      description: 获取资产列表，支持分页、排序和过滤
+      parameters:
+      - description: 查询参数
+        in: body
+        name: query
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.SearchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+            - properties:
+                data:
+                  properties:
+                    list:
+                      items:
+                        $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.Asset'
+                      type: array
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.BadRequestResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      summary: 获取资产列表
+      tags:
+      - 资产
+  /api/assets/deduplicate/{assetType}:
+    post:
+      consumes:
+      - application/json
+      description: 对指定类型的资产进行去重处理
+      parameters:
+      - description: 资产类型
+        in: path
+        name: assetType
+        required: true
+        type: string
+      - description: 过滤条件
+        in: body
+        name: filter
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      - description: 分组字段
+        in: body
+        name: groupFields
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.BadRequestResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      summary: 资产去重
+      tags:
+      - 资产
+  /node:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有在线节点的数据
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+            - properties:
+                data:
+                  properties:
+                    list:
+                      items:
+                        $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.NodeData'
+                      type: array
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.UnauthorizedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      tags:
+      - node
+  /page-monitoring/content:
+    post:
+      consumes:
+      - application/json
+      description: 获取页面监控内容接口
+      parameters:
+      - description: 内容请求
+        in: body
+        name: contentRequest
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.PageMonitoringContentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.PageMonitoringBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.BadRequestResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      tags:
+      - page_monitoring
+  /page-monitoring/diff:
+    post:
+      consumes:
+      - application/json
+      description: 获取页面监控差异接口
+      parameters:
+      - description: 差异请求
+        in: body
+        name: diffRequest
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.PageMonitoringDiffRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+            - properties:
+                data:
+                  properties:
+                    diff:
+                      type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.BadRequestResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      tags:
+      - page_monitoring
+  /page-monitoring/history:
+    post:
+      consumes:
+      - application/json
+      description: 获取页面监控历史记录接口
+      parameters:
+      - description: 历史记录请求
+        in: body
+        name: historyRequest
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.PageMonitoringHistoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.PageMonitoring'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.BadRequestResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      tags:
+      - page_monitoring
+  /query:
+    post:
+      consumes:
+      - application/json
+      description: 支持name字段模糊搜索与分页
+      parameters:
+      - description: 查询参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/task.ListRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+            - properties:
+                data:
+                  properties:
+                    list:
+                      items:
+                        $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.Task'
+                      type: array
+                    total:
+                      type: integer
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.BadRequestResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      summary: 获取任务列表
+      tags:
+      - task
+  /system/version:
+    get:
+      consumes:
+      - application/json
+      description: 获取 ScopeSentry 服务端及所有节点的当前版本信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_api_handlers_system.VersionListResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.UnauthorizedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      tags:
+      - System
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户列表接口
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.User'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.UnauthorizedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      tags:
+      - user
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除用户接口
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.UnauthorizedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      tags:
+      - user
+    get:
+      consumes:
+      - application/json
+      description: 获取单个用户接口
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.User'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.UnauthorizedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      tags:
+      - user
+    put:
+      consumes:
+      - application/json
+      description: 更新用户接口
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 更新信息
+        in: body
+        name: updateRequest
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api_handlers_user.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.User'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.UnauthorizedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      tags:
+      - user
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      description: 用户登录接口
+      parameters:
+      - description: 登录信息
+        in: body
+        name: loginRequest
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api_handlers_user.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+            - properties:
+                data:
+                  properties:
+                    access_token:
+                      type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.BadRequestResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      summary: 用户登录
+      tags:
+      - user
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      description: 用户注册接口
+      parameters:
+      - description: 注册信息
+        in: body
+        name: registerRequest
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api_handlers_user.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_models.User'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.UnauthorizedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.NotFoundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Autumn-27_ScopeSentry-go_internal_api_response.InternalServerErrorResponse'
+      tags:
+      - user
+securityDefinitions:
+  ApiKeyAuth:
+    description: Bearer token for authentication
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
