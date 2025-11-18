@@ -304,7 +304,7 @@ var ScanTemplateDefault = models.ScanTemplate{
 		},
 		PortFingerprint: map[string]string{},
 		AssetMapping: map[string]string{
-			"3a0d994a12305cb15a5cb7104d819623": "-cdncheck true -screenshot false",
+			"3a0d994a12305cb15a5cb7104d819623": "-cdncheck true -screenshot true",
 		},
 		AssetHandle: map[string]string{},
 		URLScan: map[string]string{

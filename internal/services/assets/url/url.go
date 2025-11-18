@@ -2,10 +2,11 @@ package url
 
 import (
 	"context"
+	"strings"
+
 	"github.com/Autumn-27/ScopeSentry-go/internal/utils/helper"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"strings"
 
 	"github.com/Autumn-27/ScopeSentry-go/internal/models"
 	"github.com/Autumn-27/ScopeSentry-go/internal/repositories/assets/url"
@@ -90,12 +91,21 @@ func (s *service) GetURLs(ctx context.Context, query models.SearchRequest) ([]mo
 		"time":       1,
 		"tags":       1,
 	}
+	// 构建排序
+	sortBy := bson.D{{Key: "_id", Value: -1}}
+	if val, ok := query.Sort["length"]; ok {
+		dir := -1
+		if val == "ascending" {
+			dir = 1
+		}
+		sortBy = bson.D{{Key: "length", Value: dir}}
+	}
 	// 分页查询
 	opts := options.Find().
 		SetProjection(projection).
 		SetSkip(int64((query.PageIndex - 1) * query.PageSize)).
 		SetLimit(int64(query.PageSize)).
-		SetSort(bson.D{{Key: "time", Value: -1}})
+		SetSort(sortBy)
 
 	return s.repo.Find(ctx, filter, opts)
 }
