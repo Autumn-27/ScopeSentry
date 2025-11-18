@@ -63,7 +63,6 @@ import (
 var embeddedFiles embed.FS
 
 func main() {
-	Banner()
 	// 设置 Gin 模式
 	if config.GlobalConfig.Server.Mode == "debug" {
 		gin.SetMode(gin.DebugMode)
