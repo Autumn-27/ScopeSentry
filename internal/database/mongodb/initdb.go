@@ -541,6 +541,18 @@ func createIndexes(db *mongo.Database) error {
 		return fmt.Errorf("failed to create mp indexes: %v", err)
 	}
 
+	// 创建task相关索引
+	task := db.Collection("task")
+	indexes = []mongo.IndexModel{
+		{Keys: bson.D{{"creatTime", -1}}},
+		{Keys: bson.D{{"name", 1}}},
+		{Keys: bson.D{{"progress", 1}}},
+	}
+	_, err = task.Indexes().CreateMany(context.Background(), indexes)
+	if err != nil {
+		return fmt.Errorf("failed to create task indexes: %v", err)
+	}
+
 	return nil
 }
 

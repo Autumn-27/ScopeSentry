@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	ipAssetBatchLimit    int64 = 200
+	ipAssetBatchLimit    int64 = 500
 	ipAssetIdleSleep           = 60 * time.Second
 	ipAssetErrorSleep          = 10 * time.Second
 	ipAssetBatchInterval       = 3 * time.Second

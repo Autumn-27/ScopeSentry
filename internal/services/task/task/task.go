@@ -74,8 +74,19 @@ func (s *service) List(ctx *gin.Context, search string, pageIndex, pageSize int)
 		return nil, 0, err
 	}
 
+	projection := bson.M{
+		"_id":       1,
+		"status":    1,
+		"name":      1,
+		"taskNum":   1,
+		"progress":  1,
+		"creatTime": 1,
+		"endTime":   1,
+	}
+
 	// 分页查询
 	opts := options.Find().
+		SetProjection(projection).
 		SetSkip(int64((pageIndex - 1) * pageSize)).
 		SetLimit(int64(pageSize)).
 		SetSort(bson.D{{Key: "creatTime", Value: -1}})

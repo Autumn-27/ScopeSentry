@@ -207,7 +207,17 @@ func Update18() {
 		logger.Error(fmt.Sprintf("failed to create ipAsset indexes: %v", err))
 	}
 
-	// 从资产提取ip资产
+	// 创建task相关索引
+	task := mongodb.DB.Collection("task")
+	indexes = []mongo.IndexModel{
+		{Keys: bson.D{{"creatTime", -1}}},
+		{Keys: bson.D{{"name", 1}}},
+		{Keys: bson.D{{"progress", 1}}},
+	}
+	_, err = task.Indexes().CreateMany(context.Background(), indexes)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to create task indexes: %v", err))
+	}
 
 	logger.Info(fmt.Sprintf("All updates completed."))
 
