@@ -8,6 +8,7 @@
 package export
 
 import (
+	"context"
 	"fmt"
 	"github.com/Autumn-27/ScopeSentry-go/internal/api/response"
 	"github.com/Autumn-27/ScopeSentry-go/internal/config"
@@ -103,7 +104,7 @@ func Export(c *gin.Context) {
 		Quantity: req.Quantity,
 	}
 	// 异步处理导出任务
-	go exportService.ProcessExportTask(c, run)
+	go exportService.ProcessExportTask(context.Background(), run)
 
 	response.Success(c, models.ExportResponse{
 		Message: "Successfully added data export task",

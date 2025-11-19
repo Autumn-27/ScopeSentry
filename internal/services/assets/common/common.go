@@ -264,7 +264,7 @@ func (s *service) TotalData(ctx *gin.Context, req *models.SearchRequest) (int64,
 	if err != nil {
 		return 0, err
 	}
-	if searchQuery == nil {
+	if len(searchQuery) == 0 {
 		// 使用estimatedDocumentCount获取估计的文档数量
 		return s.repo.EstimatedDocumentCount(ctx.Request.Context(), req.Index)
 	}

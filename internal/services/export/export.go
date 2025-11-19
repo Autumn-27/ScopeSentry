@@ -191,12 +191,38 @@ func getCellName(col, row int) string {
 	return fmt.Sprintf("%s%d", colName, row)
 }
 
-// 使用游标导出到CSV
+// sanitizeExcelValue 清理Excel不允许的非法字符
+// Excel XML不允许控制字符（0x00-0x1F，除了0x09(TAB)、0x0A(LF)、0x0D(CR)）
+func sanitizeExcelValue(value interface{}) string {
+	if value == nil {
+		return ""
+	}
+
+	str := fmt.Sprintf("%v", value)
+	// 过滤非法控制字符，保留TAB、LF、CR
+	result := make([]rune, 0, len(str))
+	for _, r := range str {
+		// 允许：可打印字符(>=0x20)、TAB(0x09)、LF(0x0A)、CR(0x0D)
+		if r >= 0x20 || r == 0x09 || r == 0x0A || r == 0x0D {
+			result = append(result, r)
+		} else {
+			// 非法字符替换为空格或直接跳过
+			// 这里选择跳过，如果需要保留位置可以用空格
+		}
+	}
+	return string(result)
+}
+
+// 使用流式写入导出到Excel
 func (s *service) exportToXlsx(cursor *mongo.Cursor, filePath string, fields []string, index string) (float64, error) {
 	// 创建新的Excel文件
 	f := excelize.NewFile()
 	defer f.Close()
 	start := time.Now()
+
+	// 流式写入刷新间隔（每5000行刷新一次，减少内存占用）
+	const flushInterval = 1000
+
 	if index == "asset" {
 		// 分离HTTP和Other字段
 		httpFields := []string{}
@@ -226,19 +252,42 @@ func (s *service) exportToXlsx(cursor *mongo.Cursor, filePath string, fields []s
 			return 0, err
 		}
 
-		// 写入表头
-		for i, field := range httpFields {
-			cell := getCellName(i+1, 1)
-			f.SetCellValue(httpSheet, cell, field)
+		// 创建流式写入器
+		httpStreamWriter, err := f.NewStreamWriter(httpSheet)
+		if err != nil {
+			return 0, fmt.Errorf("failed to create stream writer for HTTP sheet: %w", err)
 		}
+
+		otherStreamWriter, err := f.NewStreamWriter(otherSheet)
+		if err != nil {
+			return 0, fmt.Errorf("failed to create stream writer for Other sheet: %w", err)
+		}
+
+		// 写入表头 - 转换为interface{}切片
+		httpHeader := make([]interface{}, len(httpFields))
+		for i, field := range httpFields {
+			httpHeader[i] = field
+		}
+		if err := httpStreamWriter.SetRow("A1", httpHeader); err != nil {
+			return 0, fmt.Errorf("failed to write HTTP header: %w", err)
+		}
+
+		otherHeader := make([]interface{}, len(otherFields))
 		for i, field := range otherFields {
-			cell := getCellName(i+1, 1)
-			f.SetCellValue(otherSheet, cell, field)
+			otherHeader[i] = field
+		}
+		if err := otherStreamWriter.SetRow("A1", otherHeader); err != nil {
+			return 0, fmt.Errorf("failed to write Other header: %w", err)
 		}
 
 		// 处理数据
-		httpRow := 2
-		otherRow := 2
+		// 注意：excelize流式写入要求行号必须严格连续递增，不能跳过任何行号
+		// 表头已写入第1行，数据从第2行开始
+		httpRowIdx := 2  // 从2开始（1是表头）
+		otherRowIdx := 2 // 从2开始（1是表头）
+		httpCount := 0   // HTTP实际成功写入的行数
+		otherCount := 0  // Other实际成功写入的行数
+
 		for cursor.Next(context.Background()) {
 			var doc bson.M
 			if err := cursor.Decode(&doc); err != nil {
@@ -247,47 +296,80 @@ func (s *service) exportToXlsx(cursor *mongo.Cursor, filePath string, fields []s
 			}
 
 			if doc["type"] == "http" {
-				// 写入HTTP数据
+				// 准备HTTP数据行，清理非法字符
+				rowData := make([]interface{}, len(httpFields))
 				for i, field := range httpFields {
-					cell := getCellName(i+1, httpRow)
 					value := doc[field]
-					if value == nil {
-						if err := f.SetCellValue(httpSheet, cell, ""); err != nil {
-							logger.Error(fmt.Sprintf("Failed to write empty value for field %s: %v, skipping...", field, err))
-							continue
-						}
-					} else {
-						if err := f.SetCellValue(httpSheet, cell, fmt.Sprintf("%v", value)); err != nil {
-							logger.Error(fmt.Sprintf("Failed to write value for field %s: %v, skipping...", field, err))
-							continue
-						}
-					}
+					rowData[i] = sanitizeExcelValue(value)
 				}
-				httpRow++
+
+				// 使用流式写入 - 行号必须严格连续递增
+				cell, err := excelize.CoordinatesToCellName(1, httpRowIdx)
+				if err != nil {
+					logger.Error(fmt.Sprintf("Failed to convert coordinates for HTTP row %d: %v", httpRowIdx, err))
+					httpRowIdx++ // 即使失败也要递增行号，保持连续性
+					continue
+				}
+
+				if err := httpStreamWriter.SetRow(cell, rowData); err != nil {
+					logger.Error(fmt.Sprintf("Failed to write HTTP row %d: %v", httpRowIdx, err))
+					// 尝试写入空行以保持行号连续性
+					emptyRow := make([]interface{}, len(httpFields))
+					for i := range emptyRow {
+						emptyRow[i] = ""
+					}
+					if retryErr := httpStreamWriter.SetRow(cell, emptyRow); retryErr != nil {
+						return 0, fmt.Errorf("excelize stream writer corrupted at HTTP row %d: %w", httpRowIdx, retryErr)
+					}
+				} else {
+					httpCount++
+				}
+				httpRowIdx++ // 无论成功失败，行号都必须递增
 			} else {
-				// 写入Other数据
+				// 准备Other数据行，清理非法字符
+				rowData := make([]interface{}, len(otherFields))
 				for i, field := range otherFields {
-					cell := getCellName(i+1, otherRow)
 					value := doc[field]
-					if value == nil {
-						if err := f.SetCellValue(otherSheet, cell, ""); err != nil {
-							logger.Error(fmt.Sprintf("Failed to write empty value for field %s: %v, skipping...", field, err))
-							continue
-						}
-					} else {
-						if err := f.SetCellValue(otherSheet, cell, fmt.Sprintf("%v", value)); err != nil {
-							logger.Error(fmt.Sprintf("Failed to write value for field %s: %v, skipping...", field, err))
-							continue
-						}
-					}
+					rowData[i] = sanitizeExcelValue(value)
 				}
-				otherRow++
+
+				// 使用流式写入 - 行号必须严格连续递增
+				cell, err := excelize.CoordinatesToCellName(1, otherRowIdx)
+				if err != nil {
+					logger.Error(fmt.Sprintf("Failed to convert coordinates for Other row %d: %v", otherRowIdx, err))
+					otherRowIdx++ // 即使失败也要递增行号，保持连续性
+					continue
+				}
+
+				if err := otherStreamWriter.SetRow(cell, rowData); err != nil {
+					logger.Error(fmt.Sprintf("Failed to write Other row %d: %v", otherRowIdx, err))
+					// 尝试写入空行以保持行号连续性
+					emptyRow := make([]interface{}, len(otherFields))
+					for i := range emptyRow {
+						emptyRow[i] = ""
+					}
+					if retryErr := otherStreamWriter.SetRow(cell, emptyRow); retryErr != nil {
+						return 0, fmt.Errorf("excelize stream writer corrupted at Other row %d: %w", otherRowIdx, retryErr)
+					}
+				} else {
+					otherCount++
+				}
+				otherRowIdx++ // 无论成功失败，行号都必须递增
 			}
+
 		}
 
 		// 检查游标错误
 		if err := cursor.Err(); err != nil {
 			return 0, fmt.Errorf("cursor error: %w", err)
+		}
+
+		// 最终刷新
+		if err := httpStreamWriter.Flush(); err != nil {
+			return 0, fmt.Errorf("failed to flush HTTP stream: %w", err)
+		}
+		if err := otherStreamWriter.Flush(); err != nil {
+			return 0, fmt.Errorf("failed to flush Other stream: %w", err)
 		}
 
 		// 保存文件
@@ -302,23 +384,32 @@ func (s *service) exportToXlsx(cursor *mongo.Cursor, filePath string, fields []s
 		}
 		fileSize := float64(fileInfo.Size()) / (1024 * 1024)
 		end := time.Now()
-		logger.Info(fmt.Sprintf("Saved %v excel file size: %.2f MB time: %v number: %v", index, fileSize, end.Sub(start), httpRow+otherRow))
+		totalRows := httpCount + otherCount
+		logger.Info(fmt.Sprintf("Saved %v excel file size: %.2f MB time: %v number: %v (HTTP: %v, Other: %v)", index, fileSize, end.Sub(start), totalRows, httpCount, otherCount))
 		return fileSize, nil
 	} else {
 		// 处理其他类型的数据
 		sheet := "Sheet1"
 
+		// 创建流式写入器
+		streamWriter, err := f.NewStreamWriter(sheet)
+		if err != nil {
+			return 0, fmt.Errorf("failed to create stream writer: %w", err)
+		}
+
 		// 写入表头
+		header := make([]interface{}, len(fields))
 		for i, field := range fields {
-			cell := getCellName(i+1, 1)
-			if err := f.SetCellValue(sheet, cell, field); err != nil {
-				logger.Error(fmt.Sprintf("Failed to write header for field %s: %v, skipping...", field, err))
-				continue
-			}
+			header[i] = field
+		}
+		if err := streamWriter.SetRow("A1", header); err != nil {
+			return 0, fmt.Errorf("failed to write header: %w", err)
 		}
 
 		// 处理数据
 		row := 2
+		rowCount := 0 // 实际写入的行数
+
 		for cursor.Next(context.Background()) {
 			var doc bson.M
 			if err := cursor.Decode(&doc); err != nil {
@@ -326,28 +417,45 @@ func (s *service) exportToXlsx(cursor *mongo.Cursor, filePath string, fields []s
 				continue
 			}
 
-			// 写入数据
+			// 准备数据行，清理非法字符
+			rowData := make([]interface{}, len(fields))
 			for i, field := range fields {
-				cell := getCellName(i+1, row)
 				value := doc[field]
-				if value == nil {
-					if err := f.SetCellValue(sheet, cell, ""); err != nil {
-						logger.Error(fmt.Sprintf("Failed to write empty value for field %s: %v, skipping...", field, err))
-						continue
-					}
-				} else {
-					if err := f.SetCellValue(sheet, cell, fmt.Sprintf("%v", value)); err != nil {
-						logger.Error(fmt.Sprintf("Failed to write value for field %s: %v, skipping...", field, err))
-						continue
-					}
-				}
+				rowData[i] = sanitizeExcelValue(value)
 			}
-			row++
+
+			// 使用流式写入
+			cell, err := excelize.CoordinatesToCellName(1, row)
+			if err != nil {
+				logger.Error(fmt.Sprintf("Failed to convert coordinates for row %d: %v", row, err))
+				row++ // 即使失败也要递增行号，保持连续性
+				continue
+			}
+
+			if err := streamWriter.SetRow(cell, rowData); err != nil {
+				logger.Error(fmt.Sprintf("Failed to write row %d: %v", row, err))
+				// 尝试写入空行以保持行号连续性
+				emptyRow := make([]interface{}, len(fields))
+				for i := range emptyRow {
+					emptyRow[i] = ""
+				}
+				if retryErr := streamWriter.SetRow(cell, emptyRow); retryErr != nil {
+					return 0, fmt.Errorf("excelize stream writer corrupted at row %d: %w", row, retryErr)
+				}
+			} else {
+				rowCount++
+			}
+			row++ // 无论成功失败，行号都必须递增
 		}
 
 		// 检查游标错误
 		if err := cursor.Err(); err != nil {
 			return 0, fmt.Errorf("cursor error: %w", err)
+		}
+
+		// 最终刷新
+		if err := streamWriter.Flush(); err != nil {
+			return 0, fmt.Errorf("failed to flush stream: %w", err)
 		}
 
 		// 保存文件
@@ -362,12 +470,12 @@ func (s *service) exportToXlsx(cursor *mongo.Cursor, filePath string, fields []s
 		}
 		fileSize := float64(fileInfo.Size()) / (1024 * 1024)
 		end := time.Now()
-		logger.Info(fmt.Sprintf("Saved %v excel file size: %.2f MB time: %v number: %v", index, fileSize, end.Sub(start), row))
+		logger.Info(fmt.Sprintf("Saved %v excel file size: %.2f MB time: %v number: %v", index, fileSize, end.Sub(start), rowCount))
 		return fileSize, nil
 	}
 }
 
-// 使用游标导出到JSON
+// 使用流式编码导出到JSON
 func (s *service) exportToJSON(cursor *mongo.Cursor, filePath string) (float64, error) {
 	start := time.Now()
 	file, err := os.Create(filePath)
@@ -375,6 +483,10 @@ func (s *service) exportToJSON(cursor *mongo.Cursor, filePath string) (float64, 
 		return 0, fmt.Errorf("failed to create file: %w", err)
 	}
 	defer file.Close()
+
+	// 使用JSON编码器进行流式编码，直接写入文件，避免创建临时字节数组
+	encoder := json.NewEncoder(file)
+	encoder.SetEscapeHTML(false) // 不转义HTML字符，提高性能
 
 	// 使用游标逐条读取数据
 	row := 0
@@ -385,20 +497,9 @@ func (s *service) exportToJSON(cursor *mongo.Cursor, filePath string) (float64, 
 			continue
 		}
 
-		// 将文档转换为JSON字符串
-		jsonData, err := json.Marshal(doc)
-		if err != nil {
-			logger.Error(fmt.Sprintf("Failed to marshal document: %v, skipping...", err))
-			continue
-		}
-
-		// 写入一行数据
-		if _, err := file.Write(jsonData); err != nil {
-			logger.Error(fmt.Sprintf("Failed to write document: %v, skipping...", err))
-			continue
-		}
-		if _, err := file.Write([]byte("\n")); err != nil {
-			logger.Error(fmt.Sprintf("Failed to write newline: %v, skipping...", err))
+		// 使用流式编码直接写入文件，避免创建临时字节数组
+		if err := encoder.Encode(doc); err != nil {
+			logger.Error(fmt.Sprintf("Failed to encode document: %v, skipping...", err))
 			continue
 		}
 		row++
