@@ -39,8 +39,8 @@ type Service interface {
 	StartTasks(ctx *gin.Context, ids []string) error
 	GetTaskProgress(ctx *gin.Context, taskID string, pageIndex, pageSize int) (map[string]interface{}, error)
 	TaskProgressNumber(ctx *gin.Context) error
-	TaskProgress(ctx *gin.Context) error
-	ProcessTaskProgress(ctx *gin.Context, task models.Task) error
+	TaskProgress(ctx context.Context) error
+	ProcessTaskProgress(ctx context.Context, task models.Task) error
 }
 
 // service 实现Service接口
@@ -80,7 +80,7 @@ func (s *service) List(ctx *gin.Context, search string, pageIndex, pageSize int)
 		SetLimit(int64(pageSize)).
 		SetSort(bson.D{{Key: "creatTime", Value: -1}})
 
-	tasks, err := s.taskRepo.Find(ctx, filter, opts)
+	tasks, err := s.taskRepo.Find(ctx.Request.Context(), filter, opts)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -143,7 +143,7 @@ func (s *service) DeleteTasks(ctx *gin.Context, ids []string, delA bool) error {
 		if len(objIDs) > 0 {
 			// 仅查询 name 字段
 			opts := options.Find().SetProjection(bson.M{"name": 1})
-			tasks, err := s.taskRepo.Find(ctx, bson.M{"_id": bson.M{"$in": objIDs}}, opts)
+			tasks, err := s.taskRepo.Find(ctx.Request.Context(), bson.M{"_id": bson.M{"$in": objIDs}}, opts)
 			if err == nil {
 				nameSet := make(map[string]struct{})
 				for _, t := range tasks {
@@ -448,7 +448,7 @@ func (s *service) TaskProgressNumber(ctx *gin.Context) error {
 		"status":   1,
 	}
 	// 调用 repository
-	tasks, err := s.taskRepo.Find(ctx, filter, nil)
+	tasks, err := s.taskRepo.Find(ctx.Request.Context(), filter, nil)
 	if err != nil {
 		return err
 	}
@@ -463,7 +463,7 @@ func (s *service) TaskProgressNumber(ctx *gin.Context) error {
 }
 
 // TaskProgress 更新任务进度
-func (s *service) TaskProgress(ctx *gin.Context) error {
+func (s *service) TaskProgress(ctx context.Context) error {
 	// 查询所有进度不为100且状态为1（运行中）的任务
 	filter := bson.M{
 		"progress": bson.M{"$ne": 100},
@@ -492,7 +492,7 @@ func (s *service) TaskProgress(ctx *gin.Context) error {
 }
 
 // processTaskProgress 处理单个任务的进度更新
-func (s *service) ProcessTaskProgress(ctx *gin.Context, task models.Task) error {
+func (s *service) ProcessTaskProgress(ctx context.Context, task models.Task) error {
 	taskID := task.ID.Hex()
 	tmpKey := fmt.Sprintf("TaskInfo:tmp:%s", taskID)
 	timeKey := fmt.Sprintf("TaskInfo:time:%s", taskID)

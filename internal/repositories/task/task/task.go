@@ -25,7 +25,7 @@ import (
 // Repository 定义任务数据访问接口
 type Repository interface {
 	Count(ctx *gin.Context, filter interface{}) (int64, error)
-	Find(ctx *gin.Context, filter interface{}, opts *options.FindOptions) ([]models.Task, error)
+	Find(ctx context.Context, filter interface{}, opts *options.FindOptions) ([]models.Task, error)
 	FindByID(ctx context.Context, id primitive.ObjectID) (*models.Task, error)
 	Insert(ctx *gin.Context, task *models.Task) (string, error) // 新增方法
 	ClearTaskCache(ctx context.Context, id string) error
@@ -38,10 +38,10 @@ type Repository interface {
 	UpdateOne(ctx context.Context, filter bson.M, update bson.M) error
 	GetProgressFromRedis(ctx *gin.Context, key string) (map[string]string, error)
 	// 新增Redis操作方法
-	Exists(ctx *gin.Context, key string) (bool, error)
-	SCard(ctx *gin.Context, key string) (int64, error)
-	Get(ctx *gin.Context, key string) (string, error)
-	Del(ctx *gin.Context, keys ...string) error
+	Exists(ctx context.Context, key string) (bool, error)
+	SCard(ctx context.Context, key string) (int64, error)
+	Get(ctx context.Context, key string) (string, error)
+	Del(ctx context.Context, keys ...string) error
 }
 
 // repository 实现Repository接口
@@ -64,15 +64,15 @@ func (r *repository) Count(ctx *gin.Context, filter interface{}) (int64, error) 
 }
 
 // Find 查询多个文档
-func (r *repository) Find(ctx *gin.Context, filter interface{}, opts *options.FindOptions) ([]models.Task, error) {
-	cursor, err := r.db.Collection("task").Find(ctx.Request.Context(), filter, opts)
+func (r *repository) Find(ctx context.Context, filter interface{}, opts *options.FindOptions) ([]models.Task, error) {
+	cursor, err := r.db.Collection("task").Find(ctx, filter, opts)
 	if err != nil {
 		return nil, err
 	}
-	defer cursor.Close(ctx.Request.Context())
+	defer cursor.Close(ctx)
 
 	var tasks []models.Task
-	if err = cursor.All(ctx.Request.Context(), &tasks); err != nil {
+	if err = cursor.All(ctx, &tasks); err != nil {
 		return nil, err
 	}
 	return tasks, nil
@@ -222,7 +222,7 @@ func (r *repository) GetProgressFromRedis(ctx *gin.Context, key string) (map[str
 }
 
 // Exists 检查Redis键是否存在
-func (r *repository) Exists(ctx *gin.Context, key string) (bool, error) {
+func (r *repository) Exists(ctx context.Context, key string) (bool, error) {
 	result, err := r.redisClient.Exists(ctx, key).Result()
 	if err != nil {
 		return false, fmt.Errorf("failed to check key existence: %w", err)
@@ -231,7 +231,7 @@ func (r *repository) Exists(ctx *gin.Context, key string) (bool, error) {
 }
 
 // SCard 获取集合中元素的数量
-func (r *repository) SCard(ctx *gin.Context, key string) (int64, error) {
+func (r *repository) SCard(ctx context.Context, key string) (int64, error) {
 	result, err := r.redisClient.SCard(ctx, key).Result()
 	if err != nil {
 		return 0, fmt.Errorf("failed to get set cardinality: %w", err)
@@ -240,7 +240,7 @@ func (r *repository) SCard(ctx *gin.Context, key string) (int64, error) {
 }
 
 // Get 获取Redis键的值
-func (r *repository) Get(ctx *gin.Context, key string) (string, error) {
+func (r *repository) Get(ctx context.Context, key string) (string, error) {
 	result, err := r.redisClient.Get(ctx, key).Result()
 	if err != nil {
 		if err == redisdriver.Nil {
@@ -252,7 +252,7 @@ func (r *repository) Get(ctx *gin.Context, key string) (string, error) {
 }
 
 // Del 删除Redis键
-func (r *repository) Del(ctx *gin.Context, keys ...string) error {
+func (r *repository) Del(ctx context.Context, keys ...string) error {
 	if len(keys) == 0 {
 		return nil
 	}

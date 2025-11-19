@@ -7,6 +7,7 @@
 package task
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/Autumn-27/ScopeSentry-go/internal/api/response"
@@ -43,7 +44,7 @@ func List(c *gin.Context) {
 		return
 	}
 	go func() {
-		err := taskService.TaskProgress(c)
+		err := taskService.TaskProgress(context.Background())
 		if err != nil {
 			logger.Error(fmt.Sprintf("%v", err))
 		}

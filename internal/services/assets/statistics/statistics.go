@@ -2,6 +2,7 @@ package statistics
 
 import (
 	"github.com/Autumn-27/ScopeSentry-go/internal/models"
+	"github.com/Autumn-27/ScopeSentry-go/internal/repositories/assets/common"
 	"github.com/Autumn-27/ScopeSentry-go/internal/repositories/assets/statistics"
 	"github.com/Autumn-27/ScopeSentry-go/internal/services/assets/asset"
 	"github.com/gin-gonic/gin"
@@ -20,12 +21,14 @@ type Service interface {
 
 type service struct {
 	repo         statistics.Repository
+	commonRepo   common.Repository
 	assetService asset.Service
 }
 
 func NewService() Service {
 	return &service{
 		repo:         statistics.NewRepository(),
+		commonRepo:   common.NewRepository(),
 		assetService: asset.NewService(),
 	}
 }
@@ -43,31 +46,31 @@ func (s *service) GetStatisticsData(ctx *gin.Context) (*models.StatisticsData, e
 	// 查询资产数量
 	go func() {
 		defer wg.Done()
-		assetCount, err = s.repo.CountDocuments(ctx, "asset", bson.M{})
+		assetCount, err = s.commonRepo.EstimatedDocumentCount(ctx, "asset")
 	}()
 
 	// 查询子域数量
 	go func() {
 		defer wg.Done()
-		subdomainCount, err = s.repo.CountDocuments(ctx, "subdomain", bson.M{})
+		subdomainCount, err = s.commonRepo.EstimatedDocumentCount(ctx, "subdomain")
 	}()
 
 	// 查询敏感信息数量
 	go func() {
 		defer wg.Done()
-		sensitiveCount, err = s.repo.CountDocuments(ctx, "SensitiveResult", bson.M{})
+		sensitiveCount, err = s.commonRepo.EstimatedDocumentCount(ctx, "SensitiveResult")
 	}()
 
 	// 查询URL扫描数量
 	go func() {
 		defer wg.Done()
-		urlCount, err = s.repo.CountDocuments(ctx, "UrlScan", bson.M{})
+		urlCount, err = s.commonRepo.EstimatedDocumentCount(ctx, "UrlScan")
 	}()
 
 	// 查询漏洞数量
 	go func() {
 		defer wg.Done()
-		vulnerabilityCount, err = s.repo.CountDocuments(ctx, "vulnerability", bson.M{})
+		vulnerabilityCount, err = s.commonRepo.EstimatedDocumentCount(ctx, "vulnerability")
 	}()
 
 	// 等待所有 goroutine 完成
