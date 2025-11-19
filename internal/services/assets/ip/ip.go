@@ -4,6 +4,7 @@ import (
 	"github.com/Autumn-27/ScopeSentry-go/internal/models"
 	iprepo "github.com/Autumn-27/ScopeSentry-go/internal/repositories/assets/ip"
 	"github.com/Autumn-27/ScopeSentry-go/internal/utils/helper"
+	"github.com/Autumn-27/ScopeSentry-go/internal/utils/random"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -76,6 +77,7 @@ func flattenIPAssets(assets []models.IPAsset) []models.IPAssetFlat {
 	var rows []models.IPAssetFlat
 
 	for _, asset := range assets {
+		id := asset.ID.Hex()
 		totalRows := 0
 		for _, port := range asset.Ports {
 			serverCount := len(port.Server)
@@ -113,11 +115,13 @@ func flattenIPAssets(assets []models.IPAsset) []models.IPAssetFlat {
 
 			for _, server := range servers {
 				row := models.IPAssetFlat{
+					ID:        id,
 					IP:        asset.IP,
 					Port:      port.Port,
 					Domain:    server.Domain,
 					Service:   server.Service,
 					WebServer: server.WebServer,
+					DataKey:   random.GenerateRandomString(6),
 					Products:  append([]string{}, server.Technologies...),
 					Time:      asset.Time,
 				}

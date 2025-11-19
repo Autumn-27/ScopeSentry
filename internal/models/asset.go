@@ -88,19 +88,22 @@ type IPAssetTmp struct {
 }
 
 type IPAsset struct {
-	IP         string    `json:"ip" bson:"ip"`
-	Ports      []IPPorts `json:"ports" bson:"ports"`
-	Project    []string  `json:"project" bson:"project"`
-	TaskName   []string  `json:"taskName" bson:"taskName"`
-	RootDomain []string  `bson:"rootDomain,omitempty" json:"rootDomain,omitempty"`
-	Time       string    `bson:"time" csv:"time"`
+	ID         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	IP         string             `json:"ip" bson:"ip"`
+	Ports      []IPPorts          `json:"ports" bson:"ports"`
+	Project    []string           `json:"project" bson:"project"`
+	TaskName   []string           `json:"taskName" bson:"taskName"`
+	RootDomain []string           `bson:"rootDomain,omitempty" json:"rootDomain,omitempty"`
+	Time       string             `bson:"time" csv:"time"`
 }
 
 type IPAssetFlat struct {
+	ID          string   `bson:"id,omitempty" json:"id"`
 	IP          string   `json:"ip"`
 	IPRowSpan   int      `json:"ipRowSpan"`
 	Port        string   `json:"port"`
 	PortRowSpan int      `json:"portRowSpan"`
+	DataKey     string   `bson:"datakey,omitempty" json:"datakey,omitempty"`
 	Domain      string   `json:"domain"`
 	Service     string   `json:"service"`
 	WebServer   string   `json:"webServer"`

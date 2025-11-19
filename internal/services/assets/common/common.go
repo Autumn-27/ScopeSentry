@@ -26,7 +26,7 @@ var (
 	validCollections = []string{
 		"asset", "DirScanResult", "SensitiveResult", "SubdomainTakerResult",
 		"UrlScan", "crawler", "subdomain", "vulnerability", "PageMonitoring",
-		"app", "RootDomain", "mp",
+		"app", "RootDomain", "mp", "IPAsset",
 	}
 )
 
