@@ -51,7 +51,10 @@ func CreateDatabase() error {
 
 		// 创建用户集合
 		collection := db.Collection("user")
-		password := random.GenerateString(12)
+		password, err := random.GeneratePassword(16)
+		if err != nil {
+			password = random.GenerateRandomString(16)
+		}
 
 		// 打印重要信息
 		separator := strings.Repeat("=", 50)

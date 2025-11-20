@@ -3,6 +3,7 @@ package random
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"math/big"
 	mRand "math/rand"
 )
 
@@ -34,4 +35,25 @@ func GenerateRandomString(length int) string {
 		result[i] = charset[mRand.Intn(len(charset))]
 	}
 	return string(result)
+}
+
+func GeneratePassword(length int) (string, error) {
+	// 安全字符集：大小写字母 + 数字 + 特殊字符
+	const charset = "abcdefghijklmnopqrstuvwxyz" +
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+		"0123456789" +
+		"!@#$%^&*()-_=+[]{}<>?/"
+
+	pass := make([]byte, length)
+
+	for i := 0; i < length; i++ {
+		// 从 charset 中安全随机取一个字符
+		n, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		if err != nil {
+			return "", err
+		}
+		pass[i] = charset[n.Int64()]
+	}
+
+	return string(pass), nil
 }
