@@ -3,8 +3,8 @@ package scheduler
 import (
 	"fmt"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/database/mongodb"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/database/mongodb"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"

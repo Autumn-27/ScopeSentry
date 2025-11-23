@@ -13,8 +13,8 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/database/mongodb"
-	"github.com/Autumn-27/ScopeSentry-go/internal/database/redis"
+	"github.com/Autumn-27/ScopeSentry/internal/database/mongodb"
+	"github.com/Autumn-27/ScopeSentry/internal/database/redis"
 	redisdriver "github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

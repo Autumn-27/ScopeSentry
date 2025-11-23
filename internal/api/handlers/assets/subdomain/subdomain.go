@@ -1,9 +1,9 @@
 package subdomain
 
 import (
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/response"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
-	"github.com/Autumn-27/ScopeSentry-go/internal/services/assets/subdomain"
+	"github.com/Autumn-27/ScopeSentry/internal/api/response"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/services/assets/subdomain"
 	"github.com/gin-gonic/gin"
 )
 

@@ -9,10 +9,10 @@ package common
 
 import (
 	"fmt"
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/response"
-	"github.com/Autumn-27/ScopeSentry-go/internal/logger"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
-	"github.com/Autumn-27/ScopeSentry-go/internal/services/assets/common"
+	"github.com/Autumn-27/ScopeSentry/internal/api/response"
+	"github.com/Autumn-27/ScopeSentry/internal/logger"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/services/assets/common"
 	"github.com/gin-gonic/gin"
 )
 

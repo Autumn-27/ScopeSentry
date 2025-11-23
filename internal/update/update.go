@@ -10,8 +10,8 @@ package update
 import (
 	"context"
 	"errors"
-	"github.com/Autumn-27/ScopeSentry-go/internal/constants"
-	"github.com/Autumn-27/ScopeSentry-go/internal/database/mongodb"
+	"github.com/Autumn-27/ScopeSentry/internal/constants"
+	"github.com/Autumn-27/ScopeSentry/internal/database/mongodb"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/mod/semver"

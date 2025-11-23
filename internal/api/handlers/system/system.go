@@ -8,12 +8,12 @@ package system
 
 import (
 	"encoding/json"
-	"github.com/Autumn-27/ScopeSentry-go/internal/constants"
+	"github.com/Autumn-27/ScopeSentry/internal/constants"
 	"net/http"
 	"time"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/response"
-	"github.com/Autumn-27/ScopeSentry-go/internal/database/redis"
+	"github.com/Autumn-27/ScopeSentry/internal/api/response"
+	"github.com/Autumn-27/ScopeSentry/internal/database/redis"
 	"github.com/gin-gonic/gin"
 	"github.com/valyala/fasthttp"
 )

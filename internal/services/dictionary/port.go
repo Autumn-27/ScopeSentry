@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
-	dictrepo "github.com/Autumn-27/ScopeSentry-go/internal/repositories/dictionary"
-	nodessvc "github.com/Autumn-27/ScopeSentry-go/internal/services/node"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
+	dictrepo "github.com/Autumn-27/ScopeSentry/internal/repositories/dictionary"
+	nodessvc "github.com/Autumn-27/ScopeSentry/internal/services/node"
 )
 
 type PortService interface {

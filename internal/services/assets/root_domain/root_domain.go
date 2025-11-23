@@ -2,10 +2,10 @@ package root_domain
 
 import (
 	"fmt"
-	"github.com/Autumn-27/ScopeSentry-go/internal/bootstrap"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
-	"github.com/Autumn-27/ScopeSentry-go/internal/repositories/assets/root_domain"
-	"github.com/Autumn-27/ScopeSentry-go/internal/utils/helper"
+	"github.com/Autumn-27/ScopeSentry/internal/bootstrap"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/repositories/assets/root_domain"
+	"github.com/Autumn-27/ScopeSentry/internal/utils/helper"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

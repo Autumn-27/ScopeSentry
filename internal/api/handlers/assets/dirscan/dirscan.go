@@ -8,9 +8,9 @@
 package dirscan
 
 import (
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/response"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
-	"github.com/Autumn-27/ScopeSentry-go/internal/services/assets/dirscan"
+	"github.com/Autumn-27/ScopeSentry/internal/api/response"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/services/assets/dirscan"
 	"github.com/gin-gonic/gin"
 )
 

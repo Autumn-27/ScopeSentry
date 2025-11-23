@@ -9,10 +9,10 @@ package sensitive_rule
 
 import (
 	"errors"
-	"github.com/Autumn-27/ScopeSentry-go/internal/repositories/sensitive_rule"
+	"github.com/Autumn-27/ScopeSentry/internal/repositories/sensitive_rule"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
-	"github.com/Autumn-27/ScopeSentry-go/internal/services/node"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/services/node"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

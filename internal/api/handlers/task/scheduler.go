@@ -10,9 +10,9 @@ package task
 import (
 	"fmt"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/response"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
-	"github.com/Autumn-27/ScopeSentry-go/internal/services/task/scheduler"
+	"github.com/Autumn-27/ScopeSentry/internal/api/response"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/services/task/scheduler"
 
 	"github.com/gin-gonic/gin"
 )

@@ -13,7 +13,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
 )
 
 // SearchKey 定义了不同类型数据的字段映射关系

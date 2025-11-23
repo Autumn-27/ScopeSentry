@@ -8,9 +8,9 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
-	"github.com/Autumn-27/ScopeSentry-go/internal/repositories/assets/asset"
-	"github.com/Autumn-27/ScopeSentry-go/internal/utils/helper"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/repositories/assets/asset"
+	"github.com/Autumn-27/ScopeSentry/internal/utils/helper"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"

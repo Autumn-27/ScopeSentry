@@ -8,9 +8,9 @@
 package project
 
 import (
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/handlers/project"
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes/common"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/api/handlers/project"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/common"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
 	"github.com/gin-gonic/gin"
 )
 

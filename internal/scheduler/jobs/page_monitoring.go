@@ -10,8 +10,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Autumn-27/ScopeSentry-go/internal/logger"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/logger"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

@@ -5,9 +5,9 @@ import (
 	"io"
 	"mime/multipart"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/response"
-	"github.com/Autumn-27/ScopeSentry-go/internal/logger"
-	dictservice "github.com/Autumn-27/ScopeSentry-go/internal/services/dictionary"
+	"github.com/Autumn-27/ScopeSentry/internal/api/response"
+	"github.com/Autumn-27/ScopeSentry/internal/logger"
+	dictservice "github.com/Autumn-27/ScopeSentry/internal/services/dictionary"
 	"github.com/gin-gonic/gin"
 )
 

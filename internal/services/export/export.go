@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/config"
-	"github.com/Autumn-27/ScopeSentry-go/internal/logger"
+	"github.com/Autumn-27/ScopeSentry/internal/config"
+	"github.com/Autumn-27/ScopeSentry/internal/logger"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
-	"github.com/Autumn-27/ScopeSentry-go/internal/repositories/export"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/repositories/export"
 	"github.com/xuri/excelize/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

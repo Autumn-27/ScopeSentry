@@ -8,9 +8,9 @@
 package task
 
 import (
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/handlers/task"
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes/common"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/api/handlers/task"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/common"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
 )
 
 func registerSchedulerTaskRoutes() models.RouteGroup {

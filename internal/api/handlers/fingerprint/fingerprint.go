@@ -8,9 +8,9 @@
 package fingerprint
 
 import (
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/response"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
-	service "github.com/Autumn-27/ScopeSentry-go/internal/services/fingerprint"
+	"github.com/Autumn-27/ScopeSentry/internal/api/response"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
+	service "github.com/Autumn-27/ScopeSentry/internal/services/fingerprint"
 	"github.com/gin-gonic/gin"
 )
 

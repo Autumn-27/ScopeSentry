@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/logger"
+	"github.com/Autumn-27/ScopeSentry/internal/logger"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/config"
+	"github.com/Autumn-27/ScopeSentry/internal/config"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/utils/helper"
+	"github.com/Autumn-27/ScopeSentry/internal/utils/helper"
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/config"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
-	"github.com/Autumn-27/ScopeSentry-go/internal/repositories/user"
+	"github.com/Autumn-27/ScopeSentry/internal/config"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/repositories/user"
 	"golang.org/x/crypto/bcrypt"
 )
 

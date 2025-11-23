@@ -3,18 +3,18 @@ package mongodb
 import (
 	"context"
 	"fmt"
-	"github.com/Autumn-27/ScopeSentry-go/internal/logger"
-	"github.com/Autumn-27/ScopeSentry-go/internal/utils/helper"
+	"github.com/Autumn-27/ScopeSentry/internal/logger"
+	"github.com/Autumn-27/ScopeSentry/internal/utils/helper"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/constants"
+	"github.com/Autumn-27/ScopeSentry/internal/constants"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/config"
-	"github.com/Autumn-27/ScopeSentry-go/internal/utils/random"
+	"github.com/Autumn-27/ScopeSentry/internal/config"
+	"github.com/Autumn-27/ScopeSentry/internal/utils/random"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )

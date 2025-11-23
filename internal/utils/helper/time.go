@@ -8,7 +8,7 @@
 package helper
 
 import (
-	"github.com/Autumn-27/ScopeSentry-go/internal/config"
+	"github.com/Autumn-27/ScopeSentry/internal/config"
 	"time"
 )
 

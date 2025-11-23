@@ -8,9 +8,9 @@
 package fingerprint
 
 import (
-	handler "github.com/Autumn-27/ScopeSentry-go/internal/api/handlers/fingerprint"
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes/common"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
+	handler "github.com/Autumn-27/ScopeSentry/internal/api/handlers/fingerprint"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/common"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
 	"github.com/gin-gonic/gin"
 )
 

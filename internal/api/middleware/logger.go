@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/Autumn-27/ScopeSentry-go/internal/logger"
+	"github.com/Autumn-27/ScopeSentry/internal/logger"
 	"time"
 
 	"github.com/gin-gonic/gin"

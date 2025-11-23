@@ -10,7 +10,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
 )
 
 //go:embed assets/dir

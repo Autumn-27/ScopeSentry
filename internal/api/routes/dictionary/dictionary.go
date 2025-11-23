@@ -1,9 +1,9 @@
 package dictionary
 
 import (
-	dictHandler "github.com/Autumn-27/ScopeSentry-go/internal/api/handlers/dictionary"
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes/common"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
+	dictHandler "github.com/Autumn-27/ScopeSentry/internal/api/handlers/dictionary"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/common"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
 	"github.com/gin-gonic/gin"
 )
 

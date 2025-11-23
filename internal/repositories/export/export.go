@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/utils/helper"
+	"github.com/Autumn-27/ScopeSentry/internal/utils/helper"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/database/mongodb"
+	"github.com/Autumn-27/ScopeSentry/internal/database/mongodb"
 )
 
 // Repository 定义导出仓库接口

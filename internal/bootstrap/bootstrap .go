@@ -3,7 +3,7 @@ package bootstrap
 import (
 	"context"
 	"fmt"
-	"github.com/Autumn-27/ScopeSentry-go/internal/database/mongodb"
+	"github.com/Autumn-27/ScopeSentry/internal/database/mongodb"
 	"log"
 	"time"
 )

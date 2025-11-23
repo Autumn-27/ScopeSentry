@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
-	repo "github.com/Autumn-27/ScopeSentry-go/internal/repositories/fingerprint"
-	"github.com/Autumn-27/ScopeSentry-go/internal/services/node"
-	"github.com/Autumn-27/ScopeSentry-go/internal/utils/helper"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
+	repo "github.com/Autumn-27/ScopeSentry/internal/repositories/fingerprint"
+	"github.com/Autumn-27/ScopeSentry/internal/services/node"
+	"github.com/Autumn-27/ScopeSentry/internal/utils/helper"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

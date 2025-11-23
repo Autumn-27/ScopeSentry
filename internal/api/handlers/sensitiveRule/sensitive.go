@@ -8,8 +8,8 @@
 package sensitiveRule
 
 import (
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/response"
-	svc "github.com/Autumn-27/ScopeSentry-go/internal/services/sensitive_rule"
+	"github.com/Autumn-27/ScopeSentry/internal/api/response"
+	svc "github.com/Autumn-27/ScopeSentry/internal/services/sensitive_rule"
 	"github.com/gin-gonic/gin"
 )
 

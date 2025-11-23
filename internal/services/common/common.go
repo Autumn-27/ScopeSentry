@@ -8,7 +8,7 @@
 package common
 
 import (
-	"github.com/Autumn-27/ScopeSentry-go/internal/repositories/common"
+	"github.com/Autumn-27/ScopeSentry/internal/repositories/common"
 )
 
 type Service struct {

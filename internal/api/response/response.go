@@ -2,11 +2,11 @@ package response
 
 import (
 	"fmt"
-	"github.com/Autumn-27/ScopeSentry-go/internal/logger"
+	"github.com/Autumn-27/ScopeSentry/internal/logger"
 	"net/http"
 	"runtime"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/i18n"
+	"github.com/Autumn-27/ScopeSentry/internal/i18n"
 	"github.com/gin-gonic/gin"
 )
 

@@ -9,14 +9,14 @@ package configuration
 
 import (
 	"fmt"
-	"github.com/Autumn-27/ScopeSentry-go/internal/logger"
-	assetCommon "github.com/Autumn-27/ScopeSentry-go/internal/services/assets/common"
+	"github.com/Autumn-27/ScopeSentry/internal/logger"
+	assetCommon "github.com/Autumn-27/ScopeSentry/internal/services/assets/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
-	nservice "github.com/Autumn-27/ScopeSentry-go/internal/services/node"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
+	nservice "github.com/Autumn-27/ScopeSentry/internal/services/node"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/repositories/common"
+	"github.com/Autumn-27/ScopeSentry/internal/repositories/common"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 )

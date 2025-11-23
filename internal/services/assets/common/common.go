@@ -6,14 +6,14 @@ import (
 	"io"
 	"strings"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/services/assets/asset"
+	"github.com/Autumn-27/ScopeSentry/internal/services/assets/asset"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/logger"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
-	"github.com/Autumn-27/ScopeSentry-go/internal/repositories/assets/common"
-	commonrepo "github.com/Autumn-27/ScopeSentry-go/internal/repositories/common"
-	"github.com/Autumn-27/ScopeSentry-go/internal/utils/helper"
-	"github.com/Autumn-27/ScopeSentry-go/internal/utils/random"
+	"github.com/Autumn-27/ScopeSentry/internal/logger"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/repositories/assets/common"
+	commonrepo "github.com/Autumn-27/ScopeSentry/internal/repositories/common"
+	"github.com/Autumn-27/ScopeSentry/internal/utils/helper"
+	"github.com/Autumn-27/ScopeSentry/internal/utils/random"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"

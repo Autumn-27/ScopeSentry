@@ -3,16 +3,16 @@ package project
 import (
 	"context"
 	"fmt"
-	"github.com/Autumn-27/ScopeSentry-go/internal/logger"
+	"github.com/Autumn-27/ScopeSentry/internal/logger"
 	"sort"
 	"strings"
 	"sync"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/utils/helper"
+	"github.com/Autumn-27/ScopeSentry/internal/utils/helper"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
-	repo "github.com/Autumn-27/ScopeSentry-go/internal/repositories/project"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
+	repo "github.com/Autumn-27/ScopeSentry/internal/repositories/project"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 )

@@ -2,8 +2,8 @@ package common
 
 import (
 	"context"
-	"github.com/Autumn-27/ScopeSentry-go/internal/database/mongodb"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/database/mongodb"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"go.mongodb.org/mongo-driver/bson"

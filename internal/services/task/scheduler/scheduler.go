@@ -3,11 +3,11 @@ package scheduler
 import (
 	"fmt"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
-	schedulerCore "github.com/Autumn-27/ScopeSentry-go/internal/scheduler"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
+	schedulerCore "github.com/Autumn-27/ScopeSentry/internal/scheduler"
 
-	schedulerRepo "github.com/Autumn-27/ScopeSentry-go/internal/repositories/task/scheduler"
-	"github.com/Autumn-27/ScopeSentry-go/internal/utils/helper"
+	schedulerRepo "github.com/Autumn-27/ScopeSentry/internal/repositories/task/scheduler"
+	"github.com/Autumn-27/ScopeSentry/internal/utils/helper"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"

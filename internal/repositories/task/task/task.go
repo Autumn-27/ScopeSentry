@@ -11,9 +11,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/database/mongodb"
-	"github.com/Autumn-27/ScopeSentry-go/internal/database/redis"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/database/mongodb"
+	"github.com/Autumn-27/ScopeSentry/internal/database/redis"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
 	"github.com/gin-gonic/gin"
 	redisdriver "github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/bson"

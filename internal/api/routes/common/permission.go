@@ -8,7 +8,7 @@
 package common
 
 import (
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/middleware"
+	"github.com/Autumn-27/ScopeSentry/internal/api/middleware"
 	"github.com/gin-gonic/gin"
 )
 

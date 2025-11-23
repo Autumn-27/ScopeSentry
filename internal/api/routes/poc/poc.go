@@ -1,9 +1,9 @@
 package poc
 
 import (
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/handlers/poc"
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes/common"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/api/handlers/poc"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/common"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
 	"github.com/gin-gonic/gin"
 )
 

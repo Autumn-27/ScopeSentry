@@ -3,22 +3,22 @@ package routes
 import (
 	"strings"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/middleware"
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes/assets"
-	confRoutes "github.com/Autumn-27/ScopeSentry-go/internal/api/routes/configuration"
-	dictRoutes "github.com/Autumn-27/ScopeSentry-go/internal/api/routes/dictionary"
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes/export"
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes/fingerprint"
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes/plugin"
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes/poc"
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes/project"
-	sroutes "github.com/Autumn-27/ScopeSentry-go/internal/api/routes/sensitive_rule"
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes/system"
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes/task"
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes/user"
+	"github.com/Autumn-27/ScopeSentry/internal/api/middleware"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/assets"
+	confRoutes "github.com/Autumn-27/ScopeSentry/internal/api/routes/configuration"
+	dictRoutes "github.com/Autumn-27/ScopeSentry/internal/api/routes/dictionary"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/export"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/fingerprint"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/plugin"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/poc"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/project"
+	sroutes "github.com/Autumn-27/ScopeSentry/internal/api/routes/sensitive_rule"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/system"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/task"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/user"
 	"github.com/gin-gonic/gin"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes/node"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/node"
 )
 
 // loggerWithSkipPaths 自定义日志中间件，支持跳过指定前缀的路径

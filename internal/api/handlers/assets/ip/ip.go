@@ -8,9 +8,9 @@
 package ip
 
 import (
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/response"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
-	ipservice "github.com/Autumn-27/ScopeSentry-go/internal/services/assets/ip"
+	"github.com/Autumn-27/ScopeSentry/internal/api/response"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
+	ipservice "github.com/Autumn-27/ScopeSentry/internal/services/assets/ip"
 	"github.com/gin-gonic/gin"
 )
 

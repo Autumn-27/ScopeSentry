@@ -24,20 +24,20 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	"github.com/Autumn-27/ScopeSentry-go/internal/worker"
+	"github.com/Autumn-27/ScopeSentry/internal/worker"
 	"io/fs"
 	"strings"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/bootstrap"
-	"github.com/Autumn-27/ScopeSentry-go/internal/config"
-	"github.com/Autumn-27/ScopeSentry-go/internal/scheduler"
-	"github.com/Autumn-27/ScopeSentry-go/internal/update"
+	"github.com/Autumn-27/ScopeSentry/internal/bootstrap"
+	"github.com/Autumn-27/ScopeSentry/internal/config"
+	"github.com/Autumn-27/ScopeSentry/internal/scheduler"
+	"github.com/Autumn-27/ScopeSentry/internal/update"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/logger"
+	"github.com/Autumn-27/ScopeSentry/internal/logger"
 
-	_ "github.com/Autumn-27/ScopeSentry-go/internal/database/mongodb"
+	_ "github.com/Autumn-27/ScopeSentry/internal/database/mongodb"
 
-	_ "github.com/Autumn-27/ScopeSentry-go/internal/database/redis"
+	_ "github.com/Autumn-27/ScopeSentry/internal/database/redis"
 
 	"net/http"
 	"os"
@@ -45,14 +45,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/constants"
+	"github.com/Autumn-27/ScopeSentry/internal/constants"
 
-	_ "github.com/Autumn-27/ScopeSentry-go/internal/bootstrap"
+	_ "github.com/Autumn-27/ScopeSentry/internal/bootstrap"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes"
-	redisLogSubscriber "github.com/Autumn-27/ScopeSentry-go/internal/services/redis_log_subscriber"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes"
+	redisLogSubscriber "github.com/Autumn-27/ScopeSentry/internal/services/redis_log_subscriber"
 
-	"github.com/Autumn-27/ScopeSentry-go/docs"
+	"github.com/Autumn-27/ScopeSentry/docs"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"

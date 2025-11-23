@@ -1,9 +1,9 @@
 package sensitive_rule
 
 import (
-	handler "github.com/Autumn-27/ScopeSentry-go/internal/api/handlers/sensitiveRule"
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes/common"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
+	handler "github.com/Autumn-27/ScopeSentry/internal/api/handlers/sensitiveRule"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/common"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
 	"github.com/gin-gonic/gin"
 )
 

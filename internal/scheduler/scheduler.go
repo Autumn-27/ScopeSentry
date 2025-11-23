@@ -6,11 +6,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Autumn-27/ScopeSentry-go/internal/config"
-	"github.com/Autumn-27/ScopeSentry-go/internal/database/mongodb"
-	"github.com/Autumn-27/ScopeSentry-go/internal/logger"
-	"github.com/Autumn-27/ScopeSentry-go/internal/scheduler/jobs"
-	"github.com/Autumn-27/ScopeSentry-go/internal/utils/helper"
+	"github.com/Autumn-27/ScopeSentry/internal/config"
+	"github.com/Autumn-27/ScopeSentry/internal/database/mongodb"
+	"github.com/Autumn-27/ScopeSentry/internal/logger"
+	"github.com/Autumn-27/ScopeSentry/internal/scheduler/jobs"
+	"github.com/Autumn-27/ScopeSentry/internal/utils/helper"
 
 	"github.com/go-co-op/gocron"
 	"go.mongodb.org/mongo-driver/bson"

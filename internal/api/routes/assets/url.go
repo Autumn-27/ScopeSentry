@@ -8,9 +8,9 @@
 package assets
 
 import (
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/handlers/assets/url"
-	"github.com/Autumn-27/ScopeSentry-go/internal/api/routes/common"
-	"github.com/Autumn-27/ScopeSentry-go/internal/models"
+	"github.com/Autumn-27/ScopeSentry/internal/api/handlers/assets/url"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/common"
+	"github.com/Autumn-27/ScopeSentry/internal/models"
 )
 
 func registerUrlRoutes() models.RouteGroup {
