@@ -3,12 +3,13 @@ package mongodb
 import (
 	"context"
 	"fmt"
-	"github.com/Autumn-27/ScopeSentry/internal/logger"
-	"github.com/Autumn-27/ScopeSentry/internal/utils/helper"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/Autumn-27/ScopeSentry/internal/logger"
+	"github.com/Autumn-27/ScopeSentry/internal/utils/helper"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/Autumn-27/ScopeSentry/internal/constants"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -348,6 +349,10 @@ func createIndexes(db *mongo.Database) error {
 		{Keys: bson.D{{"technologies", 1}}},
 		{Keys: bson.D{{"faviconmmh3", 1}}},
 		{Keys: bson.D{{"bodyhash", 1}}},
+		// 1.8.1新增索引
+		{Keys: bson.D{{"host", 1}}},
+
+		{Keys: bson.D{{"rootDomain", 1}, {"time", -1}}}, // 优化按 rootDomain 查询并按 time 排序的性能
 	}
 	_, err = asset.Indexes().CreateMany(context.Background(), indexes)
 	if err != nil {

@@ -2,6 +2,7 @@ package asset
 
 import (
 	"fmt"
+
 	"github.com/Autumn-27/ScopeSentry/internal/api/response"
 	"github.com/Autumn-27/ScopeSentry/internal/logger"
 	"github.com/Autumn-27/ScopeSentry/internal/models"
@@ -270,4 +271,90 @@ func GetAssetCardData(c *gin.Context) {
 	response.Success(c, gin.H{
 		"list": assets,
 	}, "api.asset.card.success")
+}
+
+// GetHostsByRootDomain godoc
+// @Summary 根据根域名获取主机列表
+// @Description 根据 rootDomain 字段全等查询资产数据，返回 host 列表，支持分页
+// @Tags 资产
+// @Accept json
+// @Produce json
+// @Param query body object{rootDomain=string,pageIndex=int,pageSize=int} true "查询参数"
+// @Success 200 {object} response.SuccessResponse{data=object{list=[]string,total=int64}}
+// @Failure 400 {object} response.BadRequestResponse
+// @Failure 500 {object} response.InternalServerErrorResponse
+// @Router /api/assets/asset/hosts [post]
+func GetHostsByRootDomain(c *gin.Context) {
+	var request struct {
+		RootDomain string `json:"rootDomain" binding:"required"`
+		PageIndex  int    `json:"pageIndex"`
+		PageSize   int    `json:"pageSize"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		response.BadRequest(c, "api.bad_request", err)
+		return
+	}
+
+	// 设置默认分页大小
+	if request.PageSize <= 0 {
+		request.PageSize = 10
+	}
+	if request.PageIndex <= 0 {
+		request.PageIndex = 1
+	}
+
+	hosts, total, err := assetService.GetHostsByRootDomain(c, request.RootDomain, request.PageIndex, request.PageSize)
+	if err != nil {
+		response.InternalServerError(c, "api.asset.hosts.failed", err)
+		return
+	}
+
+	response.Success(c, gin.H{
+		"list":  hosts,
+		"total": total,
+	}, "api.asset.hosts.success")
+}
+
+// GetAssetsByHost godoc
+// @Summary 根据主机名获取资产列表
+// @Description 根据 host 字段查询资产数据，返回 ip、port、service、statuscode、faviconmmh3 字段，支持分页
+// @Tags 资产
+// @Accept json
+// @Produce json
+// @Param query body object{host=string,pageIndex=int,pageSize=int} true "查询参数"
+// @Success 200 {object} response.SuccessResponse{data=object{list=[]models.Asset,total=int64}}
+// @Failure 400 {object} response.BadRequestResponse
+// @Failure 500 {object} response.InternalServerErrorResponse
+// @Router /api/assets/asset/by-host [post]
+func GetAssetsByHost(c *gin.Context) {
+	var request struct {
+		Host      string `json:"host" binding:"required"`
+		PageIndex int    `json:"pageIndex"`
+		PageSize  int    `json:"pageSize"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		response.BadRequest(c, "api.bad_request", err)
+		return
+	}
+
+	// 设置默认分页大小
+	if request.PageSize <= 0 {
+		request.PageSize = 10
+	}
+	if request.PageIndex <= 0 {
+		request.PageIndex = 1
+	}
+
+	assets, total, err := assetService.GetAssetsByHost(c, request.Host, request.PageIndex, request.PageSize)
+	if err != nil {
+		response.InternalServerError(c, "api.asset.by_host.failed", err)
+		return
+	}
+
+	response.Success(c, gin.H{
+		"list":  assets,
+		"total": total,
+	}, "api.asset.by_host.success")
 }

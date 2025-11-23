@@ -31,6 +31,8 @@ type Service interface {
 	GetTaskTarget(ctx *gin.Context, query models.SearchRequest) (string, error)
 	GetTaskTargetByIDs(ctx *gin.Context, ids []string) (string, error)
 	BuildSearchQuery(query models.SearchRequest) (map[string]interface{}, error)
+	GetHostsByRootDomain(ctx *gin.Context, rootDomain string, pageIndex, pageSize int) ([]string, int64, error)
+	GetAssetsByHost(ctx *gin.Context, host string, pageIndex, pageSize int) ([]models.Asset, int64, error)
 }
 
 // 全局 bodyhash 缓存实例，TTL 为 30 秒（可通过 NewCache 参数自定义）
@@ -429,4 +431,52 @@ func (s *service) GetTaskTargetByIDs(ctx *gin.Context, ids []string) (string, er
 		}
 	}
 	return targets, nil
+}
+
+// GetHostsByRootDomain 根据 rootDomain 查询并返回去重后的 host 列表
+func (s *service) GetHostsByRootDomain(ctx *gin.Context, rootDomain string, pageIndex, pageSize int) ([]string, int64, error) {
+	// 设置分页参数
+	if pageSize <= 0 {
+		pageSize = 10 // 默认大小是10
+	}
+	if pageIndex <= 0 {
+		pageIndex = 1
+	}
+	skip := int64((pageIndex - 1) * pageSize)
+	limit := int64(pageSize)
+
+	// 使用聚合管道在数据库层面去重，返回真实的去重后数据
+	hosts, total, err := s.assetRepo.GetDistinctHostsByRootDomain(ctx.Request.Context(), rootDomain, skip, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+	if hosts == nil {
+		hosts = []string{}
+	}
+
+	return hosts, total, nil
+}
+
+// GetAssetsByHost 根据 host 查询资产列表
+func (s *service) GetAssetsByHost(ctx *gin.Context, host string, pageIndex, pageSize int) ([]models.Asset, int64, error) {
+	// 设置分页参数
+	if pageSize <= 0 {
+		pageSize = 10 // 默认大小是10
+	}
+	if pageIndex <= 0 {
+		pageIndex = 1
+	}
+	skip := int64((pageIndex - 1) * pageSize)
+	limit := int64(pageSize)
+
+	// 查询资产列表
+	assets, total, err := s.assetRepo.GetAssetsByHost(ctx.Request.Context(), host, skip, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if assets == nil {
+		assets = []models.Asset{}
+	}
+	return assets, total, nil
 }
