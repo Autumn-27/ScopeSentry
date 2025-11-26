@@ -74,7 +74,7 @@ func (s *service) Insert(ctx *gin.Context, task *models.Task) (string, error) {
 		//普通的情况不需要做改变
 	} else if task.TargetSource == "project" {
 		// 从项目中获取数据，读取projet的目标
-		target, err = s.projectService.GetTargets(ctx, []string{task.TargetSource})
+		target, err = s.projectService.GetTargets(ctx, task.Project)
 		if err != nil {
 			return "", err
 		}
