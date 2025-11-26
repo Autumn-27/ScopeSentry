@@ -172,7 +172,7 @@ func (s *service) DeleteTasks(ctx *gin.Context, ids []string, delA bool) error {
 
 					// 按 taskName 删除各资产集合数据
 					// 注意：部分集合中 taskName 为数组字段，$in 也能匹配
-					collections := []string{"asset", "DirScanResult", "SensitiveResult", "SubdomainTakerResult", "UrlScan", "crawler", "subdomain", "vulnerability", "PageMonitoring", "app", "RootDomain", "mp"}
+					collections := []string{"asset", "DirScanResult", "SensitiveResult", "SubdomainTakerResult", "UrlScan", "crawler", "subdomain", "vulnerability", "PageMonitoring", "app", "RootDomain", "mp", "IPAsset"}
 					filter := bson.M{"taskName": bson.M{"$in": names}}
 					// 直接通过底层数据库执行批删
 					db := mongodb.DB
