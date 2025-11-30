@@ -159,7 +159,7 @@ var Plugins = []models.Plugin{
 		Module:       "PortScan",
 		Name:         "RustScan",
 		Hash:         "66b4ddeb983387df2b7ee7726653874d",
-		Parameter:    "-port {port.nmap top 1000} -b 500 -t 5000",
+		Parameter:    "-port {port.top1000} -b 500 -t 5000",
 		Help:         "-port 端口扫描范围 -b 端口扫描并发数量  -t 超时时间",
 		Introduction: "端口存活扫描",
 		IsSystem:     true,

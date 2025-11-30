@@ -357,6 +357,8 @@ func (r *repository) GetAssetsByHost(ctx context.Context, host string, skip, lim
 		"statuscode":  1,
 		"faviconmmh3": 1,
 		"bodyhash":    1,
+		"title":       1,
+		"url":         1,
 	}
 
 	// 构建查询选项
