@@ -36,10 +36,10 @@ func registerSensitivveRoutes() models.RouteGroup {
 				Middlewares: common.WithAuth(),
 			},
 			{
-				Method:  "POST",
-				Path:    "/names",
-				Handler: sensitive.GetSensitiveInfoName,
-				//Middlewares: common.WithAuth(),
+				Method:      "POST",
+				Path:        "/names",
+				Handler:     sensitive.GetSensitiveInfoName,
+				Middlewares: common.WithAuth(),
 			},
 			{
 				Method:      "POST",

@@ -35,14 +35,16 @@ func registerAssetRoutes() models.RouteGroup {
 				Middlewares: common.WithAuth(),
 			},
 			{
-				Method:  "POST",
-				Path:    "/hosts",
-				Handler: asset.GetHostsByRootDomain,
+				Method:      "POST",
+				Path:        "/hosts",
+				Handler:     asset.GetHostsByRootDomain,
+				Middlewares: common.WithAuth(),
 			},
 			{
-				Method:  "POST",
-				Path:    "/by-host",
-				Handler: asset.GetAssetsByHost,
+				Method:      "POST",
+				Path:        "/by-host",
+				Handler:     asset.GetAssetsByHost,
+				Middlewares: common.WithAuth(),
 			},
 		},
 	}

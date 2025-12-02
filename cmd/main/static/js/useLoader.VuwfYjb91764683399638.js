@@ -1,0 +1,1 @@
+async function e(e,a,n,t,s){const r=new e;return s&&s(r),n&&n(r),await new Promise((e,n)=>{r.load(a,a=>{const n=a;n.scene&&Object.assign(n,function(e){const a={nodes:{},materials:{}};return e&&e.traverse(e=>{e.name&&(a.nodes[e.name]=e),e.material&&!a.materials[e.material.name]&&(a.materials[e.material.name]=e.material)}),a}(n.scene)),e(n)},t,e=>{n(e)})})}export{e as u};

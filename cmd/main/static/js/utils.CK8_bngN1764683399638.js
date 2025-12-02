@@ -1,0 +1,1 @@
+import{R as e}from"./three-stdlib.CqpxBIJB1764683399638.js";import{r,a9 as s}from"./three.BbguFgn81764683399638.js";const t=t=>new Promise((a,i)=>{(new e).load(t,(e,t)=>{e.minFilter=r,e.magFilter=r,e.mapping=s,e.needsUpdate=!0,a(e)})});export{t as l};

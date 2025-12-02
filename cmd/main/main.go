@@ -24,9 +24,10 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	"github.com/Autumn-27/ScopeSentry/internal/worker"
 	"io/fs"
 	"strings"
+
+	"github.com/Autumn-27/ScopeSentry/internal/worker"
 
 	"github.com/Autumn-27/ScopeSentry/internal/bootstrap"
 	"github.com/Autumn-27/ScopeSentry/internal/config"
@@ -97,6 +98,13 @@ func main() {
 	frontendFS, _ := fs.Sub(embeddedFiles, "static")
 	// 准备静态资源文件系统（assets目录）
 	assetsFS, _ := fs.Sub(embeddedFiles, "static/assets")
+	// 准备其他静态资源文件系统
+	cssFS, _ := fs.Sub(embeddedFiles, "static/css")
+	dracoFS, _ := fs.Sub(embeddedFiles, "static/draco")
+	jsFS, _ := fs.Sub(embeddedFiles, "static/js")
+	libFS, _ := fs.Sub(embeddedFiles, "static/lib")
+	pluginsFS, _ := fs.Sub(embeddedFiles, "static/plugins")
+	pngFS, _ := fs.Sub(embeddedFiles, "static/png")
 
 	// 注册 Swagger 路由（在静态文件之前，避免冲突）
 	docs.SwaggerInfo.BasePath = "/api"
@@ -104,6 +112,34 @@ func main() {
 
 	// 注册静态资源路由（/assets 映射到 static/assets 目录）
 	router.StaticFS("/assets", http.FS(assetsFS)) // /assets 对应前端 js/css
+
+	// 注册其他静态资源路由
+	router.StaticFS("/css", http.FS(cssFS))         // /css 对应 static/css 目录
+	router.StaticFS("/draco", http.FS(dracoFS))     // /draco 对应 static/draco 目录
+	router.StaticFS("/js", http.FS(jsFS))           // /js 对应 static/js 目录
+	router.StaticFS("/lib", http.FS(libFS))         // /lib 对应 static/lib 目录
+	router.StaticFS("/plugins", http.FS(pluginsFS)) // /plugins 对应 static/plugins 目录
+	router.StaticFS("/png", http.FS(pngFS))         // /png 对应 static/png 目录
+
+	// 注册 /map 路由，映射到 map.html
+	router.GET("/map", func(c *gin.Context) {
+		data, err := fs.ReadFile(frontendFS, "map.html")
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Failed to read map.html")
+			return
+		}
+		c.Data(http.StatusOK, "text/html; charset=utf-8", data)
+	})
+
+	// 注册 /favicon.ico 路由
+	router.GET("/favicon.ico", func(c *gin.Context) {
+		data, err := fs.ReadFile(frontendFS, "favicon.ico")
+		if err != nil {
+			c.String(http.StatusNotFound, "Favicon not found")
+			return
+		}
+		c.Data(http.StatusOK, "image/x-icon", data)
+	})
 
 	// 注册上传文件静态路由（/images 映射到外部 uploads 目录）
 	router.Static("/images", config.GlobalConfig.System.ImgDir) // /uploads 对应上传的图片文件
@@ -127,7 +163,11 @@ func main() {
 			return
 		}
 		// 如果请求的是静态资源但未找到，返回404而不是首页
-		if strings.HasPrefix(path, "/assets") || strings.HasPrefix(path, "/uploads") {
+		if strings.HasPrefix(path, "/assets") || strings.HasPrefix(path, "/uploads") ||
+			strings.HasPrefix(path, "/css") || strings.HasPrefix(path, "/draco") ||
+			strings.HasPrefix(path, "/js") || strings.HasPrefix(path, "/lib") ||
+			strings.HasPrefix(path, "/plugins") || strings.HasPrefix(path, "/png") ||
+			strings.HasPrefix(path, "/images") {
 			c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
 			return
 		}

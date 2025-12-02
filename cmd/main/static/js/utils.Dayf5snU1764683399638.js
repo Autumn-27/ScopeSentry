@@ -1,0 +1,1 @@
+import{i as e}from"./index.DM693cYN1764683399638.js";import{w as r}from"./@vue.DjQnunkc1764683399638.js";async function t(t){const o=t.split("/").pop();e.getResource("TextureLoader",t,o);const s=e.getReactiveItem(o);return new Promise((e,t)=>{const o=s();if(o)return void e(o);const n=r(()=>s(),r=>{r?(n(),e(r)):t(new Error("useTexture 加载失败，未得到模型"))})})}export{t as u};
