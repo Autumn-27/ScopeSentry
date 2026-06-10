@@ -8,3 +8,5 @@ dist/
 .uploads/
 frontend/node_modules/
 frontend/dist-pro/
+.cursor/mcp.json
+.cursor/

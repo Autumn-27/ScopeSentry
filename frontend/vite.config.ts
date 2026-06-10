@@ -121,6 +121,10 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
           target: 'http://127.0.0.1:8082',
           changeOrigin: true
         },
+        '/mcp': {
+          target: 'http://127.0.0.1:8082',
+          changeOrigin: true
+        },
         '/images': {
           target: 'http://127.0.0.1:8082',
           changeOrigin: true

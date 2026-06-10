@@ -216,7 +216,7 @@ type createProjectInput struct {
 	Ignore         string   `json:"ignore,omitempty" jsonschema:"忽略目标列表，格式同 target"`
 	Duplicates     string   `json:"duplicates,omitempty" jsonschema:"去重策略"`
 	ScheduledTasks bool     `json:"scheduledTasks,omitempty" jsonschema:"是否启用定时扫描"`
-	Hour           int      `json:"hour,omitempty" jsonschema:"定时扫描间隔（小时），scheduledTasks=true 时有效"`
+	Hour           int      `json:"hour,omitempty" jsonschema:"定时扫描间隔（小时），仅在启用 scheduledTasks 时有效"`
 }
 
 func createProject(ctx context.Context, _ *mcp.CallToolRequest, input createProjectInput) (*mcp.CallToolResult, any, error) {
@@ -486,10 +486,10 @@ type listAssetsInput struct {
 	AssetType        string              `json:"asset_type" jsonschema:"资产类型，必填。如 asset、RootDomain、subdomain、app、mp、UrlScan、SensitiveResult、DirScanResult、crawler、vulnerability、PageMonitoring、IPAsset、SubdomainTakerResult"`
 	PageIndex        int                 `json:"pageIndex,omitempty" jsonschema:"页码，从 1 开始，默认 1"`
 	PageSize         int                 `json:"pageSize,omitempty" jsonschema:"每页条数，默认 20"`
-	SearchExpression string              `json:"search,omitempty" jsonschema:"搜索表达式。field=value 模糊匹配; field==\"精确值\"; field!=\"排除\"; 用 && 和 || 组合。通用字段 project/tag/task/rootDomain。详见工具 description"`
-	Filter           map[string][]string `json:"filter,omitempty" jsonschema:"精确过滤。key 支持 project/port/service/app/icon/statuscode/level/type/color/status/tags/task/sname，value 为字符串数组(OR)。例 {\"project\":[\"项目A\"]}"`
-	Sort             map[string]string   `json:"sort,omitempty" jsonschema:"排序。key 为字段名，value 为 1(升序) 或 -1(降序)。例 {\"length\":\"-1\"}"`
-	Sid              string              `json:"sid,omitempty" jsonschema:"敏感信息规则名称，仅 asset_type=SensitiveResult 时有效"`
+	SearchExpression string              `json:"search,omitempty" jsonschema:"搜索表达式（非 SQL）。= 模糊、== 精确、!= 排除，&&/|| 组合。通用字段 tag/task/rootDomain（project 不支持 search）；各类型专有字段见工具 description"`
+	Filter           map[string][]string `json:"filter,omitempty" jsonschema:"精确过滤 JSON，与 search 可组合。filter.project 为项目 ObjectID（list_projects 获取，非项目名）；filter.task 为任务名称。详见工具 description"`
+	Sort             map[string]string   `json:"sort,omitempty" jsonschema:"排序。仅 UrlScan/DirScanResult 支持 length：ascending 升序，其他值降序"`
+	Sid              string              `json:"sid,omitempty" jsonschema:"敏感信息规则名称，仅 asset_type 为 SensitiveResult 时有效"`
 }
 
 func listAssets(ctx context.Context, _ *mcp.CallToolRequest, input listAssetsInput) (*mcp.CallToolResult, any, error) {

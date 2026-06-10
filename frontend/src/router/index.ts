@@ -352,6 +352,16 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
           icon: 'game-icons:web-spit',
           noCache: true
         }
+      },
+      {
+        path: 'apikey',
+        component: () => import('@/views/Configuration/ApiKey.vue'),
+        name: 'apikey management',
+        meta: {
+          title: t('router.apiKeyManagement'),
+          icon: 'mdi:key-variant',
+          noCache: true
+        }
       }
     ]
   },

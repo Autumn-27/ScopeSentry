@@ -272,6 +272,7 @@ export default {
     subfinder: 'subfinder配置',
     rad: 'rad配置',
     system: '系统配置',
+    apiKeyManagement: 'API Key 管理',
     login: '登录',
     pluginsManager: '插件管理',
     dashboard: '首页',
@@ -532,6 +533,25 @@ export default {
     unknown: '未知',
     nameMsg: '请输入POC名称,POC名称和POC内容中的name应保持一致。',
     contentMsg: '请输入poc内容'
+  },
+  apiKey: {
+    createTitle: '新建 API Key',
+    keyCreatedTitle: 'API Key 已创建',
+    keyPrefix: 'Key 前缀',
+    createdBy: '创建者',
+    createdAt: '创建时间',
+    lastUsedAt: '最后使用',
+    status: '状态',
+    enabled: '启用',
+    disabled: '禁用',
+    namePlaceholder: '请输入 API Key 名称，如 Cursor MCP',
+    keyShowOnce: '请立即复制保存，关闭后将无法再次查看完整 Key',
+    fullKey: '完整 Key',
+    copyKey: '复制 Key',
+    copied: '已复制',
+    deleteConfirm: '确定要删除 API Key「{name}」吗？删除后使用该 Key 的 MCP 客户端将无法连接。',
+    usageTitle: 'MCP 集成说明',
+    usageDesc: 'API Key 用于 MCP 客户端（如 Cursor）连接 ScopeSentry。创建后请将 Key 配置到 MCP 客户端的 headers 中。'
   },
   configuration: {
     subfinder: 'subfinder配置',

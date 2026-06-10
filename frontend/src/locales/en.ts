@@ -273,6 +273,7 @@ export default {
     dirDictionary: 'Dir Scan',
     portDictionary: 'Port',
     configuration: 'Configuration',
+    apiKeyManagement: 'API Key Management',
     login: 'Login',
     pluginsManager: 'Plugins Manager',
     dashboard: 'Dashboard',
@@ -535,6 +536,26 @@ export default {
     nameMsg:
       'Please enter the POC name. The POC name and the name in the POC content should be consistent.',
     contentMsg: 'Please enter poc content'
+  },
+  apiKey: {
+    createTitle: 'Create API Key',
+    keyCreatedTitle: 'API Key Created',
+    keyPrefix: 'Key Prefix',
+    createdBy: 'Created By',
+    createdAt: 'Created At',
+    lastUsedAt: 'Last Used',
+    status: 'Status',
+    enabled: 'Enabled',
+    disabled: 'Disabled',
+    namePlaceholder: 'Enter API Key name, e.g. Cursor MCP',
+    keyShowOnce: 'Copy and save this key now. It will not be shown again.',
+    fullKey: 'Full Key',
+    copyKey: 'Copy Key',
+    copied: 'Copied',
+    deleteConfirm: 'Delete API Key "{name}"? MCP clients using this key will stop working.',
+    usageTitle: 'MCP Integration',
+    usageDesc:
+      'API Keys authenticate MCP clients (such as Cursor) to ScopeSentry. Configure the key in your MCP client headers after creation.'
   },
   configuration: {
     subfinder: 'subfinder configuration',
