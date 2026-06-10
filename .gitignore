@@ -6,3 +6,5 @@ file/
 PLUGINKEY
 dist/
 .uploads/
+frontend/node_modules/
+frontend/dist-pro/
