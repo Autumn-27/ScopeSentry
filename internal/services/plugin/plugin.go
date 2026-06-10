@@ -42,6 +42,7 @@ import (
 type Service interface {
 	List(ctx *gin.Context, req *models.PluginListRequest) (*models.PluginListResponse, error)
 	ListByModule(ctx *gin.Context, module string) ([]models.Plugin, error)
+	GetPluginByHash(ctx context.Context, hash string) (*models.Plugin, error)
 	Detail(ctx *gin.Context, req *models.PluginDetailRequest) (*models.Plugin, error)
 	Save(ctx *gin.Context, req *models.PluginSaveRequest) error
 	Delete(ctx *gin.Context, req *models.PluginDeleteRequest) error
@@ -115,6 +116,11 @@ func (s *service) ListByModule(ctx *gin.Context, module string) ([]models.Plugin
 		return []models.Plugin{}, err
 	}
 	return result, err
+}
+
+// GetPluginByHash 根据 hash 获取单个插件
+func (s *service) GetPluginByHash(ctx context.Context, hash string) (*models.Plugin, error) {
+	return s.repo.FindByHash(ctx, hash)
 }
 
 // Detail 获取插件详情

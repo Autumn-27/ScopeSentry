@@ -26,6 +26,9 @@ func normalizeVersion(version string) string {
 }
 
 func Update() error {
+	// 确保 API Key 索引存在（幂等操作）
+	Update20()
+
 	configColl := mongodb.DB.Collection("config")
 	var result struct {
 		Name    string `bson:"name"`

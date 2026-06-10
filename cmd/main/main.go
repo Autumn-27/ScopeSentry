@@ -51,6 +51,7 @@ import (
 	_ "github.com/Autumn-27/ScopeSentry/internal/bootstrap"
 
 	"github.com/Autumn-27/ScopeSentry/internal/api/routes"
+	scopesentrymcp "github.com/Autumn-27/ScopeSentry/internal/mcp"
 	redisLogSubscriber "github.com/Autumn-27/ScopeSentry/internal/services/redis_log_subscriber"
 
 	"github.com/Autumn-27/ScopeSentry/docs"
@@ -91,6 +92,7 @@ func main() {
 	go redisLogSubscriber.SubscribeLogChannel()
 	// 创建路由
 	router := routes.SetupRouter()
+	scopesentrymcp.RegisterRoutes(router)
 	gin.DisableConsoleColor()
 	//router.Use(logger.GinLogger(), logger.GinRecovery())
 
@@ -158,7 +160,7 @@ func main() {
 	router.NoRoute(func(c *gin.Context) {
 		path := c.Request.URL.Path
 		// 排除 API 路径和静态资源路径
-		if strings.HasPrefix(path, "/api") {
+		if strings.HasPrefix(path, "/api") || strings.HasPrefix(path, "/mcp") {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 			return
 		}

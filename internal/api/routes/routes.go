@@ -19,6 +19,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/Autumn-27/ScopeSentry/internal/api/routes/node"
+	apikeyRoutes "github.com/Autumn-27/ScopeSentry/internal/api/routes/apikey"
 )
 
 // loggerWithSkipPaths 自定义日志中间件，支持跳过指定前缀的路径
@@ -91,6 +92,9 @@ func SetupRouter() *gin.Engine {
 
 		// 注册字典路由
 		dictRoutes.RegisterDictionaryRoutes(api)
+
+		// 注册 API Key 管理路由
+		apikeyRoutes.RegisterApiKeyRoutes(api)
 	}
 
 	return router
