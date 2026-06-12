@@ -65,7 +65,7 @@ jobs:
           HUSKY: "0"
         run: |
           npm ci
-          npm run build:pro
+          npx vite build --mode pro
           test -d dist-pro || (echo "frontend/dist-pro not found after build" >&2 && exit 1)
 
       - name: Overlay frontend into cmd/main/static
