@@ -61,6 +61,8 @@ jobs:
 
       - name: Build frontend to dist-pro
         working-directory: frontend
+        env:
+          HUSKY: "0"
         run: |
           npm ci
           npm run build:pro
