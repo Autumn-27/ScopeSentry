@@ -7,7 +7,7 @@ before:
     - go mod tidy
 
 builds:
-  - id: scopesentry
+  - id: ScopeSentry
     goos:
       - windows
       - linux
@@ -25,7 +25,7 @@ builds:
 archives:
   - id: default
     builds:
-      - scopesentry
+      - ScopeSentry
     format: zip
     name_template: "ScopeSentry_{{ .Os }}_{{ .Arch }}"
 

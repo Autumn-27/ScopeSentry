@@ -97,6 +97,14 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Verify Linux binary for Docker
+        run: |
+          test -f dist/ScopeSentry_linux_amd64_v1/ScopeSentry || (
+            echo "Linux binary not found, dist contents:" >&2
+            find dist -type f >&2
+            exit 1
+          )
+
       - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
