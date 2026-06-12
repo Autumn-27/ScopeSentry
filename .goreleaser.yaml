@@ -1,15 +1,14 @@
-# This is an example .goreleaser.yml file with some sensible defaults.
-# Make sure to check the documentation at https://goreleaser.com
-
-# The lines below are called `modelines`. See `:help modeline`
-# Feel free to remove those if you don't want/need to use them.
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-# vim: set ts=2 sw=2 tw=0 fo=cnqoj
 
-version: 1
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
 
 builds:
-  - goos:
+  - id: scopesentry
+    goos:
       - windows
       - linux
       - darwin
@@ -18,13 +17,25 @@ builds:
     env:
       - GOAMD64=v1
     main: ./cmd/main/main.go
-    binary: "ScopeSentry"
-    ldflags: "-s -w"
+    binary: ScopeSentry
+    ldflags:
+      - -s -w
+      - -X github.com/Autumn-27/ScopeSentry/internal/constants.Version={{.Version}}
+
 archives:
-  - id: ss-archive
+  - id: default
     builds:
-      - ss
-    format: tar.gz
+      - scopesentry
+    format: zip
     name_template: "ScopeSentry_{{ .Os }}_{{ .Arch }}"
+
+changelog:
+  disable: true
+
+release:
+  github:
+    owner: Autumn-27
+    name: ScopeSentry
+  name_template: "ScopeSentry {{.Version}}"
 
 dist: ./dist
