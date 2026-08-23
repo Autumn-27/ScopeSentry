@@ -8,9 +8,9 @@ import (
 
 	"github.com/Autumn-27/ScopeSentry/internal/constants"
 	"github.com/Autumn-27/ScopeSentry/internal/models"
-	assetCommon "github.com/Autumn-27/ScopeSentry/internal/services/assets/common"
 	"github.com/Autumn-27/ScopeSentry/internal/services/assets/app"
 	"github.com/Autumn-27/ScopeSentry/internal/services/assets/asset"
+	assetCommon "github.com/Autumn-27/ScopeSentry/internal/services/assets/common"
 	"github.com/Autumn-27/ScopeSentry/internal/services/assets/crawler"
 	"github.com/Autumn-27/ScopeSentry/internal/services/assets/dirscan"
 	"github.com/Autumn-27/ScopeSentry/internal/services/assets/ip"
@@ -325,11 +325,11 @@ func getScanTemplate(ctx context.Context, _ *mcp.CallToolRequest, input getScanT
 }
 
 type createScanTemplateInput struct {
-	Name         string              `json:"name" jsonschema:"模板名称，必填"`
-	Modules      map[string][]string `json:"modules,omitempty" jsonschema:"模块到插件 hash 列表的映射。key 为模块名(用 list_plugin_modules 获取)，value 为该模块下要启用的插件 hash 数组(用 list_plugins 获取，按数组顺序执行)。例 {\"SubdomainScan\":[\"d60ba73c...\"]}"`
+	Name         string                       `json:"name" jsonschema:"模板名称，必填"`
+	Modules      map[string][]string          `json:"modules,omitempty" jsonschema:"模块到插件 hash 列表的映射。key 为模块名(用 list_plugin_modules 获取)，value 为该模块下要启用的插件 hash 数组(用 list_plugins 获取，按数组顺序执行)。例 {\"SubdomainScan\":[\"d60ba73c...\"]}"`
 	Parameters   map[string]map[string]string `json:"parameters,omitempty" jsonschema:"可选，覆盖插件运行参数。结构为 模块名->插件hash->参数字符串。不提供时自动使用插件默认参数"`
-	VulList      []string            `json:"vullist,omitempty" jsonschema:"可选，nuclei POC 模板 ID 列表，仅 VulnerabilityScan 使用 nuclei 时有效"`
-	TemplateJSON string              `json:"template_json,omitempty" jsonschema:"可选，完整 ScanTemplate JSON。提供时优先于 modules，用于高级自定义"`
+	VulList      []string                     `json:"vullist,omitempty" jsonschema:"可选，nuclei POC 模板 ID 列表，仅 VulnerabilityScan 使用 nuclei 时有效"`
+	TemplateJSON string                       `json:"template_json,omitempty" jsonschema:"可选，完整 ScanTemplate JSON。提供时优先于 modules，用于高级自定义"`
 }
 
 func createScanTemplate(ctx context.Context, _ *mcp.CallToolRequest, input createScanTemplateInput) (*mcp.CallToolResult, any, error) {

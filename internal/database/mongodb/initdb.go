@@ -344,7 +344,6 @@ func createIndexes(db *mongo.Database) error {
 	indexes := []mongo.IndexModel{
 		{Keys: bson.D{{"time", -1}}},
 		{Keys: bson.D{{"url", 1}}},
-		{Keys: bson.D{{"host", 1}}},
 		{Keys: bson.D{{"ip", 1}}},
 		{Keys: bson.D{{"port", 1}}},
 		{Keys: bson.D{{"host", 1}, {"port", 1}}, Options: options.Index().SetUnique(true)},
