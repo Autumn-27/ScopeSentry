@@ -174,8 +174,39 @@ func (r *repository) ListProjectsByTag(ctx context.Context, search, tag string, 
 		return nil, err
 	}
 	items := make([]models.ProjectBrief, 0, len(docs))
+	ids := make([]string, 0, len(docs))
 	for _, d := range docs {
-		items = append(items, models.ProjectBrief{ID: d.ID.Hex(), Name: d.Name, Logo: d.Logo, AssetCount: d.AssetCount, Tag: d.Tag})
+		id := d.ID.Hex()
+		ids = append(ids, id)
+		items = append(items, models.ProjectBrief{ID: id, Name: d.Name, Logo: d.Logo, Tag: d.Tag})
+	}
+	if len(items) == 0 {
+		return items, nil
+	}
+	assetCursor, err := mongodb.DB.Collection("asset").Aggregate(ctx, mongo.Pipeline{
+		bson.D{{Key: "$match", Value: bson.M{"project": bson.M{"$in": ids}}}},
+		bson.D{{Key: "$group", Value: bson.M{"_id": "$project", "count": bson.M{"$sum": 1}}}},
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer assetCursor.Close(ctx)
+	counts := make(map[string]int, len(ids))
+	for assetCursor.Next(ctx) {
+		var row struct {
+			ID    string `bson:"_id"`
+			Count int    `bson:"count"`
+		}
+		if err := assetCursor.Decode(&row); err != nil {
+			return nil, err
+		}
+		counts[row.ID] = row.Count
+	}
+	if err := assetCursor.Err(); err != nil {
+		return nil, err
+	}
+	for i := range items {
+		items[i].AssetCount = counts[items[i].ID]
 	}
 	return items, nil
 }
