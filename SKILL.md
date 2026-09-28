@@ -51,7 +51,7 @@ Cursor → Settings → MCP → 添加服务器：
 | `list_projects`        | 按标签分组的项目树（含项目 ID） |
 | `list_projects_data`   | 分页项目列表，可按名称搜索     |
 | `get_project`          | 项目详情              |
-| `create_project`       | 新建项目              |
+| `create_project`       | 新建项目；同名且范围有效时替换资产范围 |
 | `list_tasks`           | 扫描任务列表            |
 | `get_task`             | 任务详情              |
 | `list_scan_templates`  | 扫描模板列表            |

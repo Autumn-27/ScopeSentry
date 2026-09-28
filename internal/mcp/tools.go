@@ -93,7 +93,7 @@ func registerTools(server *mcp.Server) {
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "create_project",
-		Description: "创建新项目。必填 name 和 target，可选 tag、template、node 等",
+		Description: "创建新项目。必填 name 和有效 target，可选 tag、template、node 等。名称已存在且 target 整理后仍有目标时，只替换该项目的资产范围。",
 	}, createProject)
 
 	mcp.AddTool(server, &mcp.Tool{
@@ -225,7 +225,7 @@ type createProjectInput struct {
 }
 
 func createProject(ctx context.Context, _ *mcp.CallToolRequest, input createProjectInput) (*mcp.CallToolResult, any, error) {
-	if input.Name == "" || input.Target == "" {
+	if input.Name == "" || strings.TrimSpace(input.Target) == "" {
 		return errorResult("name 和 target 不能为空", nil)
 	}
 	p := &models.Project{
@@ -242,10 +242,24 @@ func createProject(ctx context.Context, _ *mcp.CallToolRequest, input createProj
 		Tp:             "project",
 	}
 	c := ginContext(ctx)
-	if err := d.projectService.AddProject(c, p); err != nil {
+	id, replaced, err := d.projectService.ApplyProjectScope(c, p)
+	if err != nil {
 		return errorResult("创建项目失败", err)
 	}
-	return jsonToolResult(ginH{"success": true, "message": "项目创建成功"})
+	if replaced {
+		return jsonToolResult(ginH{
+			"success":  true,
+			"message":  "项目范围已替换",
+			"id":       id,
+			"replaced": true,
+		})
+	}
+	return jsonToolResult(ginH{
+		"success":  true,
+		"message":  "项目创建成功",
+		"id":       id,
+		"replaced": false,
+	})
 }
 
 type listTasksInput struct {

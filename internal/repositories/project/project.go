@@ -25,6 +25,7 @@ type Repository interface {
 	AggregateTagCounts(ctx context.Context, search string) (map[string]int, error)
 	ListProjectsByTag(ctx context.Context, search, tag string, pageIndex, pageSize int) ([]models.ProjectBrief, error)
 	FindByID(ctx context.Context, id string) (*models.Project, error)
+	FindByName(ctx context.Context, name string) (*models.Project, error)
 	ExistsByName(ctx context.Context, name string) (bool, error)
 	InsertProject(ctx context.Context, p *models.Project) (string, error)
 	UpsertProjectTarget(ctx context.Context, id string, target string) error
@@ -187,6 +188,17 @@ func (r *repository) FindByID(ctx context.Context, id string) (*models.Project, 
 	}
 	var p models.Project
 	if err := r.collection.FindOne(ctx, bson.M{"_id": obj}).Decode(&p); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &p, nil
+}
+
+func (r *repository) FindByName(ctx context.Context, name string) (*models.Project, error) {
+	var p models.Project
+	if err := r.collection.FindOne(ctx, bson.M{"name": name}).Decode(&p); err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, nil
 		}

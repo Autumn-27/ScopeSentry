@@ -25,6 +25,7 @@ type Service interface {
 	GetProjectsData(ctx *gin.Context, search string, pageIndex, pageSize int) (models.ProjectListResponse, error)
 	GetProjectContent(ctx *gin.Context, id string) (*models.ProjectContentResponse, error)
 	AddProject(ctx *gin.Context, p *models.Project) error
+	ApplyProjectScope(ctx *gin.Context, p *models.Project) (id string, replaced bool, err error)
 	DeleteProjects(ctx *gin.Context, ids []string, delA bool) error
 	UpdateProject(ctx *gin.Context, p *models.UpdateProject) error
 	UpdateAssetsProject(ctx *gin.Context, id string) error
@@ -152,6 +153,68 @@ func (s *service) GetProjectContent(ctx *gin.Context, id string) (*models.Projec
 		Ignore:         p.Ignore,
 	}
 	return resp, nil
+}
+
+func projectScopeEmpty(target, ignore string) bool {
+	if strings.TrimSpace(target) == "" {
+		return true
+	}
+	list, err := helper.GetTargetList(target, ignore)
+	if err != nil || len(list) == 0 {
+		return true
+	}
+	return false
+}
+
+func (s *service) ApplyProjectScope(ctx *gin.Context, p *models.Project) (string, bool, error) {
+	if p == nil || p.Name == "" {
+		return "", false, fmt.Errorf("name 和 target 不能为空")
+	}
+	existing, err := s.projectRepo.FindByName(ctx, p.Name)
+	if err != nil {
+		return "", false, err
+	}
+	ignore := p.Ignore
+	if existing != nil {
+		ignore = existing.Ignore
+	}
+	if projectScopeEmpty(p.Target, ignore) {
+		return "", false, fmt.Errorf("资产范围不能为空")
+	}
+	if existing == nil {
+		if err := s.AddProject(ctx, p); err != nil {
+			return "", false, err
+		}
+		created, err := s.projectRepo.FindByName(ctx, p.Name)
+		if err != nil {
+			return "", false, err
+		}
+		if created == nil {
+			return "", false, fmt.Errorf("创建项目失败")
+		}
+		return created.ID.Hex(), false, nil
+	}
+	updated := &models.UpdateProject{
+		ID:             existing.ID.Hex(),
+		Name:           existing.Name,
+		Tag:            existing.Tag,
+		Logo:           existing.Logo,
+		Target:         p.Target,
+		ScheduledTasks: existing.ScheduledTasks,
+		Hour:           existing.Hour,
+		AllNode:        existing.AllNode,
+		Node:           existing.Node,
+		Duplicates:     existing.Duplicates,
+		Ignore:         existing.Ignore,
+		Template:       existing.Template,
+		Tp:             existing.Tp,
+		RootDomains:    existing.RootDomains,
+		AssetCount:     existing.AssetCount,
+	}
+	if err := s.UpdateProject(ctx, updated); err != nil {
+		return "", false, err
+	}
+	return existing.ID.Hex(), true, nil
 }
 
 func (s *service) AddProject(ctx *gin.Context, p *models.Project) error {
