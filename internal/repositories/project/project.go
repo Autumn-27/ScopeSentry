@@ -35,6 +35,8 @@ type Repository interface {
 	DeleteProjectAsset(ctx context.Context, ids []string) error
 	UpdateProject(ctx context.Context, p *models.UpdateProject) error
 	UpdateAssetsProject(ctx context.Context, rootDomains []string, projectID string, change bool) error
+	CountProjectAssets(ctx context.Context, projectID string) (int64, error)
+	SetAssetCount(ctx context.Context, projectID string, count int64) error
 }
 
 type repository struct {
@@ -353,6 +355,31 @@ func (r *repository) assetUpdateProject(ctx context.Context, rootDomains []strin
 
 	// 然后添加符合条件的项目关联
 	return r.assetAddProject(ctx, rootDomains, collectionName, projectID)
+}
+
+// CountProjectAssets 统计所有资产集合中 project 字段命中该项目的文档总数。
+func (r *repository) CountProjectAssets(ctx context.Context, projectID string) (int64, error) {
+	var total int64
+	for _, collectionName := range constants.AssetDBNames {
+		n, err := mongodb.DB.Collection(collectionName).CountDocuments(ctx, bson.M{"project": projectID})
+		if err != nil {
+			return total, fmt.Errorf("failed to count assets for collection %s: %w", collectionName, err)
+		}
+		total += n
+	}
+	return total, nil
+}
+
+// SetAssetCount 把统计结果写回项目文档的 AssetCount 字段。
+func (r *repository) SetAssetCount(ctx context.Context, projectID string, count int64) error {
+	id, err := primitive.ObjectIDFromHex(projectID)
+	if err != nil {
+		return fmt.Errorf("invalid project id %s: %w", projectID, err)
+	}
+	if _, err := r.collection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": bson.M{"AssetCount": count}}); err != nil {
+		return fmt.Errorf("failed to set AssetCount: %w", err)
+	}
+	return nil
 }
 
 // buildRootDomainQuery 构建RootDomain查询条件
