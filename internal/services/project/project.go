@@ -29,6 +29,7 @@ type Service interface {
 	DeleteProjects(ctx *gin.Context, ids []string, delA bool) error
 	UpdateProject(ctx *gin.Context, p *models.UpdateProject) error
 	UpdateAssetsProject(ctx *gin.Context, id string) error
+	RefreshProjectAssociations(ctx context.Context) error
 }
 
 type service struct {
@@ -276,6 +277,9 @@ func (s *service) AddProject(ctx *gin.Context, p *models.Project) error {
 		if err != nil {
 			logger.Error(err.Error())
 		}
+		if err := s.recalcAssetCount(context.Background(), projectId); err != nil {
+			logger.Error(err.Error())
+		}
 	}()
 	//id, err := s.projectRepo.InsertProject(ctx, p)
 	//if err != nil {
@@ -342,6 +346,9 @@ func (s *service) UpdateProject(ctx *gin.Context, p *models.UpdateProject) error
 	go func() {
 		err = s.projectRepo.UpdateAssetsProject(context.Background(), rootDomains, p.ID, true)
 		if err != nil {
+			logger.Error(err.Error())
+		}
+		if err := s.recalcAssetCount(context.Background(), p.ID); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
@@ -431,5 +438,42 @@ func (s *service) UpdateAssetsProject(ctx *gin.Context, id string) error {
 		return fmt.Errorf("failed to update assets project: %w", err)
 	}
 
+	return s.recalcAssetCount(ctx.Request.Context(), id)
+}
+
+// recalcAssetCount 重新统计项目的资产总数并写回 AssetCount 字段。
+func (s *service) recalcAssetCount(ctx context.Context, projectID string) error {
+	count, err := s.projectRepo.CountProjectAssets(ctx, projectID)
+	if err != nil {
+		return err
+	}
+	return s.projectRepo.SetAssetCount(ctx, projectID, count)
+}
+
+// RefreshProjectAssociations 重新盖章所有项目的资产关联并回填 AssetCount。
+//
+// 背景(见 issue #338):扫描结果入库不携带 project 字段,资产关联只在项目
+// 增/改时通过 UpdateAssetsProject 回填,任务结束后无人触发——导致 MCP/API
+// 按项目过滤(list_assets filter[project])拿不到数据、AssetCount 恒 0。
+// 本方法在任务结束事件处调用作为自愈:对每个项目执行 add/remove 两个方向
+// 的盖章,再统计回填。幂等,可重复调用。
+func (s *service) RefreshProjectAssociations(ctx context.Context) error {
+	projects, err := s.projectRepo.GetProjectsByTag(ctx, bson.M{"_id": 1, "root_domains": 1, "AssetCount": 1})
+	if err != nil {
+		return err
+	}
+	for _, p := range projects {
+		if len(p.RootDomains) == 0 {
+			continue
+		}
+		id := p.ID.Hex()
+		if err := s.projectRepo.UpdateAssetsProject(ctx, p.RootDomains, id, true); err != nil {
+			logger.Error(fmt.Sprintf("refresh project %s association failed: %v", id, err))
+			continue
+		}
+		if err := s.recalcAssetCount(ctx, id); err != nil {
+			logger.Error(fmt.Sprintf("refresh project %s recalc count failed: %v", id, err))
+		}
+	}
 	return nil
 }

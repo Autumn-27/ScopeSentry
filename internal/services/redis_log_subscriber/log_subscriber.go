@@ -10,6 +10,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Autumn-27/ScopeSentry/internal/services/project"
 	"github.com/Autumn-27/ScopeSentry/internal/services/task/task"
 	"strings"
 	"sync"
@@ -36,11 +37,13 @@ var (
 	logInfoMutex sync.RWMutex
 )
 var taskService task.Service
+var projectService project.Service
 
 func init() {
 	LOG_INFO = make(map[string][]string)
 	GET_LOG_NAME = make([]string, 0)
 	taskService = task.NewService()
+	projectService = project.NewService()
 }
 
 // SubscribeLogChannel 订阅 Redis 日志通道并处理消息
@@ -127,6 +130,12 @@ func handleMessage(ctx context.Context, payload string) error {
 			err := taskService.TaskProgress(context.Background())
 			if err != nil {
 				return
+			}
+			// 任务产物已落库:自愈项目资产关联并回填 AssetCount(见 issue #338)。
+			// 扫描结果入库不携带 project 字段,若不在任务结束处补盖章,
+			// MCP/API 按项目过滤将始终拿不到数据。
+			if err := projectService.RefreshProjectAssociations(context.Background()); err != nil {
+				logger.Error("Failed to refresh project asset associations", zap.Error(err))
 			}
 		}()
 	}
