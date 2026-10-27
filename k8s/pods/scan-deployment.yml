@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: scan
+  namespace: scope-sentry
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scan
+  template:
+    metadata:
+      labels:
+        app: scan
+
+    spec:
+      containers:
+        - name: scan
+          image: autumn27/scopesentry-scan:1.9.1
+
+          env:
+            - name: TIMEZONE
+              value: Asia/Shanghai
+
+            - name: REDIS_IP
+              value: redis
+
+            - name: REDIS_PORT
+              value: "6379"
+
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: REDIS_PASSWORD
+
+            - name: MONGODB_IP
+              value: mongodb
+
+            - name: MONGODB_PORT
+              value: "27017"
+
+            - name: MONGODB_DATABASE
+              value: ScopeSentry
+
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: MONGO_INITDB_ROOT_USERNAME
+
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: MONGO_INITDB_ROOT_PASSWORD
