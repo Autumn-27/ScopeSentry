@@ -1,0 +1,327 @@
+# namespace
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: scope-sentry
+
+---
+# mongo secret
+
+apiVersion: v1
+kind: Secret
+
+metadata:
+  name: mongo-secret
+  namespace: scope-sentry
+
+type: Opaque
+
+stringData:
+  MONGO_INITDB_ROOT_USERNAME: admin
+  MONGO_INITDB_ROOT_PASSWORD: mongodb_password
+
+---
+# redis secret
+
+apiVersion: v1
+kind: Secret
+
+metadata:
+  name: redis-secret
+  namespace: scope-sentry
+
+type: Opaque
+
+stringData:
+  REDIS_PASSWORD: redis_password
+
+---
+# mongodb
+
+apiVersion: apps/v1
+kind: StatefulSet
+
+metadata:
+  name: mongodb
+  namespace: scope-sentry
+
+spec:
+  serviceName: mongodb
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: mongodb
+
+  template:
+    metadata:
+      labels:
+        app: mongodb
+
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:7.0.28
+
+          ports:
+            - containerPort: 27017
+
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: MONGO_INITDB_ROOT_PASSWORD
+
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/db
+
+volumeClaimTemplates:
+  - metadata:
+      name: mongodb-data
+
+    spec:
+      accessModes:
+        - ReadWriteOnce
+
+      resources:
+        requests:
+          storage: 20Gi
+
+---
+# redis 
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: redis
+  namespace: scope-sentry  # Redis属于scope-sentry Namespace
+
+spec:
+  replicas: 1  # Redis pod 的数量为 1
+
+  # selector 决定 Deployment 管理哪些 Pod
+  selector:
+    matchLabels:
+      app: redis  # 用这个 Label 找到需要管理的 Pod
+
+  template:
+    metadata:
+      labels:
+        app: redis  # 给 Pod 打上 app=redis 标签
+
+    spec:
+      containers:
+        - name: redis
+          image: redis:7.0.11
+
+          ports:
+            - containerPort: 6379
+
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: REDIS_PASSWORD
+
+          command:
+            - redis-server
+            - --requirepass
+            - $(REDIS_PASSWORD)
+
+---
+# mongodb service
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: mongodb
+  namespace: scope-sentry
+
+spec:
+  selector:
+    app: mongodb
+
+  ports:
+    - port: 27017
+      targetPort: 27017
+
+---
+
+# redis service
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: redis
+  namespace: scope-sentry
+
+spec:
+  selector:
+    app: redis
+
+  ports:
+    - port: 6379
+      targetPort: 6379
+
+--- 
+# scope sentry admin
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: webserver
+  namespace: scope-sentry
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: webserver
+
+  template:
+    metadata:
+      labels:
+        app: webserver
+
+    spec:
+      containers:
+        - name: webserver
+          image: autumn27/scopesentry:1.9.4
+
+          ports:
+            - containerPort: 8082
+
+          env:
+            - name: TIMEZONE
+              value: Asia/Shanghai
+
+            - name: REDIS_IP
+              value: redis
+
+            - name: REDIS_PORT
+              value: "6379"
+
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: REDIS_PASSWORD
+
+            - name: MONGODB_IP
+              value: mongodb
+
+            - name: MONGODB_PORT
+              value: "27017"
+
+            - name: MONGODB_DATABASE
+              value: ScopeSentry
+
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: MONGO_INITDB_ROOT_USERNAME
+
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: MONGO_INITDB_ROOT_PASSWORD
+
+---
+# scope sentry admin service 
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: scopesentry
+  namespace: scope-sentry
+
+spec:
+  type: NodePort
+
+  selector:
+    app: webserver
+
+  ports:
+    - port: 8082
+      targetPort: 8082
+      nodePort: 30082
+      protocol: TCP
+
+--- 
+# scope sentry scan node
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: scan
+  namespace: scope-sentry
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scan
+  template:
+    metadata:
+      labels:
+        app: scan
+
+    spec:
+      containers:
+        - name: scan
+          image: autumn27/scopesentry-scan:1.9.1
+
+          env:
+            - name: TIMEZONE
+              value: Asia/Shanghai
+
+            - name: REDIS_IP
+              value: redis
+
+            - name: REDIS_PORT
+              value: "6379"
+
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: REDIS_PASSWORD
+
+            - name: MONGODB_IP
+              value: mongodb
+
+            - name: MONGODB_PORT
+              value: "27017"
+
+            - name: MONGODB_DATABASE
+              value: ScopeSentry
+
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: MONGO_INITDB_ROOT_USERNAME
+
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: MONGO_INITDB_ROOT_PASSWORD
