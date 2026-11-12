@@ -42,7 +42,7 @@ const schema = reactive<DescriptionsSchema[]>([
   },
   {
     field: 'URL',
-    label: 'URL',
+    label: t('dashboard.URL'),
     slots: {
       default: (data) => {
         const URL = data.URL
@@ -243,7 +243,7 @@ const schema = reactive<DescriptionsSchema[]>([
   },
   {
     field: 'banner',
-    label: 'Banner',
+    label: t('asset.banner'),
     span: 24,
     slots: {
       default: (data) => {
@@ -290,7 +290,7 @@ getTableDet()
 
 <template>
   <ContentDetailWrap
-    :title="t('exampleDemo.detail')"
+    :title="t('asset.detail')"
     @back="push('/asset-information/index')"
     v-loading="descriptionsDoading"
   >

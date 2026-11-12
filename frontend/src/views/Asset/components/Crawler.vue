@@ -72,12 +72,12 @@ const crudSchemas = reactive<CrudSchema[]>([
   },
   {
     field: 'method',
-    label: 'Method',
+    label: t('localization.method'),
     minWidth: 100
   },
   {
     field: 'url',
-    label: 'URL',
+    label: t('dashboard.URL'),
     minWidth: 500,
     formatter: (_, __: TableColumn, url: string) => {
       return (
@@ -94,7 +94,7 @@ const crudSchemas = reactive<CrudSchema[]>([
   },
   {
     field: 'tags',
-    label: 'TAG',
+    label: t('localization.tag'),
     fit: 'true',
     showOverflowTooltip: false,
     formatter: (row: Recordable, __: TableColumn, tags: string[]) => {

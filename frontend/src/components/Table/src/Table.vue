@@ -9,6 +9,7 @@ import {
   ElEmpty,
   ElCard
 } from 'element-plus'
+import { useI18n } from '@/hooks/web/useI18n'
 import { defineComponent, PropType, ref, computed, unref, watch, onMounted } from 'vue'
 import { propTypes } from '@/utils/propTypes'
 import { setIndex } from './helper'
@@ -210,6 +211,7 @@ export default defineComponent({
   },
   emits: ['update:pageSize', 'update:currentPage', 'register', 'refresh'],
   setup(props, { attrs, emit, slots, expose }) {
+    const { t } = useI18n()
     const elTableRef = ref<ComponentRef<typeof ElTable>>()
 
     // 注册
@@ -403,7 +405,7 @@ export default defineComponent({
                 })
               }}
             >
-              预览
+              {t('tableDemo.preview')}
             </BaseButton>
           )}
         </div>
@@ -538,7 +540,7 @@ export default defineComponent({
                 })
               ) : (
                 <div class="flex flex-1 justify-center">
-                  <ElEmpty description="暂无数据" />
+                  <ElEmpty description={t('common.noData')} />
                 </div>
               )}
             </div>

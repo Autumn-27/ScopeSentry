@@ -3,6 +3,13 @@ import { isString } from '@/utils/is'
 import { useAppStoreWithOut } from '@/store/modules/app'
 import { useI18n } from '@/hooks/web/useI18n'
 
+// Use this for one-off router/language events, outside a component effect scope.
+export const setPageTitle = (newTitle?: string) => {
+  const { t } = useI18n()
+  const appStore = useAppStoreWithOut()
+  document.title = newTitle ? `${appStore.getTitle} - ${t(newTitle)}` : appStore.getTitle
+}
+
 export const useTitle = (newTitle?: string) => {
   const { t } = useI18n()
   const appStore = useAppStoreWithOut()

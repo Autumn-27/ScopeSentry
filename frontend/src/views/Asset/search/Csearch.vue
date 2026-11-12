@@ -170,7 +170,7 @@ const getIds = async () => {
   return ids.value
 }
 const delSelect = async () => {
-  ElMessageBox.confirm('Whether to delete?', 'Warning', {
+  ElMessageBox.confirm(t('common.delMessage'), t('common.delWarning'), {
     confirmButtonText: 'OK',
     cancelButtonText: 'Cancel',
     type: 'warning'
@@ -183,7 +183,7 @@ const delSelect = async () => {
     .catch(() => {
       ElMessage({
         type: 'info',
-        message: 'Delete canceled'
+        message: t('localization.deleteCanceled')
       })
     })
 }
@@ -398,7 +398,7 @@ const openCreateTask = async () => {
       </ElCol>
       <ElCol :span="5">
         <ElButton type="primary" :icon="searchicon" @click="props.handleSearch(searchParams)">
-          Search
+          {{ t('common.search') }}
         </ElButton>
       </ElCol>
     </ElRow> -->
@@ -517,7 +517,7 @@ const openCreateTask = async () => {
               />
             </ElDropdownItem>
             <ElDropdownItem divided>
-              <ElButton style="width: 100%" type="primary" @click="refreshPage">Save</ElButton>
+              <ElButton style="width: 100%" type="primary" @click="refreshPage">{{ t('common.save') }}</ElButton>
             </ElDropdownItem>
           </ElDropdownMenu>
         </template>

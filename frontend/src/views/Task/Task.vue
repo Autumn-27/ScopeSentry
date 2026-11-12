@@ -285,7 +285,7 @@ const getTaskContent = async (data) => {
 const confirmDeleteSelect = async () => {
   const deleteAssetS = ref<boolean | string | number>(false)
   ElMessageBox({
-    title: 'Delete',
+    title: t('common.delete'),
     draggable: true,
     // Should pass a function if VNode contains dynamic props
     message: () =>
@@ -450,7 +450,7 @@ const confirmSyncToProjectSelect = async () => {
 const confirmDelete = async (data) => {
   const deleteAsset = ref<boolean | string | number>(false)
   ElMessageBox({
-    title: 'Delete',
+    title: t('common.delete'),
     draggable: true,
     // Should pass a function if VNode contains dynamic props
     message: () =>
@@ -499,7 +499,7 @@ const delSelect = async (delA) => {
   }
 }
 const confirmRetest = async (data) => {
-  const confirmed = window.confirm('Are you sure you want to retest?')
+  const confirmed = window.confirm(t('localization.retestConfirm'))
   if (confirmed) {
     await retestTask(data)
   }
@@ -536,7 +536,7 @@ const setMaxHeight = () => {
       </ElCol>
       <ElCol :span="5" style="position: relative; left: 16px">
         <ElButton type="primary" :icon="searchicon" style="height: 100%" @click="handleSearch"
-          >Search</ElButton
+          >{{ t('common.search') }}</ElButton
         >
       </ElCol>
     </ElRow>

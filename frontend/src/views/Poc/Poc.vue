@@ -99,7 +99,7 @@ const nodeColums = reactive<TableColumn[]>([
   },
   {
     field: 'tags',
-    label: 'TAG',
+    label: t('localization.tag'),
     fit: 'true',
     formatter: (row: Recordable, __: TableColumn, tags: string[]) => {
       if (tags.length != 0) {
@@ -263,7 +263,7 @@ const delSelect = async () => {
   }
 }
 const confirmDelete = async () => {
-  const confirmed = window.confirm('Are you sure you want to delete the selected data?')
+  const confirmed = window.confirm(t('common.delMessage'))
   if (confirmed) {
     await delSelect()
   }
@@ -274,7 +274,7 @@ const uploadHeaders = ref({ Authorization: `${userStore.getToken}` })
 const upload = ref<UploadInstance>()
 const uploadSuccess = async () => {
   console.log('导入中')
-  ElMessage.success('导入中')
+  ElMessage.success(t('localization.importing'))
 }
 
 const handleExceed: UploadProps['onExceed'] = (files) => {
@@ -286,7 +286,7 @@ const handleExceed: UploadProps['onExceed'] = (files) => {
 const handleUploadSuccess = (response) => {
   console.log(response)
   if (response.code === 200) {
-    ElMessage.success('Upload succes')
+    ElMessage.success(t('localization.uploadSuccess'))
   } else {
     ElMessage.error(response.message)
   }
@@ -319,7 +319,7 @@ const filterChange = async (newFilters: any) => {
       </ElCol>
       <ElCol :span="5" style="position: relative; left: 16px">
         <ElButton type="primary" :icon="searchicon" style="height: 100%" @click="handleSearch"
-          >Search</ElButton
+          >{{ t('common.search') }}</ElButton
         >
       </ElCol>
     </ElRow>

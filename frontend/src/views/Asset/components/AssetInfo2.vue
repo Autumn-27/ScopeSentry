@@ -345,7 +345,7 @@ let crudSchemas = reactive<CrudSchema[]>([
   },
   {
     field: 'tags',
-    label: 'TAG',
+    label: t('localization.tag'),
     fit: 'true',
     showOverflowTooltip: false,
     formatter: (row: Recordable, __: TableColumn, tags: string[]) => {
@@ -986,7 +986,7 @@ const confirmSelectedIcons = () => {
                 ref="iconTitleRef"
                 style="display: inline-block; position: relative"
               >
-                <ElText tag="b" size="small">Icon</ElText>
+                <ElText tag="b" size="small">{{ t('iconDemo.icon') }}</ElText>
               </div>
             </template>
             <div class="collapse-item-icon-area">
@@ -1095,7 +1095,7 @@ const confirmSelectedIcons = () => {
               color: #ccc;
             "
           >
-            <span v-if="site.type == 'http'">No pictures available</span>
+            <span v-if="site.type == 'http'">{{ t('localization.noPictures') }}</span>
             <span v-else>{{ site.service }}</span>
           </div>
           <!-- 图片元素，先隐藏，加载成功后再显示 -->

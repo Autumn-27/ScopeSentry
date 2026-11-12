@@ -99,7 +99,7 @@ const crudSchemas = reactive<CrudSchema[]>([
   },
   {
     field: 'url',
-    label: 'URL',
+    label: t('dashboard.URL'),
     minWidth: 200
   },
   {
@@ -109,7 +109,7 @@ const crudSchemas = reactive<CrudSchema[]>([
   },
   // {
   //   field: 'color',
-  //   label: 'Level',
+  //   label: t('poc.level'),
   //   minWidth: 50,
   //   columnKey: 'color',
   //   formatter: (_, __: TableColumn, cellValue: string) => {
@@ -133,7 +133,7 @@ const crudSchemas = reactive<CrudSchema[]>([
   // },
   {
     field: 'match',
-    label: 'Info',
+    label: t('poc.info'),
     minWidth: 150,
     formatter: (_, __: TableColumn, cellValue: string[]) => {
       if (!cellValue) {
@@ -214,7 +214,7 @@ const crudSchemas = reactive<CrudSchema[]>([
   },
   {
     field: 'tags',
-    label: 'TAG',
+    label: t('localization.tag'),
     fit: 'true',
     showOverflowTooltip: false,
     formatter: (row: Recordable, __: TableColumn, tags: string[]) => {
@@ -674,7 +674,7 @@ const drawerAggregationData = computed<SensitiveAggregation[]>(() => {
           </div>
         </template>
       </ElTableColumn>
-      <ElTableColumn prop="color" label="color" width="100">
+      <ElTableColumn prop="color" :label="t('sensitiveInformation.sensitiveColor')" width="100">
         <template #default="scope">
           <ElTag :color="scope.row.color" round effect="plain" size="small" style="width: 20px" />
         </template>
@@ -686,7 +686,7 @@ const drawerAggregationData = computed<SensitiveAggregation[]>(() => {
             style="display: flex; align-items: center"
             @click="OpenViewInfoDialogVisible(scope.row.name)"
           >
-            <ElButton type="success">info</ElButton>
+            <ElButton type="success">{{ t('poc.info') }}</ElButton>
           </div>
         </template>
       </ElTableColumn>

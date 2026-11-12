@@ -75,7 +75,7 @@ const deleteicon = useIcon({ icon: 'openmoji:delete' })
 const delSelect = async () => {
   const deleteAsset = ref<boolean>(false)
   ElMessageBox({
-    title: 'Delete',
+    title: t('common.delete'),
     draggable: true,
     // Should pass a function if VNode contains dynamic props
     message: () =>

@@ -242,7 +242,7 @@ const closeDialog = () => {
 
 const confirmDeleteSelect = async () => {
   ElMessageBox({
-    title: 'Delete',
+    title: t('common.delete'),
     draggable: true
   }).then(async () => {
     await delSelect()
@@ -251,7 +251,7 @@ const confirmDeleteSelect = async () => {
 
 const confirmDelete = async (hash: string, module: string) => {
   ElMessageBox({
-    title: 'Delete',
+    title: t('common.delete'),
     draggable: true
   }).then(async () => {
     await del(hash, module)
@@ -260,8 +260,8 @@ const confirmDelete = async (hash: string, module: string) => {
 
 const confirmCleanLog = async (hash: string, module: string) => {
   ElMessageBox({
-    title: 'Clean Log',
-    message: 'Are you sure you want to clean the logs?',
+    title: t('common.cleanLog'),
+    message: t('localization.cleanLogsConfirm'),
     draggable: true
   }).then(async () => {
     await cleanPluginLogApi(module, hash)
@@ -270,8 +270,8 @@ const confirmCleanLog = async (hash: string, module: string) => {
 
 const confirmCleanAllLog = async () => {
   ElMessageBox({
-    title: 'Clean All Plugin Logs',
-    message: 'Are you sure you want to clean all plugin logs?',
+    title: t('common.cleanAllLog'),
+    message: t('localization.cleanAllLogsConfirm'),
     draggable: true
   }).then(async () => {
     await cleanAllPluginLogApi()
@@ -457,7 +457,7 @@ const handleExceed: UploadProps['onExceed'] = (files) => {
 const handleUploadSuccess = (response) => {
   console.log(response)
   if (response.code === 200) {
-    ElMessage.success('Upload succes')
+    ElMessage.success(t('localization.uploadSuccess'))
   } else {
     ElMessage.error(response.message)
   }
@@ -490,7 +490,7 @@ defineExpose({
       </ElCol>
       <ElCol :span="5" style="position: relative; left: 16px">
         <ElButton type="primary" :icon="searchicon" style="height: 100%" @click="handleSearch"
-          >Search</ElButton
+          >{{ t('common.search') }}</ElButton
         >
       </ElCol>
       <ElCol :span="1" style="position: relative; left: 32px">
@@ -685,7 +685,7 @@ defineExpose({
       <el-tooltip class="item" effect="dark" :content="t('plugin.keyMsg')" placement="top">
         <ElInput v-model="pluginKey" />
       </el-tooltip>
-      <BaseButton @click="savePluginKey" type="primary" class="w-full">Save</BaseButton>
+      <BaseButton @click="savePluginKey" type="primary" class="w-full">{{ t('common.save') }}</BaseButton>
     </div>
   </Dialog>
 </template>

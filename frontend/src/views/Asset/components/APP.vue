@@ -121,7 +121,7 @@ const crudSchemas = reactive<CrudSchema[]>([
   },
   {
     field: 'tags',
-    label: 'TAG',
+    label: t('localization.tag'),
     fit: 'true',
     formatter: (row: Recordable, __: TableColumn, tags: string[]) => {
       if (tags == null) {

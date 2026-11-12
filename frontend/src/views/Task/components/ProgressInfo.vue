@@ -361,7 +361,7 @@ const progressColums = reactive<TableColumn[]>([
   },
   {
     field: 'All',
-    label: 'All',
+    label: t('common.all'),
     minWidth: 30,
     formatter: (_: Recordable, __: TableColumn, cellValue: string[]) => {
       if (cellValue.length == 3) {

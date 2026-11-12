@@ -55,7 +55,7 @@ const rules = computed(() => {
     tag: [{ required: true, message: t('project.msgProjectTag'), trigger: 'blur' }],
     target: [{ required: true, message: t('project.msgProjectScope'), trigger: 'blur' }],
     node: [{ required: false, message: t('task.nodeMsg'), trigger: 'blur' }],
-    template: [{ required: true, message: 'Please select template', trigger: 'blur' }]
+    template: [{ required: true, message: t('localization.selectTemplate'), trigger: 'blur' }]
   }
 
   if (projectForm.scheduledTasks) {
@@ -216,7 +216,7 @@ const closeTemplateDialog = () => {
     <ElFormItem :label="t('project.projectName')" prop="name">
       <ElInput v-model="projectForm.name" :placeholder="t('project.msgProject')" />
     </ElFormItem>
-    <ElFormItem label="TAG" prop="tag">
+    <ElFormItem :label="t('localization.tag')" prop="tag">
       <ElInput v-model="projectForm.tag" :placeholder="t('project.msgProjectTag')" />
     </ElFormItem>
     <ElFormItem :label="t('project.projectScope')" prop="target">
@@ -235,7 +235,7 @@ const closeTemplateDialog = () => {
         rows="10"
       />
     </ElFormItem>
-    <ElFormItem label="Logo" prop="logo">
+    <ElFormItem :label="t('setting.logo')" prop="logo">
       <ElInput v-model="projectForm.logo" placeholder="http(s)://xxxxx.xx" />
     </ElFormItem>
 
@@ -260,7 +260,7 @@ const closeTemplateDialog = () => {
             :min="1"
             controls-position="right"
             size="small"
-          /><ElText style="position: relative; left: 16px">Hour</ElText>
+          /><ElText style="position: relative; left: 16px">{{ t('task.hour') }}</ElText>
         </ElFormItem>
       </ElCol>
     </ElRow>
@@ -285,7 +285,7 @@ const closeTemplateDialog = () => {
               v-model="projectForm.node"
               filterable
               :options="nodeOptions"
-              placeholder="Please select node"
+              :placeholder="t('task.nodeMsg')"
               style="width: 80%"
               multiple
               tag-type="success"
@@ -299,7 +299,7 @@ const closeTemplateDialog = () => {
                   :indeterminate="indeterminate"
                   @change="handleCheckAll"
                 >
-                  All
+                  {{ t('common.all') }}
                 </ElCheckbox>
               </template>
             </ElSelectV2>
@@ -325,7 +325,7 @@ const closeTemplateDialog = () => {
         <ElCol :span="24">
           <ElFormItem :label="t('task.duplicates')" prop="type">
             <ElRadioGroup v-model="projectForm.duplicates">
-              <ElRadio label="None" name="duplicates" :checked="true" value="None" />
+              <ElRadio label="None" name="duplicates" :checked="true" value="None" >{{ t('localization.none') }}</ElRadio>
               <ElTooltip effect="dark" :content="t('task.duplicatesMsg')" placement="top">
                 <ElRadio
                   :label="t('task.duplicatesSubdomain')"
@@ -343,7 +343,7 @@ const closeTemplateDialog = () => {
       <ElFormItem :label="t('router.scanTemplate')" prop="template">
         <ElSelect
           v-model="projectForm.template"
-          placeholder="Please select template"
+          :placeholder="t('localization.selectTemplate')"
           style="width: 30%"
         >
           <ElOption

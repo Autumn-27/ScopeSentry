@@ -2,7 +2,7 @@
 	<img src="docs/images/favicon.ico"/>
 </div>
 
-English | [中文](./README_CN.md)
+English | [中文](./README_CN.md) | [한국어](./README_KR.md)
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Autumn-27/ScopeSentry-Scan)
 
@@ -171,6 +171,10 @@ Discord:
 
 ![](docs/images/node-cn.png)
 
+
+## Interface languages
+
+The UI supports 简体中文, English, and 한국어 (`ko-KR`). Choose a language from the language menu; the selection is saved locally. Korean includes Element Plus translations and English fallback. See the [Korean README](README_KR.md) for build commands and validation limits.
 
 #License
 
