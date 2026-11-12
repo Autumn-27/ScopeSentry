@@ -123,7 +123,7 @@ export default defineComponent({
       default: () => undefined
     },
     rowKey: propTypes.string.def('id'),
-    emptyText: propTypes.string.def('No Data'),
+    emptyText: propTypes.string,
     defaultExpandAll: propTypes.bool.def(false),
     expandRowKeys: {
       type: Array as PropType<string[]>,
@@ -332,6 +332,7 @@ export default defineComponent({
 
     const getBindValue = computed(() => {
       const bindValue: Recordable = { ...attrs, ...unref(getProps) }
+      bindValue.emptyText = bindValue.emptyText ?? t('common.noData')
       delete bindValue.columns
       delete bindValue.data
       return bindValue

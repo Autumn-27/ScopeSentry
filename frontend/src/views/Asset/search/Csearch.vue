@@ -391,7 +391,7 @@ const openCreateTask = async () => {
   <ContentWrap>
     <!-- <ElRow justify="start">
       <ElCol :span="1">
-        <ElText>{{ t('form.input') }}:</ElText>
+        <ElText>{{ t('common.search') }}:</ElText>
       </ElCol>
       <ElCol :span="5">
         <ElInput v-model="searchParams" :placeholder="t('common.inputText')" style="height: 38px" />

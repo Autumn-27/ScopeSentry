@@ -481,22 +481,22 @@ defineExpose({
 
 <template>
   <ContentWrap>
-    <ElRow>
+    <ElRow class="locale-search-row">
       <ElCol :span="1">
-        <ElText class="mx-1" style="position: relative; top: 8px">{{ t('plugin.name') }}:</ElText>
+        <ElText class="mx-1">{{ t('plugin.name') }}:</ElText>
       </ElCol>
       <ElCol :span="5">
         <ElInput v-model="search" :placeholder="t('common.inputText')" style="height: 38px" />
       </ElCol>
-      <ElCol :span="5" style="position: relative; left: 16px">
+      <ElCol :span="5">
         <ElButton type="primary" :icon="searchicon" style="height: 100%" @click="handleSearch"
           >{{ t('common.search') }}</ElButton
         >
       </ElCol>
-      <ElCol :span="1" style="position: relative; left: 32px">
-        <ElText class="mx-1" style="position: relative; top: 8px">{{ t('plugin.key') }}:</ElText>
+      <ElCol :span="1">
+        <ElText class="mx-1">{{ t('plugin.key') }}:</ElText>
       </ElCol>
-      <ElCol :span="5" style="position: relative; left: 32px">
+      <ElCol :span="5">
         <ElInput
           v-model="pluginKey"
           :placeholder="t('plugin.key')"
@@ -691,3 +691,23 @@ defineExpose({
 </template>
 
 <style scoped lang="less"></style>
+
+<style scoped>
+.locale-search-row {
+  align-items: center;
+  gap: 12px;
+}
+.locale-search-row > .el-col {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: 100%;
+}
+.locale-search-row > .el-col:nth-child(2),
+.locale-search-row > .el-col:nth-child(5) {
+  flex: 0 1 260px;
+  min-width: 0;
+}
+.locale-search-row .el-text {
+  white-space: nowrap;
+}
+</style>

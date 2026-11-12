@@ -1,4 +1,8 @@
 export default {
+  api: {
+    success: 'Operation successful',
+    system: { version: { success: 'Version information retrieved' } }
+  },
   common: {
     changeLanguageMessage: "Changing the language resets the current view and unsaved input. Requests already sent may still complete. Continue?",
     clearAll: 'Clear All',

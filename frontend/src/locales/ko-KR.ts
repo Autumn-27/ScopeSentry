@@ -1,4 +1,8 @@
 export default {
+  api: {
+    success: '요청을 처리했습니다.',
+    system: { version: { success: '버전 정보를 조회했습니다.' } }
+  },
   common: {
     changeLanguageMessage:
       '언어를 변경하면 현재 화면과 저장하지 않은 입력 내용이 초기화됩니다. 이미 전송한 요청은 계속 처리될 수 있습니다. 변경하시겠습니까?',

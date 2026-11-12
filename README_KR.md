@@ -91,9 +91,11 @@ UI는 바뀌지 않으므로 해당 변경을 포함한 소스 빌드와 서버 
 |---|---|
 | ![한국어 스캔 작업](docs/korean-localization/screenshots/korean-scan-tasks.png) | ![한국어 플러그인 관리](docs/korean-localization/screenshots/korean-plugins.png) |
 
-시스템 설정은 실제 설정값을 제외한 제목 영역만 공개한다.
+프로젝트 검색과 한국어 전체 탭:
 
-![한국어 시스템 설정 제목](docs/korean-localization/screenshots/korean-settings.png)
+![한국어 프로젝트](docs/korean-localization/screenshots/korean-projects.png)
+
+[시스템 설정 제목 이미지](docs/korean-localization/screenshots/korean-settings.png)는 별도 링크로 유지한다. 실제 설정값은 제외했다.
 
 ## 기본 사용법
 

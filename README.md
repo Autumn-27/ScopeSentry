@@ -103,9 +103,11 @@ These cropped screenshots show authenticated, read-only Korean UI checks against
 |---|---|
 | ![Korean scan tasks](docs/korean-localization/screenshots/korean-scan-tasks.png) | ![Korean plugin controls](docs/korean-localization/screenshots/korean-plugins.png) |
 
-System settings heading only; configuration values are excluded:
+Project search and localized All tab:
 
-![Korean system settings heading](docs/korean-localization/screenshots/korean-settings.png)
+![Korean projects](docs/korean-localization/screenshots/korean-projects.png)
+
+[System settings heading](docs/korean-localization/screenshots/korean-settings.png) is retained separately; configuration values are excluded.
 
 ## Screenshots
 

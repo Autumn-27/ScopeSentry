@@ -132,3 +132,10 @@ MongoDB 초기화나 `docker compose down -v`는 수행하지 않음.
 
 Draft PR 검토 준비는 가능. 병합·운영 적용 전 인증 후 통합 회귀 검증,
 언어 전환의 상태 초기화 방식 및 기존 TypeScript 실패에 대한 유지보수자 판단 필요.
+
+## 3차 품질 개선 (2026-11-12)
+
+공통 빈 데이터 문구·프로젝트 전체 탭·검색 콜론·등록 API 메시지 2개를 국제화함.
+검색 행과 대시보드 카드에 최소 레이아웃 수정 적용. 현재 3개 언어 각각 859개 키, 누락 0, 보간·Fallback·전환 검사 통과.
+기준 HEAD 및 최종 TypeScript 진단은 모두 151개로 신규 오류 0. Production build 통과.
+인증 후 조회 및 잔여 제한은 [연동 검증 기록](../docs/korean-localization/integration-evidence.md) 참고. 이전 회차 기록은 당시 결과로 유지함.
