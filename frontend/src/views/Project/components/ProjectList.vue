@@ -71,7 +71,7 @@ const del = (id: string) => {
   // })
   const deleteAsset = ref<boolean>(false)
   ElMessageBox({
-    title: 'Delete',
+    title: t('common.delete'),
     draggable: true,
     // Should pass a function if VNode contains dynamic props
     message: () =>

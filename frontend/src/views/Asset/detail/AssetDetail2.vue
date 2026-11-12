@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '@/hooks/web/useI18n'
+const { t } = useI18n()
 import {
   ElCard,
   ElTabPane,
@@ -61,7 +63,7 @@ const handleImageClick = (screenshot: string) => {
 
 <template>
   <ElTabs type="border-card" tab-position="left">
-    <ElTabPane label="原始数据">
+    <ElTabPane :label="t('localization.rawData')">
       <Codemirror
         v-model="detailJson"
         :extensions="extensions"
@@ -71,7 +73,7 @@ const handleImageClick = (screenshot: string) => {
         :style="{ height: '550px', width: '100%' }"
       />
     </ElTabPane>
-    <ElTabPane label="资产变更">
+    <ElTabPane :label="t('localization.assetChanges')">
       <ElRow style="margin-bottom: 20px">
         <ElCol :offset="2">
           <ElSpace>
@@ -120,7 +122,7 @@ const handleImageClick = (screenshot: string) => {
                         <div
                           class="px-4 py-2 bg-gray-100 border-b border-gray-200 font-medium text-sm"
                         >
-                          旧值
+                          {{ t('localization.oldValue') }}
                         </div>
                         <div class="p-4 text-sm whitespace-pre-wrap">
                           <!-- 遍历并输出 fieldname: old -->
@@ -148,7 +150,7 @@ const handleImageClick = (screenshot: string) => {
                         <div
                           class="px-4 py-2 bg-blue-100 border-b border-blue-200 font-medium text-sm"
                         >
-                          新值
+                          {{ t('localization.newValue') }}
                         </div>
                         <div class="p-4 text-sm whitespace-pre-wrap">
                           <!-- 遍历并输出 fieldname: new -->

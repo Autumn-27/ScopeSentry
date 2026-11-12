@@ -57,7 +57,7 @@ const handleTabClick = (tab: any) => {
     <ElTabPane :label="t('asset.assetName')"
       ><AssetInfo2 :projectList="projectList" :taskList="taskList"
     /></ElTabPane>
-    <ElTabPane label="IP"><IP :projectList="projectList" :taskList="taskList" /></ElTabPane>
+    <ElTabPane :label="t('asset.IP')"><IP :projectList="projectList" :taskList="taskList" /></ElTabPane>
     <ElTabPane :label="t('rootDomain.rootDomainName')">
       <RootDomain :projectList="projectList" :taskList="taskList" />
     </ElTabPane>
@@ -91,6 +91,6 @@ const handleTabClick = (tab: any) => {
     <ElTabPane :label="t('PageMonitoring.pageMonitoringName')">
       <PageMonitoring :projectList="projectList" :taskList="taskList" />
     </ElTabPane>
-    <ElTabPane label="Map" name="map" />
+    <ElTabPane :label="t('localization.map')" name="map" />
   </ElTabs>
 </template>

@@ -168,13 +168,13 @@ const delSelect = async () => {
   }
 }
 const confirmDelete = async () => {
-  const confirmed = window.confirm('Are you sure you want to delete the selected data?')
+  const confirmed = window.confirm(t('common.delMessage'))
   if (confirmed) {
     await delSelect()
   }
 }
 const updateState = async (state) => {
-  const confirmed = window.confirm('Are you sure you want to update the selected data?')
+  const confirmed = window.confirm(t('localization.updateConfirm'))
   if (confirmed) {
     ids.value = []
     const elTableExpose = await getElTableExpose()
@@ -199,7 +199,7 @@ const updateState = async (state) => {
       </ElCol>
       <ElCol :span="5">
         <ElButton type="primary" :icon="searchicon" style="height: 38px" @click="handleSearch"
-          >Search</ElButton
+          >{{ t('common.search') }}</ElButton
         >
       </ElCol>
     </ElRow>

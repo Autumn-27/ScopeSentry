@@ -39,27 +39,27 @@ const localForm = ref({ ...pocForm.value })
 const levelOptions = [
   {
     value: 'critical',
-    label: 'critical'
+    label: t('poc.critical')
   },
   {
     value: 'high',
-    label: 'high'
+    label: t('poc.high')
   },
   {
     value: 'medium',
-    label: 'medium'
+    label: t('poc.medium')
   },
   {
     value: 'low',
-    label: 'low'
+    label: t('poc.low')
   },
   {
     value: 'info',
-    label: 'info'
+    label: t('poc.info')
   },
   {
     value: 'unknown',
-    label: 'unknown'
+    label: t('poc.unknown')
   }
 ]
 const saveLoading = ref(false)

@@ -24,7 +24,7 @@ onBeforeMount(async () => {
   }
 })
 const confirmAdd = async () => {
-  const confirmed = window.confirm('Do you want to save the data?')
+  const confirmed = window.confirm(t('localization.saveConfirm'))
   if (confirmed) {
     await save()
   }

@@ -77,7 +77,7 @@ const crudSchemas = reactive<CrudSchema[]>([
   },
   {
     field: 'url',
-    label: 'URL',
+    label: t('dashboard.URL'),
     minWidth: 200,
     formatter: (_, __: TableColumn, url: string) => {
       return (
@@ -140,18 +140,18 @@ const crudSchemas = reactive<CrudSchema[]>([
   },
   {
     field: 'length',
-    label: 'Length',
+    label: t('dirScan.length'),
     minWidth: 120,
     sortable: 'custom'
   },
   {
     field: 'msg',
-    label: 'Redirect',
+    label: t('localization.redirect'),
     minWidth: 200
   },
   {
     field: 'tags',
-    label: 'TAG',
+    label: t('localization.tag'),
     fit: 'true',
     showOverflowTooltip: false,
     formatter: (row: Recordable, __: TableColumn, tags: string[]) => {

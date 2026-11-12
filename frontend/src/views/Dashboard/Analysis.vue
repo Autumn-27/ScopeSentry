@@ -416,26 +416,26 @@ async function handleSubmit() {
   </ElRow>
   <Dialog
     v-model="UpdatedialogVisible"
-    title="Update"
+    :title="t('common.update')"
     center
     style="border-radius: 15px; box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3)"
     :maxHeight="430"
   >
     <ElText type="danger" size="small" style="position: relative; left: 1rem"
-      >*更新目前只支持docker容器搭建的程序，输入的url地址确保docker内可访问，节点最新版在github中releases的linux版本</ElText
+      >{{ t('localization.updateHelp') }}</ElText
     >
     <ElForm :model="form" label-width="120px" class="upload-form">
-      <ElFormItem label="server url">
-        <ElInput v-model="form.server" placeholder="server url" />
+      <ElFormItem :label="t('localization.serverUrl')">
+        <ElInput v-model="form.server" :placeholder="t('localization.serverUrl')" />
       </ElFormItem>
-      <ElFormItem label="scan url">
+      <ElFormItem :label="t('localization.scanUrl')">
         <ElInput
           v-model="form.scan"
           placeholder="scan url(https://github.com/Autumn-27/ScopeSentry-Scan/releases/download/vx.x.x/ScopeSentry-Scan_linux_amd64_vx.x.x.zip)"
         />
       </ElFormItem>
       <ElFormItem>
-        <ElButton type="primary" @click="handleSubmit">Submit</ElButton>
+        <ElButton type="primary" @click="handleSubmit">{{ t('common.submit') }}</ElButton>
       </ElFormItem>
     </ElForm>
   </Dialog>
@@ -450,7 +450,7 @@ async function handleSubmit() {
       <el-tooltip class="item" effect="dark" :content="t('plugin.keyMsg')" placement="top">
         <ElInput v-model="pluginKey" />
       </el-tooltip>
-      <BaseButton @click="savePluginKey" type="primary" class="w-full">确定</BaseButton>
+      <BaseButton @click="savePluginKey" type="primary" class="w-full">{{ t('common.ok') }}</BaseButton>
     </div>
   </Dialog>
 </template>

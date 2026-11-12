@@ -41,20 +41,20 @@ const selectedType = ref<string>('') // '' 表示全部, 'scan' 表示扫描, 's
 
 // 模块选项
 const moduleOptions = [
-  { label: 'TargetHandler', value: 'TargetHandler' },
-  { label: 'SubdomainScan', value: 'SubdomainScan' },
-  { label: 'SubdomainSecurity', value: 'SubdomainSecurity' },
-  { label: 'PortScanPreparation', value: 'PortScanPreparation' },
-  { label: 'PortScan', value: 'PortScan' },
-  { label: 'AssetMapping', value: 'AssetMapping' },
-  { label: 'URLScan', value: 'URLScan' },
-  { label: 'WebCrawler', value: 'WebCrawler' },
-  { label: 'DirScan', value: 'DirScan' },
-  { label: 'VulnerabilityScan', value: 'VulnerabilityScan' },
-  { label: 'AssetHandle', value: 'AssetHandle' },
-  { label: 'PortFingerprint', value: 'PortFingerprint' },
-  { label: 'URLSecurity', value: 'URLSecurity' },
-  { label: 'PassiveScan', value: 'PassiveScan' }
+  { label: t('scanTemplate.TargetHandler'), value: 'TargetHandler' },
+  { label: t('scanTemplate.SubdomainScan'), value: 'SubdomainScan' },
+  { label: t('scanTemplate.SubdomainSecurity'), value: 'SubdomainSecurity' },
+  { label: t('scanTemplate.PortScanPreparation'), value: 'PortScanPreparation' },
+  { label: t('scanTemplate.PortScan'), value: 'PortScan' },
+  { label: t('scanTemplate.AssetMapping'), value: 'AssetMapping' },
+  { label: t('scanTemplate.URLScan'), value: 'URLScan' },
+  { label: t('scanTemplate.WebCrawler'), value: 'WebCrawler' },
+  { label: t('scanTemplate.DirScan'), value: 'DirScan' },
+  { label: t('scanTemplate.VulnerabilityScan'), value: 'VulnerabilityScan' },
+  { label: t('scanTemplate.AssetHandle'), value: 'AssetHandle' },
+  { label: t('scanTemplate.PortFingerprint'), value: 'PortFingerprint' },
+  { label: t('scanTemplate.URLSecurity'), value: 'URLSecurity' },
+  { label: t('scanTemplate.PassiveScan'), value: 'PassiveScan' }
 ]
 
 // 模块渐变背景

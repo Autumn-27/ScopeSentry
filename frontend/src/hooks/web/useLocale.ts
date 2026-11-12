@@ -1,3 +1,5 @@
+import router from '@/router'
+import { setPageTitle } from '@/hooks/web/useTitle'
 import { i18n } from '@/plugins/vueI18n'
 import { useLocaleStoreWithOut } from '@/store/modules/locale'
 import { setHtmlPageLang } from '@/plugins/vueI18n/helper'
@@ -14,6 +16,7 @@ const setI18nLanguage = (locale: LocaleType) => {
     lang: locale
   })
   setHtmlPageLang(locale)
+  setPageTitle(router.currentRoute.value.meta.title as string)
 }
 
 export const useLocale = () => {

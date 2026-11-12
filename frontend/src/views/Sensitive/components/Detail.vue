@@ -135,7 +135,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
     <ElFormItem :label="t('sensitiveInformation.sensitiveColor')">
       <ElSelectV2
         v-model="localSensitiveForm.color"
-        placeholder="Please select color"
+        :placeholder="t('localization.selectColor')"
         :options="colorOptions"
       />
     </ElFormItem>

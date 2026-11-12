@@ -88,7 +88,7 @@ const crudSchemas = reactive<CrudSchema[]>([
   },
   {
     field: 'host',
-    label: 'Domain',
+    label: t('asset.domain'),
     minWidth: '300'
   },
   {
@@ -98,12 +98,12 @@ const crudSchemas = reactive<CrudSchema[]>([
   },
   {
     field: 'type',
-    label: 'Type',
+    label: t('export.type'),
     minWidth: '200'
   },
   {
     field: 'response',
-    label: 'Response',
+    label: t('localization.response'),
     minWidth: '300',
     formatter: (_: Recordable, __: TableColumn, Value: string) => {
       return (
@@ -115,7 +115,7 @@ const crudSchemas = reactive<CrudSchema[]>([
   },
   {
     field: 'tags',
-    label: 'TAG',
+    label: t('localization.tag'),
     fit: 'true',
     showOverflowTooltip: false,
     formatter: (row: Recordable, __: TableColumn, tags: string[]) => {

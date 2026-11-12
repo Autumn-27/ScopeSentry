@@ -29,14 +29,14 @@ const progressColums = reactive<TableColumn[]>([
   },
   {
     field: 'install',
-    label: 'Install',
+    label: t('plugin.install'),
     formatter: (_: Recordable, __: TableColumn, cellValue: string) => {
       return cellValue == '1' ? correctIcon : errorIcon
     }
   },
   {
     field: 'check',
-    label: 'Check',
+    label: t('plugin.reCheck'),
     formatter: (_: Recordable, __: TableColumn, cellValue: string) => {
       return cellValue == '1' ? correctIcon : errorIcon
     }

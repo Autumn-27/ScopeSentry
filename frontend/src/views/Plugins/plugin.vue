@@ -62,7 +62,7 @@ const loadRemotePlugins = async () => {
 
         return {
           id: plugin.id,
-          name: plugin.name?.trim() || plugin.hash || `插件-${plugin.id}`,
+          name: plugin.name?.trim() || plugin.hash || t('localization.pluginFallback', { id: plugin.id }),
           module: plugin.module || '',
           priceStatus: plugin.priceStatus,
           price: plugin.price,
@@ -82,7 +82,7 @@ const loadRemotePlugins = async () => {
     remotePluginList.value = remotePlugins
   } catch (error) {
     console.error('Error loading plugins:', error)
-    ElMessage.error('获取插件列表失败')
+    ElMessage.error(t('localization.loadPluginsFailed'))
   } finally {
     marketLoading.value = false
   }
@@ -94,7 +94,7 @@ const handleInstallPlugin = async (plugin: RemotePluginData, token?: string) => 
     const action =
       plugin.isInstalled && plugin.needUpdate ? t('plugin.update') : t('plugin.install')
 
-    let pluginName = '未知插件'
+    let pluginName = t('localization.unknownPlugin')
     if (plugin && plugin.name) {
       const trimmedName = String(plugin.name).trim()
       if (trimmedName) {
@@ -117,7 +117,7 @@ const handleInstallPlugin = async (plugin: RemotePluginData, token?: string) => 
     }
 
     const loadingMessage = ElMessage({
-      message: `${action}中...`,
+      message: t('localization.actionProgress', { action }),
       type: 'info',
       duration: 0,
       showClose: false
@@ -128,7 +128,7 @@ const handleInstallPlugin = async (plugin: RemotePluginData, token?: string) => 
 
       if (exportRes.status !== '200' || !exportRes.data) {
         loadingMessage.close()
-        ElMessage.error(exportRes.message || '获取插件数据失败')
+        ElMessage.error(exportRes.message || t('localization.loadPluginFailed'))
         return
       }
 
