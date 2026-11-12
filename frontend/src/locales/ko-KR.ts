@@ -1,6 +1,7 @@
 export default {
   common: {
-    changeLanguageMessage: "언어를 변경하면 현재 화면과 미저장 입력이 초기화됩니다. 이미 전송한 요청은 계속 처리될 수 있습니다. 변경하시겠습니까?",
+    changeLanguageMessage:
+      '언어를 변경하면 현재 화면과 저장하지 않은 입력 내용이 초기화됩니다. 이미 전송한 요청은 계속 처리될 수 있습니다. 변경하시겠습니까?',
     clearAll: '모두 지우기',
     selectCategory: '분류 선택',
     about: '정보',
@@ -18,7 +19,7 @@ export default {
     import: '가져오기',
     category: '분류',
     uploadMsg:
-      '일괄 가져오기는 nuclei만 지원합니다. YAML 파일을 ZIP으로 압축해 업로드하세요. nuclei 공식 POC 라이브러리를 다운로드하여 업로드하면 POC가 자동으로 추출됩니다.',
+      '일괄 가져오기는 Nuclei만 지원합니다. YAML 파일을 ZIP으로 압축해 업로드하세요. Nuclei 공식 POC 라이브러리도 다운로드한 뒤 업로드하면 POC가 자동으로 추출됩니다.',
     upload: '업로드',
     cover: '덮어쓰기',
     download: '다운로드',
@@ -109,7 +110,7 @@ export default {
     lines: '줄',
     copy: '복사',
     copySuccess: '복사했습니다.',
-    copyFailed: '복사하지 못했습니다.',
+    copyFailed: '복사에 실패했습니다.',
     success: '성공'
   },
   export: {
@@ -132,12 +133,12 @@ export default {
     fileType: '파일 유형'
   },
   searchHelp: {
-    notice: '검색어는 큰따옴표로 감싸야 합니다.',
+    notice: '검색어를 큰따옴표로 감싸세요.',
     operator: '연산자',
     meaning: '의미',
-    equal: '정확히 일치하는 검색어의 자산만 조회합니다.',
+    equal: '검색어와 정확히 일치하는 자산을 조회합니다.',
     notIn: '검색어가 포함된 자산을 제외합니다.',
-    like: '검색어가 포함된 자산을 조회합니다(정규표현식 지원).',
+    like: '검색어가 포함된 자산을 조회합니다. 정규표현식도 사용할 수 있습니다.',
     brackets: '괄호 안의 조건이 가장 먼저 적용됩니다.',
     and: 'AND 조건',
     or: 'OR 조건',
@@ -149,14 +150,14 @@ export default {
     header: 'HTTP 요청 헤더 검색',
     project: '프로젝트 이름으로 검색',
     title: '웹사이트 제목 검색',
-    statuscode: '응답 코드 검색(부분 일치 검색 미지원)',
+    statuscode: '응답 코드 검색(부분 일치 미지원)',
     icon: '웹사이트 아이콘 해시로 검색',
     ip: 'IP 검색',
     length: '응답 길이 검색',
     port: '포트 검색',
     domain: '도메인 검색',
     protocol: '서비스로 검색',
-    banner: 'HTTP 이외 자산의 배너 검색',
+    banner: 'HTTP가 아닌 자산의 배너 검색',
     subdomainType: '레코드 유형 검색',
     subdomainValue: '레코드 값 검색',
     url: 'URL 검색',
@@ -223,7 +224,7 @@ export default {
     copy: '복사',
     clearAndReset: '캐시 삭제 및 초기화',
     copySuccess: '복사했습니다.',
-    copyFailed: '복사하지 못했습니다.',
+    copyFailed: '복사에 실패했습니다.',
     footer: '바닥글',
     uniqueOpened: '메뉴 하나만 펼치기',
     tagsViewIcon: '탭 아이콘',
@@ -296,7 +297,7 @@ export default {
     nodeName: '스캔 노드 이름',
     nodeStatus: '스캔 노드 상태',
     taskCount: '작업 수',
-    finished: '완료 수',
+    finished: '완료한 작업 수',
     statusRun: '실행 중',
     statusStop: '중지',
     statusError: '연결 끊김',
@@ -347,7 +348,7 @@ export default {
     msgPageMonitoringAll: '모든 페이지 모니터링',
     msgPageMonitoringJs: 'JS 페이지만 모니터링',
     msgCrawler:
-      '크롤러가 GET 및 POST 매개변수를 수집합니다. 더 많은 웹사이트 진입점을 수집하려면 URL 스캔을 활성화하는 것이 좋습니다.',
+      '크롤러는 GET·POST 매개변수를 수집합니다. 더 많은 웹사이트 진입점을 수집하려면 URL 스캔 사용을 권장합니다.',
     vulScan: '취약점 스캔',
     vulList: '취약점 목록',
     save: '저장',
@@ -367,7 +368,7 @@ export default {
     addTemplate: '템플릿 추가',
     editTemplate: '템플릿 편집',
     deleteTemplate: '템플릿 삭제',
-    autoNode: '자동 참여',
+    autoNode: '노드 자동 참여',
     running: '실행 중',
     stop: '중지',
     start: '시작',
@@ -533,7 +534,7 @@ export default {
     low: '낮음',
     info: '정보',
     unknown: '알 수 없음',
-    nameMsg: 'POC 이름을 입력하세요. POC 이름은 POC 내용의 이름과 일치해야 합니다.',
+    nameMsg: 'POC 이름을 입력하세요. 입력한 이름은 POC 내용의 이름과 일치해야 합니다.',
     contentMsg: 'POC 내용을 입력하세요.'
   },
   apiKey: {
@@ -552,7 +553,7 @@ export default {
     copyKey: '키 복사',
     copied: '복사했습니다.',
     deleteConfirm:
-      'API Key "{name}"을(를) 삭제하시겠습니까? 이 키를 사용하는 MCP 클라이언트가 작동하지 않게 됩니다.',
+      '"{name}" API Key를 삭제하시겠습니까? 이 키를 사용하는 MCP 클라이언트가 더 이상 연결되지 않습니다.',
     usageTitle: 'MCP 연동',
     usageDesc:
       'API Key는 Cursor 등의 MCP 클라이언트가 ScopeSentry에 인증할 때 사용합니다. 생성 후 MCP 클라이언트의 헤더에 키를 설정하세요.'
@@ -570,7 +571,7 @@ export default {
     maxUrlNum: '최대 URL 수',
     noticeConfig: '알림 설정',
     newWebhookConfig: '새 설정',
-    threadMsg: '시스템 메모리에 맞게 동시 실행 수를 설정하세요.',
+    threadMsg: '시스템 메모리를 고려해 동시 실행 수를 설정하세요.',
     noticeHelp:
       '*msg*는 메시지 매개변수 위치입니다. 예\\:http://example.com?msg=*mes* 또는 POST "msg":"*msg*"',
     duplicationconfiguration: '중복 제거 설정',
@@ -633,8 +634,8 @@ export default {
     parameterTip:
       '위의 매개변수 설정에 따라 자동으로 생성됩니다. 형식: -parameterName defaultValue.',
     parameterConfigTip:
-      '여기서는 플러그인 매개변수 템플릿만 설정합니다. 실제 스캔에 사용하는 매개변수는 스캔 템플릿에서 설정합니다.',
-    noParameters: '이 플러그인에 설정된 매개변수가 없습니다.',
+      '플러그인 매개변수 템플릿을 설정합니다. 실제 스캔에 사용할 값은 스캔 템플릿에서 설정하세요.',
+    noParameters: '설정된 매개변수가 없습니다.',
     free: '무료',
     paid: '유료',
     author: '작성자',
@@ -648,7 +649,7 @@ export default {
     refresh: '새로고침',
     unknownModule: '알 수 없는 모듈',
     noPluginData: '플러그인 데이터 없음',
-    confirmInstall: '플러그인 "{name}"에 대해 {action} 작업을 진행하시겠습니까?',
+    confirmInstall: '"{name}" 플러그인의 {action} 작업을 진행하시겠습니까?',
     installSuccess: '{action} 요청을 보냈습니다. 잠시 후 목록을 새로고침하세요.',
     installFailed: '플러그인 설치에 실패했습니다.',
     clientPlugin: '클라이언트 플러그인',
@@ -939,8 +940,7 @@ export default {
     pluginMarket: '플러그인 마켓:',
     sponsorCooperate: '후원 및 협업',
     supportProject: '프로젝트 후원',
-    supportDescription:
-      '이 프로젝트가 도움이 되었다면 아래 방법으로 개발자의 지속적인 개발과 유지보수를 후원할 수 있습니다.',
+    supportDescription: '아래 방법으로 프로젝트 개발과 유지보수를 후원할 수 있습니다.',
     sponsor: '후원',
     cooperate: '협업',
     cooperateDescription: '협업 아이디어가 있다면 연락해 주세요.',
@@ -952,7 +952,7 @@ export default {
     actionProgress: '{action} 중...',
     loadFailedDetail: '데이터를 불러오지 못했습니다: {message}',
     updateHelp:
-      '업데이트는 현재 Docker 설치 환경만 지원합니다. 입력한 URL에 Docker 내부에서 접근할 수 있어야 합니다. 최신 스캔 노드의 Linux 버전은 GitHub Releases에서 받을 수 있습니다.',
+      '업데이트는 Docker로 설치한 환경에서만 지원합니다. 입력한 URL은 Docker 내부에서 접근할 수 있어야 합니다. 스캔 노드의 최신 Linux 버전은 GitHub Releases에서 받을 수 있습니다.',
     uploadSuccess: '업로드했습니다.',
     uploadFailed: '업로드하지 못했습니다.',
     updateConfirm: '선택한 데이터를 업데이트하시겠습니까?',
