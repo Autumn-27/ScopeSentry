@@ -78,6 +78,23 @@ NodeName을 비워 두면 이름이 자동 생성되며 웹 화면에서 변경 
 UI는 바뀌지 않으므로 해당 변경을 포함한 소스 빌드와 서버 이미지 반영이 필요하다.
 [빌드·검증 기록](./frontend/LOCALIZATION.md) 참고.
 
+## 한국어 UI 화면
+
+기존 백엔드에 로그인한 뒤 조회한 실제 화면의 부분 캡처다. 계정 식별자와 운영 데이터는 제외했다.
+전체 기능·번역 검증을 의미하지 않으며, 미번역 메시지와 레이아웃 제한은 [연동 검증 기록](./docs/korean-localization/integration-evidence.md) 참고.
+
+| 대시보드 집계 | 자산 검색·빈 목록 |
+|---|---|
+| ![한국어 대시보드 집계](docs/korean-localization/screenshots/korean-dashboard.png) | ![한국어 자산 검색](docs/korean-localization/screenshots/korean-assets.png) |
+
+| 스캔 작업 목록 | 플러그인 검색·헤더 |
+|---|---|
+| ![한국어 스캔 작업](docs/korean-localization/screenshots/korean-scan-tasks.png) | ![한국어 플러그인 관리](docs/korean-localization/screenshots/korean-plugins.png) |
+
+시스템 설정은 실제 설정값을 제외한 제목 영역만 공개한다.
+
+![한국어 시스템 설정 제목](docs/korean-localization/screenshots/korean-settings.png)
+
 ## 기본 사용법
 
 1. `http://<서버>:8082`에 접속해 로그인. 리버스 프록시 환경은 실제 공개 URL 사용.

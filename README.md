@@ -91,6 +91,22 @@ Discord:
 [https://discord.gg/agsYdAyN](https://discord.gg/agsYdAyN)
 
 
+## Korean UI screenshots
+
+These cropped screenshots show authenticated, read-only Korean UI checks against an existing backend. Account identifiers and operational data are excluded. They are partial views, not evidence of complete feature or translation coverage. Known untranslated messages and layout limitations are documented in the [integration evidence](docs/korean-localization/integration-evidence.md).
+
+| Dashboard summary | Asset search and empty list |
+|---|---|
+| ![Korean dashboard summary](docs/korean-localization/screenshots/korean-dashboard.png) | ![Korean asset search](docs/korean-localization/screenshots/korean-assets.png) |
+
+| Scan task list | Plugin controls and headers |
+|---|---|
+| ![Korean scan tasks](docs/korean-localization/screenshots/korean-scan-tasks.png) | ![Korean plugin controls](docs/korean-localization/screenshots/korean-plugins.png) |
+
+System settings heading only; configuration values are excluded:
+
+![Korean system settings heading](docs/korean-localization/screenshots/korean-settings.png)
+
 ## Screenshots
 
 ### Login
