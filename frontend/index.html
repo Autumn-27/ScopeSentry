@@ -19,12 +19,10 @@
               return raw
             }
           }
+          // 只认 themeMode。旧版的 isDark 是旧代码按系统状态写入的机器值，
+          // 拿来当“用户显式选择”会把升级用户永久钉在浅色/深色，故忽略。
           var mode = readValue('themeMode')
-          if (mode !== 'light' && mode !== 'dark' && mode !== 'auto') {
-            // 旧版本只保存了布尔 isDark，true=夜间 false=日间
-            var legacy = readValue('isDark')
-            mode = legacy === true ? 'dark' : legacy === false ? 'light' : 'auto'
-          }
+          if (mode !== 'light' && mode !== 'dark' && mode !== 'auto') mode = 'auto'
           var prefersDark =
             typeof window.matchMedia === 'function' &&
             window.matchMedia('(prefers-color-scheme: dark)').matches

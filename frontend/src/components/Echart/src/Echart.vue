@@ -97,6 +97,11 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  // 卸载时释放实例，避免路由切换/骨架屏替换后 canvas、ResizeObserver 泄漏
+  if (echartRef) {
+    echartRef.dispose()
+    echartRef = null
+  }
   window.removeEventListener('resize', resizeHandler)
   unref(contentEl) &&
     (unref(contentEl) as Element).removeEventListener('transitionend', contentResizeHandler)

@@ -22,7 +22,9 @@ ScopeSentry 前端支持三态主题，默认 **跟随系统（设备）**。
    - `themeMode`（`auto | light | dark`，默认 `auto`）+ `systemDark`（`prefers-color-scheme` 的当前值）。
    - `setThemeMode(mode)` 写入 localStorage 键 `themeMode`，并立即应用。
    - `setSystemDark(dark)` 只在 `auto` 模式下实时应用，手动指定的日间/夜间不会被系统切换覆盖。
-   - `initTheme()` 在 `App.vue` setup 阶段调用：读取持久化值 → 迁移旧版布尔 `isDark` → 绑定 `matchMedia('(prefers-color-scheme: dark)')` 监听（单例，避免 HMR 重复绑定）。
+   - `initTheme()` 在 `App.vue` setup 阶段调用：读取持久化 `themeMode`（缺失/非法 → `auto`）→ 绑定 `matchMedia('(prefers-color-scheme: dark)')` 监听（先解绑再绑定，兼容旧 Safari 的 `addListener`；SSR 无 `window` 时直接返回）。
+   - **旧版 `isDark` 不做迁移**：旧代码每次启动都按系统状态覆写它，无法区分「用户显式选择」和「系统当时是深色」，迁移会把升级用户永久钉在浅色/深色。它只作为兼容写回，不参与决策。
+   - `getStorage` 对 `localStorage` 被禁用、写入损坏做了 try/catch，读失败按「没有」处理，不会让根组件 setup 抛错白屏。
 2. **首屏防闪烁**（`index.html`）
    - `<head>` 内联脚本在样式/JS 加载前就根据 `themeMode`（兼容旧键 `isDark`）给 `<html>` 加 `dark`/`light` 类并设置 `color-scheme`，避免先白后黑的闪屏；加载动画本身也有深色样式。
    - 内联脚本能解析 `useStorage` 写入的 `{"type":"String","value":"auto"}` 包装格式，也能解析裸字符串/布尔值。
@@ -56,7 +58,7 @@ npx vite build --mode pro        # 产物 dist-pro/
 | --- | --- |
 | 首次访问，系统为深色 | `<html class="dark">`，themeMode=auto（默认跟随） |
 | 手动切日间后真实刷新，系统仍为深色 | 保持 `light`，header 白底，systemDark=true —— 手动选择优先于系统 |
-| localStorage 只有旧版 `isDark=false` | 自动迁移为 themeMode=light，并回写新键 |
+| localStorage 只有旧版 `isDark=false` | 按设计忽略该值，themeMode 回到 `auto`（跟随系统） |
 | 切回「跟随系统」 | 立即恢复为系统深色 `dark` |
 | `pnpm theme:check` | 30+ 断言全部 PASS（模式校验、迁移、首屏脚本、UI 三选项接线） |
 

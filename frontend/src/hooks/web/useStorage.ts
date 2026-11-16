@@ -11,12 +11,19 @@ export const useStorage = (type: 'sessionStorage' | 'localStorage' = 'sessionSto
   }
 
   const getStorage = (key: string) => {
-    const value = window[type].getItem(key)
-    if (value) {
-      const { value: val } = JSON.parse(value)
-      return val
-    } else {
-      return value
+    // localStorage 可能被禁用（隐私模式）或写入损坏，读不出来按“没有”处理，
+    // 不能让根组件 setup 抛错导致白屏
+    try {
+      const value = window[type].getItem(key)
+      if (!value) return value
+      const parsed = JSON.parse(value)
+      if (parsed && typeof parsed === 'object' && 'value' in parsed) {
+        return parsed.value
+      }
+      // 兼容被手工写成裸 JSON 的场景
+      return parsed
+    } catch (e) {
+      return null
     }
   }
 

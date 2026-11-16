@@ -12,7 +12,7 @@ import {
   LEGACY_IS_DARK_STORAGE_KEY,
   DEFAULT_THEME_MODE,
   getSystemDark,
-  isThemeMode,
+  resolveInitialThemeMode,
   resolveIsDark,
   applyThemeClass
 } from '@/constants/theme'
@@ -61,13 +61,22 @@ let mediaQueryHandler: ((event: MediaQueryListEvent) => void) | null = null
 const bindSystemThemeListener = (storeInstance: { setSystemDark: (value: boolean) => void }) => {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-  if (mediaQueryList === mediaQuery && mediaQueryHandler) return
+  // matchMedia 每次返回新对象，不能靠引用判断是否已绑定，统一先解绑再绑
   if (mediaQueryList && mediaQueryHandler) {
-    mediaQueryList.removeEventListener('change', mediaQueryHandler)
+    if (typeof mediaQueryList.removeEventListener === 'function') {
+      mediaQueryList.removeEventListener('change', mediaQueryHandler)
+    } else if (typeof mediaQueryList.removeListener === 'function') {
+      // Safari <= 13 / 旧 WKWebView 只有废弃的 add/removeListener
+      mediaQueryList.removeListener(mediaQueryHandler)
+    }
   }
   mediaQueryList = mediaQuery
   mediaQueryHandler = (event: MediaQueryListEvent) => storeInstance.setSystemDark(event.matches)
-  mediaQuery.addEventListener('change', mediaQueryHandler)
+  if (typeof mediaQuery.addEventListener === 'function') {
+    mediaQuery.addEventListener('change', mediaQueryHandler)
+  } else if (typeof mediaQuery.addListener === 'function') {
+    mediaQuery.addListener(mediaQueryHandler)
+  }
 }
 
 export const useAppStore = defineStore('app', {
@@ -307,21 +316,12 @@ export const useAppStore = defineStore('app', {
         this.setIsDark(systemDark)
       }
     },
-    /** 启动时初始化主题：读取持久化模式 -> 迁移旧版 isDark -> 监听系统变化 */
+    /** 启动时初始化主题：读取持久化模式（缺省/非法 -> 跟随系统）并监听系统变化 */
     initTheme() {
+      // SSR/预渲染环境没有 window，直接跳过（其余主题逻辑都有 typeof window 守卫）
+      if (typeof window === 'undefined') return
       this.systemDark = getSystemDark()
-      const storedMode = getStorage(THEME_MODE_STORAGE_KEY)
-      let themeMode: ThemeMode = DEFAULT_THEME_MODE
-      if (isThemeMode(storedMode)) {
-        themeMode = storedMode
-      } else {
-        const legacyIsDark = getStorage(LEGACY_IS_DARK_STORAGE_KEY)
-        if (legacyIsDark === true) {
-          themeMode = 'dark'
-        } else if (legacyIsDark === false) {
-          themeMode = 'light'
-        }
-      }
+      const themeMode = resolveInitialThemeMode(getStorage(THEME_MODE_STORAGE_KEY))
       this.themeMode = themeMode
       setStorage(THEME_MODE_STORAGE_KEY, themeMode)
       this.setIsDark(resolveIsDark(themeMode, this.systemDark))

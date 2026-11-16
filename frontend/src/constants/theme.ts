@@ -17,6 +17,17 @@ export const DEFAULT_THEME_MODE: ThemeMode = 'auto'
 export const isThemeMode = (value: unknown): value is ThemeMode =>
   typeof value === 'string' && (THEME_MODE_OPTIONS as string[]).includes(value)
 
+/**
+ * 启动时决定主题模式。
+ *
+ * 只认 `themeMode`：旧版本的 `isDark` 布尔值是**机器写入的当时系统状态**
+ * （旧代码每次启动都按系统覆盖写），无法区分“用户显式选择”和“系统当时是深色”，
+ * 因此不能把它迁移成 light/dark —— 否则升级用户的默认值会被永久钉死，
+ * 「默认跟随系统」对存量用户失效。缺失/非法一律回到 auto。
+ */
+export const resolveInitialThemeMode = (storedMode: unknown): ThemeMode =>
+  isThemeMode(storedMode) ? storedMode : DEFAULT_THEME_MODE
+
 /** 系统当前是否处于深色模式（SSR / 老浏览器安全降级） */
 export const getSystemDark = (): boolean => {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false
