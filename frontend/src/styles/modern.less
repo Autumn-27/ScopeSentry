@@ -139,8 +139,9 @@ html .el-descriptions{
  * 3. 按钮
  * ========================================================================= */
 html .el-button{
-  height: 34px;
-  padding: 0 14px;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
   font-weight: 500;
   border-radius: var(--app-radius-sm);
   transition:
@@ -148,6 +149,13 @@ html .el-button{
     border-color 0.18s ease,
     color 0.18s ease,
     box-shadow 0.18s ease;
+}
+
+/* 用 icon 属性时 Element 会把图标再包一层 el-icon；间距统一交给 flex gap，
+   把 Element 自带的 6px margin 归零，避免叠加成 14px */
+html .el-button > .el-icon + span,
+html .el-button > .el-icon + .el-button__text{
+  margin-left: 0;
 }
 
 html .el-button--small{
@@ -176,7 +184,7 @@ html .el-button.is-link{
 }
 
 html .el-button + .el-button{
-  margin-left: 8px;
+  margin-left: 10px;
 }
 
 html .el-button-group > .el-button + .el-button{
@@ -203,9 +211,11 @@ html .el-input__wrapper,
 html .el-select__wrapper{
   min-height: 34px;
   padding: 1px 11px;
-  background-color: var(--app-surface);
+  background-color: var(--el-fill-color-extra-light);
   box-shadow: 0 0 0 1px var(--app-border) inset;
-  transition: box-shadow 0.18s ease;
+  transition:
+    box-shadow 0.18s ease,
+    background-color 0.18s ease;
 }
 
 html .el-input__wrapper:hover,
@@ -215,9 +225,10 @@ html .el-select__wrapper:hover{
 
 html .el-input__wrapper.is-focus,
 html .el-select__wrapper.is-focused{
+  background-color: var(--app-surface);
   box-shadow:
     0 0 0 1px var(--app-primary) inset,
-    0 0 0 3px rgb(47 111 235 / 14%);
+    0 0 0 3px rgb(47 111 235 / 9%);
 }
 
 html .el-textarea__inner{
@@ -232,8 +243,18 @@ html .el-textarea__inner:focus{
 }
 
 html .el-form-item__label{
+  font-size: 13px;
   font-weight: 500;
-  color: var(--el-text-color-regular);
+  color: var(--el-text-color-secondary);
+}
+
+html .el-form-item{
+  margin-bottom: 18px;
+}
+
+html .el-form-item--label-top .el-form-item__label{
+  margin-bottom: 8px;
+  line-height: 1.4;
 }
 
 html .el-checkbox__inner,
@@ -329,8 +350,18 @@ html .el-tag{
   height: 24px;
   padding: 0 9px;
   font-weight: 500;
-  border: none;
   border-radius: var(--app-radius-xs);
+}
+
+/* 实心标签去边框；plain 标签保留 1px 描边（否则状态标签会全部变成实心） */
+html .el-tag:not(.el-tag--plain){
+  border: none;
+}
+
+html .el-tag--plain{
+  border-width: 1px;
+  border-style: solid;
+  background-color: transparent;
 }
 
 html .el-tag--large{
@@ -606,4 +637,106 @@ html .v-logo {
 
 html .el-skeleton__item {
   border-radius: var(--app-radius-xs);
+}
+
+/* 表格操作列：低噪音文字按钮，替代一排实心彩色块 */
+html .el-table .el-button {
+  height: 28px;
+  padding: 0 9px;
+  font-size: 12px;
+  color: var(--el-text-color-regular);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--app-radius-xs);
+  box-shadow: none;
+}
+
+html .el-table .el-button + .el-button {
+  margin-left: 4px;
+}
+
+html .el-table .el-button:hover {
+  background: var(--el-fill-color-light);
+  border-color: var(--app-border);
+}
+
+html .el-table .el-button--primary {
+  color: var(--app-primary);
+  background: var(--app-primary-soft);
+}
+
+html .el-table .el-button--primary:hover {
+  background: rgb(47 111 235 / 16%);
+}
+
+html .el-table .el-button--success {
+  color: var(--el-color-success);
+}
+
+html .el-table .el-button--success:hover {
+  background: var(--el-color-success-light-9);
+}
+
+html .el-table .el-button--warning {
+  color: var(--el-color-warning);
+}
+
+html .el-table .el-button--warning:hover {
+  background: var(--el-color-warning-light-9);
+}
+
+html .el-table .el-button--danger {
+  color: var(--el-color-danger);
+}
+
+html .el-table .el-button--danger:hover {
+  background: var(--el-color-danger-light-9);
+}
+
+html .el-table .el-button--info {
+  color: var(--el-text-color-secondary);
+}
+
+html .el-table .el-button--info:hover {
+  background: var(--el-fill-color);
+}
+
+/* ===========================================================================
+ * 14. 细节补完：下拉项 / 分页 hover / 消息 / 弹窗底部
+ * ========================================================================= */
+html .el-select-dropdown__list{
+  padding: 6px;
+}
+
+html .el-select-dropdown__item{
+  height: 34px;
+  margin: 1px 0;
+  padding: 0 10px;
+  line-height: 34px;
+  border-radius: var(--app-radius-xs);
+}
+
+html .el-pager li:not(.is-active):hover,
+html .el-pagination button:not(:disabled):hover{
+  background-color: var(--el-fill-color-light);
+}
+
+html .el-message .el-message__content{
+  line-height: 1.5;
+}
+
+html .el-dialog__footer{
+  padding-top: 4px;
+}
+
+/* 表单校验提示与输入框之间留一点气 */
+html .el-form-item__error{
+  padding-top: 3px;
+  font-size: 12px;
+}
+
+/* required 星号不要抢眼 */
+html .el-form-item.is-required:not(.is-no-asterisk) > .el-form-item__label::before{
+  margin-right: 3px;
+  color: var(--el-color-danger);
 }
