@@ -6,3 +6,89 @@
 .el-popup-parent--hidden {
   width: 100% !important;
 }
+
+/* ---------------------------------------------------------------------------
+ * 主题切换过渡：只在手动切换时由 store 加 .theme-transition 类，260ms 后移除
+ * ------------------------------------------------------------------------- */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition:
+    background-color 0.24s ease,
+    color 0.24s ease,
+    border-color 0.24s ease,
+    box-shadow 0.24s ease,
+    fill 0.24s ease !important;
+  transition-delay: 0s !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-transition,
+  html.theme-transition *,
+  html.theme-transition *::before,
+  html.theme-transition *::after {
+    transition: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * 滚动条：跟随主题变量，深浅色都不出现“亮色轨道 + 深色内容”的割裂感
+ * ------------------------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--el-border-color-darker);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--el-text-color-disabled);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--el-border-color-darker) transparent;
+}
+
+/* ---------------------------------------------------------------------------
+ * 键盘可达性：只在键盘聚焦时显示主色描边，鼠标点击不出现
+ * ------------------------------------------------------------------------- */
+a:focus-visible,
+button:focus-visible,
+[role='button']:focus-visible,
+.el-button:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: 2px;
+}
+
+/* 选中文本配色跟随主题 */
+::selection {
+  background-color: var(--el-color-primary-light-7);
+  color: var(--el-text-color-primary);
+}
+
+/* ---------------------------------------------------------------------------
+ * 顶栏图标统一交互态：折叠/全屏/尺寸/多语言/主题/用户信息复用 .custom-hover
+ * ------------------------------------------------------------------------- */
+.custom-hover {
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+/* 只给顶栏内的图标加 hover 底色，侧边栏 logo 等区域不受影响 */
+#v-tool-header .custom-hover:hover {
+  background-color: var(--top-header-hover-color, var(--el-fill-color-light));
+}

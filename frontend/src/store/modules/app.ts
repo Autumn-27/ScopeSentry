@@ -53,6 +53,7 @@ interface AppState {
 
 let mediaQueryList: MediaQueryList | null = null
 let mediaQueryHandler: ((event: MediaQueryListEvent) => void) | null = null
+let themeTransitionTimer: number | null = null
 
 /**
  * 监听系统深浅色变化，只在“跟随系统”模式下实时生效
@@ -305,9 +306,24 @@ export const useAppStore = defineStore('app', {
     },
     /** 手动切换：日间 / 夜间 / 跟随系统 */
     setThemeMode(themeMode: ThemeMode) {
+      if (themeMode === this.themeMode) return
       this.themeMode = themeMode
       setStorage(THEME_MODE_STORAGE_KEY, themeMode)
+      // 手动切换时给整页一次短过渡，避免颜色硬切；首次加载/跟随系统变化不加
+      this.playThemeTransition()
       this.setIsDark(resolveIsDark(themeMode, this.systemDark))
+    },
+    /** 主题切换的 260ms 全局过渡（系统级变化与人机切换的手感差异） */
+    playThemeTransition() {
+      if (typeof window === 'undefined' || typeof document === 'undefined') return
+      const root = document.documentElement
+      if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+      root.classList.add('theme-transition')
+      if (themeTransitionTimer) window.clearTimeout(themeTransitionTimer)
+      themeTransitionTimer = window.setTimeout(() => {
+        root.classList.remove('theme-transition')
+        themeTransitionTimer = null
+      }, 260)
     },
     /** 系统主题变化（prefers-color-scheme） */
     setSystemDark(systemDark: boolean) {

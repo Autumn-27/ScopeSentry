@@ -72,3 +72,21 @@ npx vite build --mode pro        # 产物 dist-pro/
 4. 切回「跟随系统」→ 立即对齐系统当前状态。
 5. 登录页切换 → 登录后进入后台保持一致。
 6. 图表页（首页 Dashboard / 项目详情）在两种模式下坐标轴与图例清晰可读。
+
+## UI/UX 细节（本次一并打磨）
+
+| 细节 | 行为 | 实现位置 |
+| --- | --- | --- |
+| 切换过渡 | 手动切换主题时整页 240ms 颜色过渡（背景/文字/边框/阴影），300ms 后移除过渡类；`prefers-reduced-motion` 下不启用 | `store/modules/app.ts::playThemeTransition` + `styles/index.less` |
+| 首屏一致性 | `<meta name="color-scheme" content="light dark">` + 内联脚本，浏览器原生控件/滚动条在 JS 执行前就按主题渲染 | `index.html` |
+| 滚动条 | 8px、跟随 `--el-border-color-darker`，hover 加深；Firefox 用 `scrollbar-width/color` | `styles/index.less` |
+| 键盘可达性 | 主题入口是真 `<button>`，带动态 `aria-label`（如「主题模式：夜间模式」）；`:focus-visible` 主色描边 | `ThemeSwitch.vue` + `styles/index.less` |
+| 顶栏图标 | `.custom-hover` 统一 hover 底色（仅顶栏内），其余图标不再"点了没反馈" | `styles/index.less` |
+| 设置面板 | 主题从下拉改为三段式分段控件（日间 / 夜间 / 跟随系统），一眼看清当前值 | `components/Setting/src/Setting.vue` |
+| 编辑器 | Monaco（指纹/差异视图）在 `vs` 与 `vs-dark` 间切换；CodeMirror（POC）深色挂 oneDark、浅色用默认亮色，并移除写死的 `#1e1e1e` 覆盖 | `MonacoDiffEditor.vue`、`Fingerprint/components/Detail.vue`、`Poc/components/Detail.vue` |
+| 图表 | ECharts 切换时 dispose 后按 `dark` 主题重建，卸载时释放实例，避免 canvas/ResizeObserver 泄漏 | `components/Echart/src/Echart.vue` |
+| 文案 | 主题菜单项、提示、状态标签（待开始）三语齐备，864 键对齐 | `locales/{zh-CN,en,ko-KR}.ts` |
+
+设置面板主题分段控件：
+
+![settings](./images/theme/settings-theme-mode.png)

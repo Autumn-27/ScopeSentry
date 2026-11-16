@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ElDrawer, ElDivider, ElMessage } from 'element-plus'
+import { ElDrawer, ElDivider, ElMessage, ElRadioButton, ElRadioGroup } from 'element-plus'
 import { ref, unref, computed, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
-import { ThemeSwitch } from '@/components/ThemeSwitch'
 import { colorIsDark, lighten, hexToRGB } from '@/utils/color'
 import { useCssVar } from '@vueuse/core'
 import { useAppStore } from '@/store/modules/app'
@@ -13,6 +12,7 @@ import LayoutRadioPicker from './components/LayoutRadioPicker.vue'
 import { useStorage } from '@/hooks/web/useStorage'
 import { useClipboard } from '@vueuse/core'
 import { useDesign } from '@/hooks/web/useDesign'
+import type { ThemeMode } from '@/constants/theme'
 
 const { clear: storageClear } = useStorage('localStorage')
 
@@ -25,6 +25,12 @@ const appStore = useAppStore()
 const { t } = useI18n()
 
 const layout = computed(() => appStore.getLayout)
+
+// 主题模式：设置面板用分段控件，比下拉更直观
+const themeMode = computed<ThemeMode>({
+  get: () => appStore.getThemeMode,
+  set: (mode) => appStore.setThemeMode(mode)
+})
 
 const drawer = ref(false)
 
@@ -211,7 +217,11 @@ const clear = () => {
     <div class="text-center">
       <!-- 主题 -->
       <ElDivider>{{ t('setting.theme') }}</ElDivider>
-      <ThemeSwitch />
+      <ElRadioGroup v-model="themeMode" class="theme-mode-group">
+        <ElRadioButton label="light">{{ t('setting.themeLight') }}</ElRadioButton>
+        <ElRadioButton label="dark">{{ t('setting.themeDark') }}</ElRadioButton>
+        <ElRadioButton label="auto">{{ t('setting.themeAuto') }}</ElRadioButton>
+      </ElRadioGroup>
 
       <!-- 布局 -->
       <ElDivider>{{ t('setting.layout') }}</ElDivider>
@@ -294,5 +304,19 @@ const clear = () => {
 
 .@{prefix-cls} {
   border-radius: 6px 0 0 6px;
+}
+
+.theme-mode-group {
+  display: flex;
+  width: 100%;
+
+  :deep(.el-radio-button) {
+    flex: 1;
+  }
+
+  :deep(.el-radio-button__inner) {
+    width: 100%;
+    padding: 8px 0;
+  }
 }
 </style>

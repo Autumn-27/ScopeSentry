@@ -50,17 +50,28 @@ const triggerIcon = computed(() => {
   return isDark.value ? 'emojione-monotone:crescent-moon' : 'emojione-monotone:sun'
 })
 
+// 提示文案带当前模式，避免用户只能靠图标猜
+const currentLabel = computed(() => {
+  const current = options.value.find((item) => item.value === mode.value)
+  return current ? `${t('setting.themeMode')}：${current.label}` : t('setting.themeMode')
+})
+
 const handleCommand = (command: ThemeMode) => {
   appStore.setThemeMode(command)
 }
 </script>
 
 <template>
-  <ElTooltip :content="t('setting.themeMode')" placement="bottom">
+  <ElTooltip :content="currentLabel" placement="bottom">
     <ElDropdown :class="prefixCls" trigger="click" @command="handleCommand">
-      <span :class="`${prefixCls}__trigger`" class="cursor-pointer flex items-center">
+      <button
+        type="button"
+        :class="`${prefixCls}__trigger`"
+        :aria-label="currentLabel"
+        :title="currentLabel"
+      >
         <Icon :icon="triggerIcon" :color="color || undefined" :size="18" />
-      </span>
+      </button>
       <template #dropdown>
         <ElDropdownMenu>
           <ElDropdownItem v-for="item in options" :key="item.value" :command="item.value">
@@ -86,7 +97,19 @@ const handleCommand = (command: ThemeMode) => {
 
 .@{prefix-cls} {
   &__trigger {
-    padding: 0 6px;
+    display: flex;
+    align-items: center;
+    padding: 4px 6px;
+    color: inherit;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: var(--top-header-hover-color, var(--el-fill-color-light));
+    }
   }
 
   &__item {
