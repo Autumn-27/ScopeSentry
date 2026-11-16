@@ -761,3 +761,47 @@ html .el-dialog__body {
   overflow-y: auto;
   overscroll-behavior: contain;
 }
+
+/* ===========================================================================
+ * 16. 方角收口：卡片裁切、border-card 型 Tabs、折叠面板色带
+ * ========================================================================= */
+html .el-card {
+  overflow: hidden;
+}
+
+html .el-tabs--border-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  box-shadow: none;
+  overflow: hidden;
+}
+
+html .el-tabs--border-card > .el-tabs__header {
+  background: var(--app-surface-2);
+  border-bottom: 1px solid var(--app-border);
+}
+
+html .el-tabs--border-card > .el-tabs__header .el-tabs__item {
+  border: none;
+  color: var(--el-text-color-secondary);
+}
+
+html .el-tabs--border-card > .el-tabs__header .el-tabs__item.is-active {
+  color: var(--el-text-color-primary);
+  background: var(--app-surface);
+}
+
+html .el-tabs--border-card > .el-tabs__content {
+  padding: 16px;
+}
+
+/* 折叠面板内容区原本有一块深色底，空列表时看起来像个方框 */
+html .el-collapse {
+  --el-collapse-header-bg-color: transparent;
+  --el-collapse-content-bg-color: transparent;
+}
+
+html .el-collapse-item__wrap {
+  background-color: transparent;
+}

@@ -166,7 +166,14 @@ const signIn = async () => {
               addRoute(route as RouteRecordRaw) // 动态添加可访问路由表
             })
             permissionStore.setIsAddRouters(true)
-            push({ path: redirect.value || permissionStore.addRouters[0].path })
+            // 目标路由优先用 query.redirect，其次首个可访问路由；
+            // push 失败（例如分包加载失败）时退化为整页跳转，避免停在登录页
+            const target = redirect.value || permissionStore.addRouters[0]?.path || '/'
+            try {
+              await push(target)
+            } catch {
+              window.location.replace(`/#${target}`)
+            }
           }
         }
       } finally {

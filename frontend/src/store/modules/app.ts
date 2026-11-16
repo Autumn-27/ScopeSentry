@@ -12,6 +12,7 @@ import {
   LEGACY_IS_DARK_STORAGE_KEY,
   DEFAULT_THEME_MODE,
   getSystemDark,
+  isThemeMode,
   resolveInitialThemeMode,
   resolveIsDark,
   applyThemeClass
@@ -49,6 +50,34 @@ interface AppState {
   footer: boolean
   theme: ThemeTypes
   fixedMenu: boolean
+}
+
+let themeStorageBound = false
+
+/**
+ * 多标签页主题同步：A 标签切换主题后，B 标签立即跟随
+ * （storage 事件只在其它标签触发，所以不会形成回环）
+ */
+const bindThemeStorageSync = (storeInstance: {
+  setThemeMode: (mode: ThemeMode) => void
+  themeMode: ThemeMode
+}) => {
+  if (themeStorageBound || typeof window === 'undefined') return
+  themeStorageBound = true
+  window.addEventListener('storage', (event) => {
+    if (event.key !== THEME_MODE_STORAGE_KEY || !event.newValue) return
+    try {
+      const parsed = JSON.parse(event.newValue)
+      const mode =
+        parsed && typeof parsed === 'object' && 'value' in parsed ? parsed.value : parsed
+      // 注意：Pinia 的 getter 是属性而不是方法，这里读 state 上的 themeMode 值
+      if (isThemeMode(mode) && mode !== storeInstance.themeMode) {
+        storeInstance.setThemeMode(mode)
+      }
+    } catch {
+      /* 忽略损坏值 */
+    }
+  })
 }
 
 let mediaQueryList: MediaQueryList | null = null
@@ -342,6 +371,7 @@ export const useAppStore = defineStore('app', {
       setStorage(THEME_MODE_STORAGE_KEY, themeMode)
       this.setIsDark(resolveIsDark(themeMode, this.systemDark))
       bindSystemThemeListener(this)
+      bindThemeStorageSync(this)
     },
     setCurrentSize(currentSize: ComponentSize) {
       this.currentSize = currentSize
