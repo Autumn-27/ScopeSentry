@@ -66,14 +66,23 @@ jobs:
           GOPROXY: https://goproxy.cn,direct
           GOTOOLCHAIN: local
         run: |
-          go test -count=1 \
+          go test -count=1 -coverprofile=coverage.out \
             ./internal/services/task/tasksync/ \
             ./internal/services/task/taskstate/ \
             ./internal/services/task/audit/ \
             ./internal/api/routes/audit/ \
             ./internal/repositories/plugin/ \
             ./internal/services/project/ \
-            ./internal/api/handlers/sensitiveRule/
+            ./internal/api/handlers/sensitiveRule/ \
+            ./internal/api/middleware/compress/ \
+            ./internal/api/handlers/health/
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: go-coverage
+          path: coverage.out
+          if-no-files-found: error
 
       - name: go vet (本次维护的包)
         env:
@@ -127,3 +136,73 @@ jobs:
       - name: vue-tsc (non-blocking)
         continue-on-error: true
         run: npx vue-tsc --noEmit --skipLibCheck
+
+  # 真实依赖下的全量测试：临时起 Mongo + Redis，随机端口，跑 go test ./...
+  integration:
+    name: Integration (Mongo + Redis)
+    runs-on: [self-hosted, linux, x64, scopesentry-ci]
+    timeout-minutes: 30
+    env:
+      MONGODB_IP: 127.0.0.1
+      MONGODB_DATABASE: ScopeSentryCI
+      MONGODB_USER: ciadmin
+      MONGODB_PASSWORD: cipassword
+      REDIS_IP: 127.0.0.1
+      REDIS_PASSWORD: ciredis
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.6'
+          cache: false
+
+      - name: Start Mongo + Redis
+        run: |
+          set -euo pipefail
+          MONGO="ci-mongo-${{ github.run_id }}"
+          REDIS="ci-redis-${{ github.run_id }}"
+          docker rm -f "$MONGO" "$REDIS" >/dev/null 2>&1 || true
+
+          docker run -d --name "$MONGO" -p 0:27017 \
+            -e MONGO_INITDB_ROOT_USERNAME=ciadmin \
+            -e MONGO_INITDB_ROOT_PASSWORD=cipassword \
+            mongo:7.0.28
+          docker run -d --name "$REDIS" -p 0:6379 \
+            redis:7.0.11 redis-server --requirepass ciredis
+
+          MPORT=$(docker port "$MONGO" 27017/tcp | head -1 | awk -F: '{print $NF}')
+          RPORT=$(docker port "$REDIS" 6379/tcp | head -1 | awk -F: '{print $NF}')
+          echo "MONGODB_PORT=$MPORT" >> "$GITHUB_ENV"
+          echo "REDIS_PORT=$RPORT" >> "$GITHUB_ENV"
+
+          for i in $(seq 1 60); do
+            if docker exec "$MONGO" mongosh -u ciadmin -p cipassword --authenticationDatabase admin --quiet \
+              --eval 'db.runCommand({ping:1}).ok' 2>/dev/null | grep -q 1; then
+              break
+            fi
+            sleep 2
+          done
+
+          docker exec "$REDIS" redis-cli -a ciredis ping | grep -q PONG
+          echo "mongo:$MPORT redis:$RPORT ready"
+
+      # 先跑一个包把空库初始化一次（bootstrap 的 init 会 CreateDatabase），
+      # 否则 go test 并行启多个测试二进制会在首启初始化上互相踩踏
+      - name: warm up database
+        env:
+          GOPROXY: https://goproxy.cn,direct
+          GOTOOLCHAIN: local
+        run: go test -count=1 ./internal/services/project/
+
+      - name: go test ./...
+        env:
+          GOPROXY: https://goproxy.cn,direct
+          GOTOOLCHAIN: local
+        run: go test -count=1 ./...
+
+      - name: Cleanup dependencies
+        if: always()
+        run: |
+          docker rm -f "ci-mongo-${{ github.run_id }}" "ci-redis-${{ github.run_id }}" || true
