@@ -518,6 +518,8 @@ Redis 里放的是扫描任务队列和节点心跳（`node:<name>`）。当前 
 
 ## 八、已知问题与建议
 
+> **修复状态**：A 档第 1 条（volumeClaimTemplates 缩进）已在本分支修复，修复后 kubeconform -strict 为 **20/20 全部合法**，详见文末「九、修复记录」。本节保留的是修复前的原始校验记录。
+
 ### A. 阻断部署（必须先修，否则起不来）
 
 | # | 问题 | 位置 | 影响 |
@@ -632,3 +634,38 @@ CI 里建议串起来跑：
 python3 -c "import yaml,glob; [list(yaml.safe_load_all(open(f))) for f in glob.glob('k8s/**/*.yml', recursive=True)]; print('yaml ok')" \
   && kubeconform -strict -summary k8s/all.yml
 ```
+
+---
+
+## 九、修复记录（本次提交）
+
+### A-1 volumeClaimTemplates 缩进（已修复）
+
+改动：k8s/pods/mongodb-statefulset.yml 与 k8s/all.yml 中，把 volumeClaimTemplates 从文档根级移到 spec 下（缩进 2 空格），与 serviceName/selector/template 同级。
+
+修复后结构自检（Python + PyYAML）：
+
+```
+k8s/all.yml                       root keys: ['apiVersion','kind','metadata','spec']
+  spec.volumeClaimTemplates: True | temps: ['mongodb-data']
+  volumeMounts: [{'name': 'mongodb-data', 'mountPath': '/data/db'}]
+k8s/pods/mongodb-statefulset.yml  root keys: ['apiVersion','kind','metadata','spec']
+  spec.volumeClaimTemplates: True | temps: ['mongodb-data']
+  volumeMounts: [{'name': 'mongodb-data', 'mountPath': '/data/db'}]
+```
+
+修复后 kubeconform 复跑：
+
+```bash
+/tmp/kubeconform -strict -summary -ignore-missing-schemas k8s/all.yml $(find k8s -name "*.yml" | sort)
+```
+
+```
+Summary: 20 resources found in 11 files - Valid: 20, Invalid: 0, Errors: 0, Skipped: 0
+```
+
+### 仍未处理（留待后续）
+
+- B 档 13 项（探针、resources、webserver 持久卷与 jwt.secret 稳定性、启动顺序、NodeName、Redis 持久化）保持原样，原因见上表「建议修复」栏。
+- A-2 storageClassName 未写死，部署前请按第四节执行 kubectl get sc 确认默认 StorageClass。
+

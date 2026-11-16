@@ -83,17 +83,17 @@ spec:
             - name: mongodb-data
               mountPath: /data/db
 
-volumeClaimTemplates:
-  - metadata:
-      name: mongodb-data
+  volumeClaimTemplates:
+    - metadata:
+        name: mongodb-data
 
-    spec:
-      accessModes:
-        - ReadWriteOnce
+      spec:
+        accessModes:
+          - ReadWriteOnce
 
-      resources:
-        requests:
-          storage: 20Gi
+        resources:
+          requests:
+            storage: 20Gi
 
 ---
 # redis 
