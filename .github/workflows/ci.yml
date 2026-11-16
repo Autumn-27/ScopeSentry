@@ -107,18 +107,12 @@ jobs:
           corepack prepare pnpm@9.1.1 --activate
           pnpm -v
 
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/pnpm/store
-          key: pnpm-${{ runner.os }}-${{ hashFiles('frontend/package.json') }}
-          restore-keys: pnpm-${{ runner.os }}-
-
-      # 仓库没有提交 lockfile；husky 的 prepare 在子目录里会失败，用 HUSKY=0 跳过
+      # 自建 runner 的 pnpm store 常驻 ~/.local/share/pnpm/store，
+      # 再上传到 Actions cache 既慢又容易在 post 步骤被取消（会让 job 判失败）
       - name: Install dependencies
         env:
           HUSKY: '0'
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --no-frozen-lockfile --prefer-offline
 
       - name: Build (mode=pro)
         run: pnpm build:pro
