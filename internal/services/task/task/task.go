@@ -35,6 +35,7 @@ type Service interface {
 	List(ctx *gin.Context, search string, pageIndex, pageSize int) ([]models.Task, int64, error)
 	CheckTaskNameExists(ctx *gin.Context, name string) (bool, error)
 	GetTaskDetail(ctx *gin.Context, taskID string) (*models.Task, error)
+	GetTasksByIDs(ctx *gin.Context, ids []string) ([]models.Task, error)
 	DeleteTasks(ctx *gin.Context, ids []string, delA bool) error
 	RetestTask(ctx context.Context, id string) error
 	StopTasks(ctx *gin.Context, ids []string) error
@@ -124,6 +125,25 @@ func (s *service) GetTaskDetail(ctx *gin.Context, taskID string) (*models.Task, 
 	}
 
 	return task, nil
+}
+
+// GetTasksByIDs 按任务 ID 批量查询任务（同步到项目时使用，见 issue #317）。
+func (s *service) GetTasksByIDs(ctx *gin.Context, ids []string) ([]models.Task, error) {
+	objIDs := make([]primitive.ObjectID, 0, len(ids))
+	for _, id := range ids {
+		if strings.TrimSpace(id) == "" {
+			continue
+		}
+		oid, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			return nil, fmt.Errorf("invalid task id %q: %w", id, err)
+		}
+		objIDs = append(objIDs, oid)
+	}
+	if len(objIDs) == 0 {
+		return nil, nil
+	}
+	return s.taskRepo.Find(ctx.Request.Context(), bson.M{"_id": bson.M{"$in": objIDs}}, nil)
 }
 
 // DeleteTasks 批量删除任务
