@@ -86,3 +86,17 @@ node scripts/check-locales.mjs        # en/zh-CN/ko-KR 869 键一致
 | 改造前（深色） | 改造后（深色） |
 | --- | --- |
 | ![before](./images/ui/before-dashboard-dark.png) | ![after](./images/ui/dashboard-dark.png) |
+
+## 第二轮：细节修正（按实际使用反馈）
+
+| 问题 | 处理 |
+| --- | --- |
+| 登录表单出现「框中框」、输入框焦点双环、字段过密 | 移除表单自带的 `dark:border-1` 内框；焦点只保留 1px 主色 + 3px 9% 光晕；label 13px/次级色；字段间距 20px、输入 42px、按钮 44px；Chrome 自动填充在深色下不再变白 |
+| 每次进页面都弹「版本信息获取成功」 | 读请求（GET，或返回 `{list,total}` 的 POST 查询）不再弹成功提示；写操作保留；需要时可用 `showSuccessMessage: true` 强制 |
+| 后端新 key 未翻译时把 `api.user.login.success` 原样弹给用户 | `translateApiMessage` 对未注册的 `*.success` 回退为通用「操作成功」 |
+| `el-form-item:last-child { margin-bottom: 0 }` 误伤所有字段（Element 每个字段独占一个 col，全是 last-child） | 删除该规则，登录卡片高度从 290px 恢复到 432px |
+| 标签页 pill 太宽、带竖分隔线 | 高度 28px、内边距 10px、右间距 6px、垂直居中；去掉工具按钮的竖线 |
+| 插件页搜索按钮被 `height:100%` 压成 16px | 去掉内联高度，行内统一 38px |
+| 进插件页自动弹「插件 Key」对话框 | 挂载时不再强弹；工具栏输入框可直接填 |
+| 表格每行四个实心彩色按钮，视觉噪音大 | 表格内操作按钮改文字按钮：28px、透明底、语义色文字、hover 才加浅底 |
+| 按钮图标与文字间距为 0 | `.el-button` 用 flex `gap: 8px`，并把 Element 自带 6px margin 归零 |

@@ -375,9 +375,7 @@ const pluginKey = ref('')
 
 const LoadPluginKey = () => {
   const key = localStorage.getItem(`plugin_key`) as string
-  if (!key) {
-    keyDialogVisible.value = true
-  }
+  // 同 ClientPlugin：不在挂载时强弹 Key 对话框
   pluginKey.value = key || ''
 }
 
@@ -652,7 +650,7 @@ const handleFileChange = (_file, fileList) => {
         <ElInput v-model="search" :placeholder="t('common.inputText')" style="height: 38px" />
       </ElCol>
       <ElCol :span="5">
-        <ElButton type="primary" :icon="searchicon" style="height: 100%" @click="handleSearch"
+        <ElButton type="primary" :icon="searchicon" @click="handleSearch"
           >{{ t('common.search') }}</ElButton
         >
       </ElCol>
@@ -871,5 +869,9 @@ const handleFileChange = (_file, fileList) => {
 }
 .locale-search-row .el-text {
   white-space: nowrap;
+}
+/* 搜索按钮与输入框同高 */
+.locale-search-row .el-button {
+  height: 38px;
 }
 </style>

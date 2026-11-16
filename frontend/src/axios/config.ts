@@ -36,7 +36,16 @@ const defaultResponseInterceptors = (response: AxiosResponse) => {
     // 如果是文件流，直接过
     return response
   } else if (response.data.code === SUCCESS_CODE) {
-    if (response?.data?.message) {
+    // 读请求不弹成功提示：像"版本信息获取成功"这种每次进页面都弹，属于噪音。
+    // 需要时可在请求配置里显式传 showSuccessMessage: true 打开。
+    const method = String(response?.config?.method || 'get').toLowerCase()
+    const forceSuccessMessage = (response?.config as Recordable)?.showSuccessMessage === true
+    // 列表查询在这个项目里走 POST（返回 { list, total }），同样不该弹"操作成功"
+    const payload = response?.data?.data
+    const looksLikeQuery =
+      !!payload && typeof payload === 'object' && ('list' in payload || 'total' in payload)
+    const isRead = method === 'get' || looksLikeQuery
+    if (response?.data?.message && (!isRead || forceSuccessMessage)) {
       ElMessage.success(translateApiMessage(response?.data?.message))
     }
     return response.data

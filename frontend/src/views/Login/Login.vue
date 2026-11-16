@@ -197,7 +197,7 @@ const year = new Date().getFullYear()
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 48px 24px;
+    padding: 48px 24px 72px;
     background:
       radial-gradient(760px 420px at 80% 0%, rgb(47 111 235 / 8%), transparent 60%),
       var(--el-bg-color-page);
@@ -214,8 +214,8 @@ const year = new Date().getFullYear()
 
   &__card {
     width: 100%;
-    max-width: 404px;
-    padding: 32px 32px 26px;
+    max-width: 420px;
+    padding: 32px 32px 28px;
     background: var(--app-surface);
     border: 1px solid var(--app-border);
     border-radius: 16px;
@@ -223,12 +223,12 @@ const year = new Date().getFullYear()
   }
 
   &__card-head {
-    margin-bottom: 22px;
+    margin-bottom: 24px;
 
     h2 {
       margin: 0 0 8px;
       font-size: 22px;
-      font-weight: 700;
+      font-weight: 650;
       letter-spacing: -0.02em;
     }
 
@@ -239,10 +239,59 @@ const year = new Date().getFullYear()
     }
   }
 
+  /* 登录表单细节：与卡片保持同一套留白和圆角，避免出现"框中框" */
+  &__card :deep(.login-form) {
+    .el-form-item {
+      margin-bottom: 20px;
+    }
+
+    .el-form-item--label-top .el-form-item__label {
+      margin-bottom: 8px;
+    }
+
+    .el-input__wrapper {
+      min-height: 42px;
+      padding: 1px 12px;
+      border-radius: 10px;
+    }
+
+    .el-checkbox {
+      height: 24px;
+      margin-right: 0;
+    }
+
+    .el-checkbox__label {
+      padding-left: 8px;
+      font-size: 13px;
+      color: var(--el-text-color-secondary);
+    }
+
+    .el-button {
+      height: 44px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 10px;
+    }
+
+    /* Chrome 自动填充在深色下会强行变白，这里压回主题色 */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus {
+      -webkit-text-fill-color: var(--el-text-color-primary);
+      caret-color: var(--el-text-color-primary);
+      box-shadow: 0 0 0 1000px var(--app-surface) inset;
+      transition: background-color 9999s ease-out 0s;
+    }
+  }
+
   &__panel-foot {
-    margin-top: 28px;
+    position: absolute;
+    right: 0;
+    bottom: 24px;
+    left: 0;
     font-size: 12px;
     color: var(--el-text-color-placeholder);
+    text-align: center;
   }
 
   /* ---------------- 响应式 ---------------- */

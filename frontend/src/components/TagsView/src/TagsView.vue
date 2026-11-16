@@ -586,12 +586,22 @@ watch(
  * Modern 覆盖：标签页改成 pill，浅色/深色统一走 token
  * （放在 scoped 块末尾，顺序在旧的 .dark 规则之后）
  * ------------------------------------------------------------------------- */
+/* 去掉左右工具按钮上的竖分隔线，标签栏更干净 */
+.@{prefix-cls}__tool::before,
+.@{prefix-cls}__tool--first::before {
+  display: none;
+}
+
 .@{prefix-cls}__item {
   top: 0;
   height: 28px;
-  margin: 0 4px;
-  padding: 0 12px;
+  margin: 7px 6px 0 0;
+  padding: 0 10px;
+  overflow: hidden;
   font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
   font-weight: 500;
   color: var(--el-text-color-regular);
   background: var(--app-surface);

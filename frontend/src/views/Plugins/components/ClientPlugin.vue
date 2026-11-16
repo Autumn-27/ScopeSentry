@@ -329,9 +329,8 @@ const pluginKey = ref('')
 
 const LoadPluginKey = () => {
   const key = localStorage.getItem(`plugin_key`) as string
-  if (!key) {
-    keyDialogVisible.value = true
-  }
+  // 进页面不再自动弹「插件 Key」对话框：工具栏里就能直接填，
+  // 只有真正需要校验（打开插件市场/安装）时才提示。
   pluginKey.value = key || ''
 }
 
@@ -489,7 +488,7 @@ defineExpose({
         <ElInput v-model="search" :placeholder="t('common.inputText')" style="height: 38px" />
       </ElCol>
       <ElCol :span="5">
-        <ElButton type="primary" :icon="searchicon" style="height: 100%" @click="handleSearch"
+        <ElButton type="primary" :icon="searchicon" @click="handleSearch"
           >{{ t('common.search') }}</ElButton
         >
       </ElCol>
@@ -709,5 +708,9 @@ defineExpose({
 }
 .locale-search-row .el-text {
   white-space: nowrap;
+}
+/* 搜索按钮与输入框同高，之前 height:100% 在小屏/自动高度下会塌成 16px */
+.locale-search-row .el-button {
+  height: 38px;
 }
 </style>
