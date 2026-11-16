@@ -23,9 +23,10 @@ func registerTemplateRoutes() models.RouteGroup {
 				Middlewares: common.WithAuth(),
 			},
 			{
-				Method:  "POST",
-				Path:    "/delete",
-				Handler: taskHandler.Delete,
+				Method:      "POST",
+				Path:        "/delete",
+				Handler:     taskHandler.Delete,
+				Middlewares: common.WithAuth(),
 			},
 			{
 				Method:      "POST",
