@@ -1,6 +1,7 @@
 import { AxiosResponse, AxiosRequestHeaders, InternalAxiosRequestConfig } from './types'
 import { ElMessage } from 'element-plus'
 import qs from 'qs'
+import { translateApiMessage } from './translateMessage'
 import { SUCCESS_CODE } from '@/constants'
 import { useUserStoreWithOut } from '@/store/modules/user'
 
@@ -36,11 +37,11 @@ const defaultResponseInterceptors = (response: AxiosResponse) => {
     return response
   } else if (response.data.code === SUCCESS_CODE) {
     if (response?.data?.message) {
-      ElMessage.success(response?.data?.message)
+      ElMessage.success(translateApiMessage(response?.data?.message))
     }
     return response.data
   } else {
-    ElMessage.error(response?.data?.message)
+    ElMessage.error(translateApiMessage(response?.data?.message))
     if (response?.data?.code === 401) {
       const userStore = useUserStoreWithOut()
       userStore.logout()

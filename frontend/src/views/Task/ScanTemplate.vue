@@ -81,7 +81,7 @@ const closeDialog = () => {
 }
 const confirmDeleteSelect = async () => {
   ElMessageBox({
-    title: 'Delete',
+    title: t('common.delete'),
     draggable: true
   }).then(async () => {
     await delSelect()
@@ -90,7 +90,7 @@ const confirmDeleteSelect = async () => {
 
 const confirmDelete = async (data) => {
   ElMessageBox({
-    title: 'Delete',
+    title: t('common.delete'),
     draggable: true
   }).then(async () => {
     await del(data)
@@ -165,7 +165,7 @@ const editTemplate = async (data) => {
       </ElCol>
       <ElCol :span="5" style="position: relative; left: 16px">
         <ElButton type="primary" :icon="searchicon" style="height: 100%" @click="handleSearch"
-          >Search</ElButton
+          >{{ t('common.search') }}</ElButton
         >
       </ElCol>
     </ElRow>

@@ -132,7 +132,7 @@ const delSelect = async () => {
   }
 }
 const confirmDelete = async () => {
-  const confirmed = window.confirm('Are you sure you want to delete the selected data?')
+  const confirmed = window.confirm(t('common.delMessage'))
   if (confirmed) {
     await delSelect()
   }
@@ -169,9 +169,9 @@ onMounted(() => {
 const handleUpdate = async () => {
   try {
     // 二次确认
-    await ElMessageBox.confirm(`确定要更新 ${updateCount.value} 条指纹数据吗？`, '确认更新', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('localization.fingerprintUpdateConfirm', { count: updateCount.value }), t('localization.confirmUpdate'), {
+      confirmButtonText: t('common.ok'),
+      cancelButtonText: t('common.cancel'),
       type: 'warning'
     })
 
@@ -182,7 +182,7 @@ const handleUpdate = async () => {
     const fingerprints = fingerprintsRes.data.data || []
 
     if (fingerprints.length === 0) {
-      ElMessage.warning('没有需要更新的数据')
+      ElMessage.warning(t('localization.noUpdates'))
       updateLoading.value = false
       return
     }
@@ -190,7 +190,7 @@ const handleUpdate = async () => {
     // 批量添加指纹
     await batchAddFingerprintApi(fingerprints)
 
-    ElMessage.success(`成功更新 ${fingerprints.length} 条指纹数据`)
+    ElMessage.success(t('localization.fingerprintUpdated', { count: fingerprints.length }))
 
     // 刷新列表和数量
     await getList()
@@ -198,7 +198,7 @@ const handleUpdate = async () => {
   } catch (error: any) {
     if (error !== 'cancel') {
       console.error('Error updating fingerprints:', error)
-      ElMessage.error(error?.message || '更新失败，请稍后重试')
+      ElMessage.error(error?.message || t('localization.updateFailed'))
     }
   } finally {
     updateLoading.value = false
@@ -219,7 +219,7 @@ const handleUpdate = async () => {
       </ElCol>
       <ElCol :span="5">
         <ElButton type="primary" :icon="searchicon" style="height: 38px" @click="handleSearch"
-          >Search</ElButton
+          >{{ t('common.search') }}</ElButton
         >
       </ElCol>
     </ElRow>

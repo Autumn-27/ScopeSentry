@@ -28,7 +28,7 @@ const taskColums = reactive<TableColumn[]>([
   },
   {
     field: 'url',
-    label: 'URL'
+    label: t('dashboard.URL')
   },
   {
     field: 'action',
@@ -69,14 +69,14 @@ function tableHeaderColor() {
 }
 
 const confirmDeleteSelect = async () => {
-  const confirmed = window.confirm('Are you sure you want to delete the selected data?')
+  const confirmed = window.confirm(t('common.delMessage'))
   if (confirmed) {
     await delSelect()
   }
 }
 
 const confirmDelete = async (data) => {
-  const confirmed = window.confirm('Are you sure you want to delete the selected data?')
+  const confirmed = window.confirm(t('common.delMessage'))
   if (confirmed) {
     await del(data)
   }
@@ -149,7 +149,7 @@ const submitAddPageMonitForm = async () => {
       </ElCol>
       <ElCol :span="5" style="position: relative; left: 16px">
         <ElButton type="primary" :icon="searchicon" style="height: 100%" @click="handleSearch"
-          >Search</ElButton
+          >{{ t('common.search') }}</ElButton
         >
       </ElCol>
     </ElRow>
@@ -207,7 +207,7 @@ const submitAddPageMonitForm = async () => {
     maxHeight="100"
   >
     <ElForm :model="pageMontForm" label-width="auto" status-icon ref="ruleFormRef">
-      <ElFormItem label="URL" prop="url">
+      <ElFormItem :label="t('dashboard.URL')" prop="url">
         <ElInput v-model="pageMontForm.url" placeholder="Input URL. Eg: http(s)://xxx.com" />
       </ElFormItem>
       <ElRow>

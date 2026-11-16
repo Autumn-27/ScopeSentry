@@ -105,7 +105,7 @@ const DeduplicationConfigLoading = ref(false)
               :min="1"
               controls-position="right"
               size="small"
-            /><ElText style="position: relative; left: 16px">Hour</ElText>
+            /><ElText style="position: relative; left: 16px">{{ t('task.hour') }}</ElText>
           </ElFormItem>
         </ElCol>
       </ElRow>

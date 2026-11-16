@@ -156,7 +156,7 @@ const onClick = (name) => {
 }
 const delLoading = ref(false)
 const confirmDelete = async (data) => {
-  const confirmed = window.confirm('Are you sure you want to delete the selected data?')
+  const confirmed = window.confirm(t('common.delMessage'))
   if (confirmed) {
     await del(data)
   }
@@ -175,7 +175,7 @@ const del = async (data) => {
   }
 }
 const confirmDeleteSelect = async () => {
-  const confirmed = window.confirm('Are you sure you want to delete the selected data?')
+  const confirmed = window.confirm(t('common.delMessage'))
   if (confirmed) {
     await delSelect()
   }
@@ -240,7 +240,7 @@ const filetype = ref('csv')
             :indeterminate="isIndeterminate"
             @change="handleCheckAllChange"
           >
-            All
+            {{ t('common.all') }}
           </ElCheckbox>
         </ElFormItem>
         <ElFormItem label=" ">

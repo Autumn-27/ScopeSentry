@@ -51,12 +51,13 @@ const currentLocale = computed(() => localeStore.currentLocale)
 </script>
 
 <template>
+  <!-- Keep the provider alive; recreate only setup-time translated content. -->
   <ElConfigProvider
     :namespace="variables.elNamespace"
     :locale="currentLocale.elLocale"
     :message="{ max: 1 }"
     :size="size"
   >
-    <slot></slot>
+    <slot :key="currentLocale.lang"></slot>
   </ElConfigProvider>
 </template>

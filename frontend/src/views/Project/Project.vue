@@ -75,7 +75,7 @@ const deleteicon = useIcon({ icon: 'openmoji:delete' })
 const delSelect = async () => {
   const deleteAsset = ref<boolean>(false)
   ElMessageBox({
-    title: 'Delete',
+    title: t('common.delete'),
     draggable: true,
     // Should pass a function if VNode contains dynamic props
     message: () =>
@@ -99,14 +99,14 @@ const selectedRowIds = ref([])
 
 <template>
   <ContentWrap>
-    <ElRow style="margin-bottom: 20px" :gutter="20">
+    <ElRow class="locale-search-row" style="margin-bottom: 20px">
       <ElCol :span="0.5">
-        <ElText class="mx-1" style="position: relative; top: 8px">{{ t('form.input') }}:</ElText>
+        <ElText class="mx-1">{{ t('common.search') }}:</ElText>
       </ElCol>
       <ElCol :span="5">
         <ElInput v-model="search" :placeholder="t('common.inputText')" style="height: 38px" />
       </ElCol>
-      <ElCol :span="5" style="position: relative; left: 16px">
+      <ElCol :span="5">
         <ElButton
           :loading="loading"
           type="primary"
@@ -117,7 +117,7 @@ const selectedRowIds = ref([])
         />
       </ElCol>
     </ElRow>
-    <ElRow style="margin-bottom: 0%">
+    <ElRow class="locale-actions-row" style="margin-bottom: 0%">
       <ElCol :span="2">
         <div class="mb-10px">
           <ElButton type="primary" @click="addProject">{{ t('project.addProject') }}</ElButton>
@@ -130,8 +130,8 @@ const selectedRowIds = ref([])
               v-model="multipleSelection"
               class="mb-2"
               inline-prompt
-              active-text="Yes"
-              inactive-text="No"
+              :active-text="t('common.on')"
+              :inactive-text="t('common.off')"
             />
           </ElFormItem>
         </ElForm>
@@ -153,7 +153,7 @@ const selectedRowIds = ref([])
       </ElCol>
     </ElRow>
     <ElTabs class="demo-tabs" v-loading="projectListLoading">
-      <ElTabPane :label="`All (${tagNum['All']})`"
+      <ElTabPane :label="`${t('common.all')} (${tagNum['All']})`"
         ><ProjectList
           :tableDataList="allProjectData['All']"
           :getProjectTag="getProjectTag"
@@ -195,4 +195,25 @@ const selectedRowIds = ref([])
   font-size: 32px;
   font-weight: 600;
 }
+</style>
+
+<style scoped>
+.locale-search-row {
+  align-items: center;
+  gap: 12px;
+}
+.locale-search-row > .el-col {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: 100%;
+}
+.locale-search-row > .el-col:nth-child(2) {
+  flex: 0 1 260px;
+  min-width: 0;
+}
+.locale-search-row .el-text {
+  white-space: nowrap;
+}
+.locale-actions-row { align-items: center; gap: 16px; }
+.locale-actions-row > .el-col { flex: 0 0 auto; width: auto; max-width: 100%; }
 </style>

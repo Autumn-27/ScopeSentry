@@ -414,7 +414,7 @@ const onSubmit = async () => {
   saveLoading.value = true
   const result: Record<string, any> = {}
   if (templateName.value == '') {
-    ElMessage.error('name 不能为空')
+    ElMessage.error(t('localization.nameRequired'))
     saveLoading.value = false
     return
   }
@@ -453,16 +453,16 @@ const onSubmit = async () => {
     console.log(result)
 
     if (res.code === 200) {
-      ElMessage.success('success')
+      ElMessage.success(t('common.success'))
       // 提交成功才执行父组件逻辑
       props.closeDialog()
       props.getList()
     } else {
       // 提交失败
-      ElMessage.error(res.message || 'error')
+      ElMessage.error(res.message || t('localization.operationFailed'))
     }
   } catch (error) {
-    ElMessage.error('error')
+    ElMessage.error(t('localization.operationFailed'))
     console.error(error)
   } finally {
     saveLoading.value = false
@@ -738,7 +738,7 @@ const handleCheckChange = (data, checked) => {
                   v-model="vulList"
                   filterable
                   :options="vulSelectOptions"
-                  placeholder="Please select vul"
+                  :placeholder="t('localization.selectVul')"
                   style="width: 80%; margin-right: 10px"
                   multiple
                   collapse-tags
@@ -776,13 +776,13 @@ const handleCheckChange = (data, checked) => {
     </div>
     <ElRow>
       <ElCol :span="12" style="text-align: right">
-        <ElButton type="primary" @click="onSubmit" :loading="saveLoading"> 保存 </ElButton>
+        <ElButton type="primary" @click="onSubmit" :loading="saveLoading"> {{ t('common.save') }} </ElButton>
       </ElCol>
     </ElRow>
   </ElForm>
   <Dialog
     v-model="dialogVisible"
-    title="POC"
+    :title="t('router.pocManagement')"
     center
     fullscreen
     style="border-radius: 15px; box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3)"
@@ -873,8 +873,8 @@ const handleCheckChange = (data, checked) => {
                         :placeholder="t('plugin.defaultValue')"
                         @change="handleParameterListChange(currentPluginModule, currentPluginHash)"
                       >
-                        <ElOption label="true" value="true" />
-                        <ElOption label="false" value="false" />
+                        <ElOption :label="t('common.true')" value="true" />
+                        <ElOption :label="t('common.false')" value="false" />
                       </ElSelect>
                       <ElInput
                         v-else

@@ -184,14 +184,14 @@ const getTaskContent = async (data) => {
 }
 
 const confirmDeleteSelect = async () => {
-  const confirmed = window.confirm('Are you sure you want to delete the selected data?')
+  const confirmed = window.confirm(t('common.delMessage'))
   if (confirmed) {
     await delSelect()
   }
 }
 
 const confirmDelete = async (data) => {
-  const confirmed = window.confirm('Are you sure you want to delete the selected data?')
+  const confirmed = window.confirm(t('common.delMessage'))
   if (confirmed) {
     await del(data)
   }
@@ -317,7 +317,7 @@ const addTask = async () => {
       </ElCol>
       <ElCol :span="5" style="position: relative; left: 16px">
         <ElButton type="primary" :icon="searchicon" style="height: 100%" @click="handleSearch"
-          >Search</ElButton
+          >{{ t('common.search') }}</ElButton
         >
       </ElCol>
     </ElRow>
@@ -410,7 +410,7 @@ const addTask = async () => {
                   v-model="pageMontForm.node"
                   filterable
                   :options="nodeOptions"
-                  placeholder="Please select node"
+                  :placeholder="t('task.nodeMsg')"
                   style="width: 80%"
                   multiple
                   tag-type="success"
@@ -425,7 +425,7 @@ const addTask = async () => {
                       :indeterminate="indeterminate"
                       @change="handleCheckAll"
                     >
-                      All
+                      {{ t('common.all') }}
                     </ElCheckbox>
                   </template>
                 </ElSelectV2>
@@ -437,7 +437,7 @@ const addTask = async () => {
                 :min="1"
                 controls-position="right"
                 size="small"
-              /><ElText style="position: relative; left: 16px">Hour</ElText>
+              /><ElText style="position: relative; left: 16px">{{ t('task.hour') }}</ElText>
             </ElFormItem>
             <ElFormItem :label="t('common.state')">
               <ElSwitch

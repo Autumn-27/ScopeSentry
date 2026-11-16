@@ -5,7 +5,21 @@ import { useLocaleStoreWithOut } from '@/store/modules/locale'
 const TIME_AGO_MESSAGE_MAP: {
   'zh-CN': UseTimeAgoMessages
   en: UseTimeAgoMessages
-} = {
+  'ko-KR': UseTimeAgoMessages
+ } = {
+  'ko-KR': {
+    justNow: '방금',
+    invalid: '유효하지 않은 날짜',
+    past: (n) => /\d/.test(n) ? n + ' 전' : n,
+    future: (n) => /\d/.test(n) ? n + ' 후' : n,
+    month: (n) => n + '개월',
+    year: (n) => n + '년',
+    day: (n) => n + '일',
+    week: (n) => n + '주',
+    hour: (n) => n + '시간',
+    minute: (n) => n + '분',
+    second: (n) => n + '초'
+  },
   'zh-CN': {
     justNow: '刚刚',
     invalid: '无效时间',

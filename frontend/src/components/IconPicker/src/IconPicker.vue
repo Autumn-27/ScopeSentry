@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '@/hooks/web/useI18n'
+const { t } = useI18n()
 import epIcons from './data/icons.ep'
 import antIcons from './data/icons.ant-design'
 import tIcons from './data/icons.tdesign'
@@ -124,7 +126,7 @@ const inputClear = () => {
           v-model="search"
           class="mb-20px"
           clearable
-          placeholder="搜索图标"
+          :placeholder="t('localization.searchIcons')"
           @clear="inputClear"
         />
         <ElTabs tab-position="left" v-model="iconName" @tab-change="tabChange">

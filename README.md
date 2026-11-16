@@ -2,7 +2,7 @@
 	<img src="docs/images/favicon.ico"/>
 </div>
 
-English | [中文](./README_CN.md)
+English | [中文](./README_CN.md) | [한국어](./README_KR.md)
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Autumn-27/ScopeSentry-Scan)
 
@@ -91,6 +91,24 @@ Discord:
 [https://discord.gg/agsYdAyN](https://discord.gg/agsYdAyN)
 
 
+## Korean UI screenshots
+
+These cropped screenshots show authenticated, read-only Korean UI checks against an existing backend. Account identifiers and operational data are excluded. They are partial views, not evidence of complete feature or translation coverage. Known untranslated messages and layout limitations are documented in the [integration evidence](docs/korean-localization/integration-evidence.md).
+
+| Dashboard summary | Asset search and empty list |
+|---|---|
+| ![Korean dashboard summary](docs/korean-localization/screenshots/korean-dashboard.png) | ![Korean asset search](docs/korean-localization/screenshots/korean-assets.png) |
+
+| Scan task list | Plugin controls and headers |
+|---|---|
+| ![Korean scan tasks](docs/korean-localization/screenshots/korean-scan-tasks.png) | ![Korean plugin controls](docs/korean-localization/screenshots/korean-plugins.png) |
+
+Project search and localized All tab:
+
+![Korean projects](docs/korean-localization/screenshots/korean-projects.png)
+
+[System settings heading](docs/korean-localization/screenshots/korean-settings.png) is retained separately; configuration values are excluded.
+
 ## Screenshots
 
 ### Login
@@ -171,6 +189,10 @@ Discord:
 
 ![](docs/images/node-cn.png)
 
+
+## Interface languages
+
+The UI supports 简体中文, English, and 한국어 (`ko-KR`). Choose a language from the language menu; the selection is saved locally. Korean includes Element Plus translations and English fallback. See the [Korean README](README_KR.md) for build commands and validation limits.
 
 #License
 

@@ -1,3 +1,5 @@
+import { useI18n } from '@/hooks/web/useI18n'
+import { translateApiMessage } from './translateMessage'
 import axios, { AxiosError } from 'axios'
 import { defaultRequestInterceptors, defaultResponseInterceptors } from './config'
 
@@ -37,16 +39,16 @@ axiosInstance.interceptors.response.use(
       // 显示后端返回的具体错误消息
       const errorMsg =
         responseData.data && responseData.data !== ''
-          ? responseData.message + ':' + responseData.data
-          : responseData.message
-      ElMessage.error(errorMsg || 'Request failed')
+          ? translateApiMessage(responseData.message) + ':' + responseData.data
+          : translateApiMessage(responseData.message)
+      ElMessage.error(errorMsg || useI18n().t('localization.requestFailed'))
       if (error.response?.status === 401) {
         const userStore = useUserStoreWithOut()
         userStore.logout()
       }
     } else {
       // 如果没有响应数据，显示网络错误或其他错误
-      ElMessage.error(error.message || 'NetworkError')
+      ElMessage.error(error.message || useI18n().t('localization.networkError'))
     }
     return Promise.reject(error)
   }

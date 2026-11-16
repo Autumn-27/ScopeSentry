@@ -37,26 +37,26 @@ const taskColums = reactive<TableColumn[]>([
   },
   {
     field: 'name',
-    label: 'Name',
+    label: t('common.name'),
     minWidth: 20
   },
   {
     field: 'method',
-    label: 'Method',
+    label: t('localization.method'),
     minWidth: 20
   },
   {
     field: 'url',
-    label: 'URL'
+    label: t('dashboard.URL')
   },
   {
     field: 'contentType',
-    label: 'Content Type',
+    label: t('localization.contentType'),
     minWidth: 25
   },
   {
     field: 'data',
-    label: 'POST DATA'
+    label: t('localization.postData')
   },
   {
     field: 'state',
@@ -215,7 +215,7 @@ const del = async (data) => {
 const ids = ref<string[]>([])
 
 const confirmDelete = async () => {
-  const confirmed = window.confirm('Are you sure you want to delete the selected data?')
+  const confirmed = window.confirm(t('common.delMessage'))
   if (confirmed) {
     await delSelect()
   }
@@ -389,25 +389,25 @@ const delSelect = async () => {
       ref="ruleFormRef"
       style="position: relative; top: 1rem"
     >
-      <ElFormItem label="Name" prop="name">
+      <ElFormItem :label="t('common.name')" prop="name">
         <ElInput v-model="notificationForm.name" placeholder="Input name." />
       </ElFormItem>
-      <ElFormItem label="Method" prop="method">
+      <ElFormItem :label="t('localization.method')" prop="method">
         <ElRadioGroup v-model="notificationForm.method">
           <ElRadio value="GET">GET</ElRadio>
           <ElRadio value="POST">POST</ElRadio>
         </ElRadioGroup>
       </ElFormItem>
-      <ElFormItem label="URL" prop="url">
+      <ElFormItem :label="t('dashboard.URL')" prop="url">
         <ElInput v-model="notificationForm.url" placeholder="Input URL." />
       </ElFormItem>
-      <ElFormItem label="Data Type" prop="contentType" v-if="notificationForm.method == 'POST'">
+      <ElFormItem :label="t('localization.dataType')" prop="contentType" v-if="notificationForm.method == 'POST'">
         <ElRadioGroup v-model="notificationForm.contentType">
           <ElRadio value="raw">Raw</ElRadio>
           <ElRadio value="json">Json</ElRadio>
         </ElRadioGroup>
       </ElFormItem>
-      <ElFormItem label="Data" prop="Data" v-if="notificationForm.method == 'POST'">
+      <ElFormItem :label="t('task.data')" prop="Data" v-if="notificationForm.method == 'POST'">
         <ElInput v-model="notificationForm.data" placeholder="Input POST Data." />
       </ElFormItem>
       <ElFormItem :label="t('common.state')">

@@ -79,9 +79,9 @@ const nodeColums = reactive<TableColumn[]>([
             onSuccess: (response) => {
               console.log(response.code)
               if (response.code === 200) {
-                ElMessage.success('Upload succes')
+                ElMessage.success(t('localization.uploadSuccess'))
               } else {
-                ElMessage.error('Upload failed')
+                ElMessage.error(t('localization.uploadFailed'))
               }
               getList()
             },
@@ -143,7 +143,7 @@ const form = ref({
 })
 const delLoading = ref(false)
 const del = async (data) => {
-  const confirmed = window.confirm('Are you sure you want to delete this data?')
+  const confirmed = window.confirm(t('common.delMessage'))
 
   if (!confirmed) {
     return
@@ -178,7 +178,7 @@ const delSelect = async () => {
   }
 }
 const confirmDelete = async () => {
-  const confirmed = window.confirm('Are you sure you want to delete the selected data?')
+  const confirmed = window.confirm(t('common.delMessage'))
   if (confirmed) {
     await delSelect()
   }
@@ -197,7 +197,7 @@ async function customRequest(option) {
     await createDictApi(formData) // 传递文件和其他参数
     getList() // 假设 getList 是一个用于获取更新后的数据的函数
     dialogVisible.value = false
-    ElMessage.success('Upload success')
+    ElMessage.success(t('localization.uploadSuccess'))
   } catch (error) {
     ElMessage.error(`Upload failed: ${error}`)
   }
@@ -263,10 +263,10 @@ const downloadFile = async (id, name) => {
   >
     <ElForm :model="form" label-width="120px" class="upload-form">
       <ElFormItem :label="t('common.name')">
-        <el-input v-model="form.name" placeholder="Enter name" />
+        <el-input v-model="form.name" :placeholder="t('localization.enterName')" />
       </ElFormItem>
       <ElFormItem :label="t('common.category')">
-        <el-input v-model="form.category" placeholder="Enter category" />
+        <el-input v-model="form.category" :placeholder="t('localization.enterCategory')" />
       </ElFormItem>
       <ElFormItem label="">
         <ElUpload
@@ -281,7 +281,7 @@ const downloadFile = async (id, name) => {
         </ElUpload>
       </ElFormItem>
       <ElFormItem>
-        <ElButton type="primary" @click="handleSubmit">Submit</ElButton>
+        <ElButton type="primary" @click="handleSubmit">{{ t('common.submit') }}</ElButton>
       </ElFormItem>
     </ElForm>
   </Dialog>

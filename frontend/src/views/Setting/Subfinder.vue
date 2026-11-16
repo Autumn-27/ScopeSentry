@@ -36,7 +36,7 @@ const nodeColums = reactive<TableColumn[]>([
       console.log(row)
       return (
         <>
-          <BaseButton type="primary">{t('poc.edit')}</BaseButton>
+          <BaseButton type="primary">{t('common.edit')}</BaseButton>
         </>
       )
     }
@@ -70,7 +70,7 @@ function tableHeaderColor() {
       </ElCol>
       <ElCol :span="5" style="position: relative; left: 16px">
         <ElButton type="primary" :icon="searchicon" style="height: 100%" @click="handleSearch"
-          >Search</ElButton
+          >{{ t('common.search') }}</ElButton
         >
       </ElCol>
     </ElRow>
@@ -78,7 +78,7 @@ function tableHeaderColor() {
       <ElCol style="position: relative; top: 16px">
         <div class="mb-10px">
           <BaseButton type="danger">
-            {{ t('poc.delete') }}
+            {{ t('common.delete') }}
           </BaseButton>
         </div>
       </ElCol>
