@@ -70,7 +70,7 @@ func TemplateDetail(c *gin.Context) {
 
 	result, err := templateService.Detail(c, req.ID)
 	if err != nil {
-		logger.Error(fmt.Sprintf("TemplateDetail error", err))
+		logger.Error(fmt.Sprintf("TemplateDetail error: %v", err))
 		response.InternalServerError(c, "api.error", err)
 		return
 	}
