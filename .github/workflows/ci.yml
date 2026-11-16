@@ -31,7 +31,9 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.24.6'
-          cache: true
+          # 自建 runner 的 ~/go/pkg/mod 本来就常驻；再把整个模块缓存传到 Actions
+          # cache 里要几分钟，收益为负，直接关掉
+          cache: false
 
       # 国内机器直连 proxy.golang.org 会卡住（IPv6 无路由 / 限速），
       # 用 goproxy.cn；它不在 no_proxy 里时也会被 runner 代理转发
