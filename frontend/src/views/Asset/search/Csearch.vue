@@ -517,7 +517,9 @@ const openCreateTask = async () => {
               />
             </ElDropdownItem>
             <ElDropdownItem divided>
-              <ElButton style="width: 100%" type="primary" @click="refreshPage">{{ t('common.save') }}</ElButton>
+              <ElButton style="width: 100%" type="primary" @click="refreshPage">{{
+                t('common.save')
+              }}</ElButton>
             </ElDropdownItem>
           </ElDropdownMenu>
         </template>

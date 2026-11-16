@@ -520,8 +520,10 @@ export interface UploadComponentProps extends Partial<UploadProps> {
   style?: CSSProperties
 }
 
-export interface TreeSelectComponentProps
-  extends Omit<Partial<SelectComponentProps>, 'props' | 'on' | 'slots'> {
+export interface TreeSelectComponentProps extends Omit<
+  Partial<SelectComponentProps>,
+  'props' | 'on' | 'slots'
+> {
   data?: any[]
   emptyText?: string
   nodeKey?: string

@@ -693,7 +693,7 @@ const drawerAggregationData = computed<SensitiveAggregation[]>(() => {
     </ElTable>
   </ElDrawer>
   <Dialog v-model="ViewInfoDialogVisible" :title="infNmae">
-    <div v-for="(item, index) in infoArray" :key="index">
+    <div v-for="(item, idx) in infoArray" :key="idx">
       <p>{{ item }}</p>
     </div>
   </Dialog>

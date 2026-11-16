@@ -586,13 +586,19 @@ const getFilter = () => {
     :max-height="maxHeight"
   >
     <ElDescriptions :border="true" :column="2" style="word-break: break-word">
-      <ElDescriptionsItem :label="t('dashboard.URL')" :span="2">{{ DialogData.URL }}</ElDescriptionsItem>
+      <ElDescriptionsItem :label="t('dashboard.URL')" :span="2">{{
+        DialogData.URL
+      }}</ElDescriptionsItem>
       <ElDescriptionsItem :label="t('poc.level')">
         <Icon icon="clarity:circle-solid" :color="color" />
         <ElText type="info">{{ DialogData.Level }}</ElText>
       </ElDescriptionsItem>
-      <ElDescriptionsItem :label="t('vulnerability.vulnerabilityName')">{{ DialogData.Vulnerability }}</ElDescriptionsItem>
-      <ElDescriptionsItem :label="t('localization.matched')">{{ DialogData.Matched }}</ElDescriptionsItem>
+      <ElDescriptionsItem :label="t('vulnerability.vulnerabilityName')">{{
+        DialogData.Vulnerability
+      }}</ElDescriptionsItem>
+      <ElDescriptionsItem :label="t('localization.matched')">{{
+        DialogData.Matched
+      }}</ElDescriptionsItem>
       <ElDescriptionsItem :label="t('asset.time')">{{ DialogData.Time }}</ElDescriptionsItem>
       <ElDescriptionsItem :label="t('localization.request')">
         <ElScrollbar :max-height="maxHeight" max-width="maxHeight">

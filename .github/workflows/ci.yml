@@ -126,6 +126,9 @@ jobs:
       - name: Build (mode=pro)
         run: pnpm build:pro
 
+      - name: ESLint
+        run: npx eslint --ext .js,.ts,.vue ./src --max-warnings 0
+
       - name: Locale parity (en / zh-CN / ko-KR)
         run: node scripts/check-locales.mjs
 

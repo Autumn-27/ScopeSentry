@@ -105,8 +105,8 @@ const handleImageClick = (screenshot: string) => {
                     <ArrowDown v-if="log.isExpanded" />
                   </ElIcon>
                   <ElTag
-                    v-for="(change, index) in log.change"
-                    :key="index"
+                    v-for="(change, idx) in log.change"
+                    :key="idx"
                     type="danger"
                     :style="{ marginBottom: '10px' }"
                   >
@@ -126,7 +126,7 @@ const handleImageClick = (screenshot: string) => {
                         </div>
                         <div class="p-4 text-sm whitespace-pre-wrap">
                           <!-- 遍历并输出 fieldname: old -->
-                          <div v-for="(change, index) in log.change" :key="'old-' + index">
+                          <div v-for="(change, idx) in log.change" :key="'old-' + idx">
                             <strong>{{ change.fieldname }}:</strong>
                             <template v-if="change.fieldname === 'Screenshot'">
                               <img
@@ -154,7 +154,7 @@ const handleImageClick = (screenshot: string) => {
                         </div>
                         <div class="p-4 text-sm whitespace-pre-wrap">
                           <!-- 遍历并输出 fieldname: new -->
-                          <div v-for="(change, index) in log.change" :key="'new-' + index">
+                          <div v-for="(change, idx) in log.change" :key="'new-' + idx">
                             <strong>{{ change.fieldname }}:</strong>
                             <template v-if="change.fieldname === 'Screenshot'">
                               <img

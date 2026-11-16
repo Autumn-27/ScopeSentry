@@ -421,9 +421,9 @@ async function handleSubmit() {
     style="border-radius: 15px; box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3)"
     :maxHeight="430"
   >
-    <ElText type="danger" size="small" style="position: relative; left: 1rem"
-      >{{ t('localization.updateHelp') }}</ElText
-    >
+    <ElText type="danger" size="small" style="position: relative; left: 1rem">{{
+      t('localization.updateHelp')
+    }}</ElText>
     <ElForm :model="form" label-width="120px" class="upload-form">
       <ElFormItem :label="t('localization.serverUrl')">
         <ElInput v-model="form.server" :placeholder="t('localization.serverUrl')" />
@@ -450,7 +450,9 @@ async function handleSubmit() {
       <el-tooltip class="item" effect="dark" :content="t('plugin.keyMsg')" placement="top">
         <ElInput v-model="pluginKey" />
       </el-tooltip>
-      <BaseButton @click="savePluginKey" type="primary" class="w-full">{{ t('common.ok') }}</BaseButton>
+      <BaseButton @click="savePluginKey" type="primary" class="w-full">{{
+        t('common.ok')
+      }}</BaseButton>
     </div>
   </Dialog>
 </template>

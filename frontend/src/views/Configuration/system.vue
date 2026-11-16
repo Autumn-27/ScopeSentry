@@ -84,7 +84,9 @@ const saveLoading = ref(false)
     <ElRow>
       <!-- <ElCol :span="20" :offset="12"/> -->
       <ElCol :span="12" :offset="2">
-        <ElButton type="primary" @click="confirmAdd" :loading="saveLoading">{{ t('common.save') }}</ElButton>
+        <ElButton type="primary" @click="confirmAdd" :loading="saveLoading">{{
+          t('common.save')
+        }}</ElButton>
         <ElDivider direction="vertical" />
         <ElText size="small" type="danger">{{ t('configuration.threadMsg') }}</ElText>
       </ElCol>

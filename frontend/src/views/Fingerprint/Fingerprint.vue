@@ -169,11 +169,15 @@ onMounted(() => {
 const handleUpdate = async () => {
   try {
     // 二次确认
-    await ElMessageBox.confirm(t('localization.fingerprintUpdateConfirm', { count: updateCount.value }), t('localization.confirmUpdate'), {
-      confirmButtonText: t('common.ok'),
-      cancelButtonText: t('common.cancel'),
-      type: 'warning'
-    })
+    await ElMessageBox.confirm(
+      t('localization.fingerprintUpdateConfirm', { count: updateCount.value }),
+      t('localization.confirmUpdate'),
+      {
+        confirmButtonText: t('common.ok'),
+        cancelButtonText: t('common.cancel'),
+        type: 'warning'
+      }
+    )
 
     updateLoading.value = true
 
@@ -218,9 +222,9 @@ const handleUpdate = async () => {
         <ElInput v-model="search" :placeholder="t('common.inputText')" style="height: 38px" />
       </ElCol>
       <ElCol :span="5">
-        <ElButton type="primary" :icon="searchicon" style="height: 38px" @click="handleSearch"
-          >{{ t('common.search') }}</ElButton
-        >
+        <ElButton type="primary" :icon="searchicon" style="height: 38px" @click="handleSearch">{{
+          t('common.search')
+        }}</ElButton>
       </ElCol>
     </ElRow>
     <ElRow :gutter="60">

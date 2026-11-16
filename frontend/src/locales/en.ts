@@ -4,7 +4,8 @@ export default {
     system: { version: { success: 'Version information retrieved' } }
   },
   common: {
-    changeLanguageMessage: "Changing the language resets the current view and unsaved input. Requests already sent may still complete. Continue?",
+    changeLanguageMessage:
+      'Changing the language resets the current view and unsaved input. Requests already sent may still complete. Continue?',
     clearAll: 'Clear All',
     selectCategory: 'Select Category',
     about: 'About',
@@ -250,7 +251,8 @@ export default {
     welcome: 'Welcome back',
     message: 'Backstage management system',
     subtitle: 'Sign in with your account to access the console',
-    tagline: 'Attack surface mapping, vulnerability scanning and distributed orchestration in one place.',
+    tagline:
+      'Attack surface mapping, vulnerability scanning and distributed orchestration in one place.',
     feature1: 'Subdomains, ports, URLs and directories converge automatically',
     feature2: 'Operate POCs, fingerprints and sensitive-data rules continuously',
     feature3: 'Multi-node distributed scanning and task orchestration',

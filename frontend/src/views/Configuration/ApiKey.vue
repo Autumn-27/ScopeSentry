@@ -140,15 +140,11 @@ const handleCopyKey = () => {
 }
 
 const handleDelete = async (row: { id: string; name: string }) => {
-  await ElMessageBox.confirm(
-    t('apiKey.deleteConfirm', { name: row.name }),
-    t('common.reminder'),
-    {
-      confirmButtonText: t('common.ok'),
-      cancelButtonText: t('common.cancel'),
-      type: 'warning'
-    }
-  )
+  await ElMessageBox.confirm(t('apiKey.deleteConfirm', { name: row.name }), t('common.reminder'), {
+    confirmButtonText: t('common.ok'),
+    cancelButtonText: t('common.cancel'),
+    type: 'warning'
+  })
   await deleteApiKeyApi(row.id)
   getList()
 }
@@ -227,7 +223,13 @@ const closeKeyDialog = () => {
     :maxHeight="360"
     @close="closeKeyDialog"
   >
-    <ElAlert :title="t('apiKey.keyShowOnce')" type="warning" :closable="false" show-icon class="mb-16px" />
+    <ElAlert
+      :title="t('apiKey.keyShowOnce')"
+      type="warning"
+      :closable="false"
+      show-icon
+      class="mb-16px"
+    />
     <ElForm label-width="80px">
       <ElFormItem :label="t('apiKey.fullKey')">
         <ElInput v-model="createdKey" readonly>

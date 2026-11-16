@@ -214,6 +214,13 @@ const selectedRowIds = ref([])
 .locale-search-row .el-text {
   white-space: nowrap;
 }
-.locale-actions-row { align-items: center; gap: 16px; }
-.locale-actions-row > .el-col { flex: 0 0 auto; width: auto; max-width: 100%; }
+.locale-actions-row {
+  align-items: center;
+  gap: 16px;
+}
+.locale-actions-row > .el-col {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: 100%;
+}
 </style>
