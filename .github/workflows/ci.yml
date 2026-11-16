@@ -33,11 +33,19 @@ jobs:
           go-version: '1.24.6'
           cache: true
 
+      # 国内机器直连 proxy.golang.org 会卡住（IPv6 无路由 / 限速），
+      # 用 goproxy.cn；它不在 no_proxy 里时也会被 runner 代理转发
       - name: go build
+        env:
+          GOPROXY: https://goproxy.cn,direct
+          GOTOOLCHAIN: local
         run: go build ./...
 
       # 只跑不依赖 Mongo/Redis 的叶子包；依赖 bootstrap 的包在 init 阶段就会连库
       - name: go test (hermetic packages)
+        env:
+          GOPROXY: https://goproxy.cn,direct
+          GOTOOLCHAIN: local
         run: |
           go test -count=1 \
             ./internal/services/task/tasksync/ \
@@ -49,6 +57,9 @@ jobs:
             ./internal/api/handlers/sensitiveRule/
 
       - name: go vet (本次维护的包)
+        env:
+          GOPROXY: https://goproxy.cn,direct
+          GOTOOLCHAIN: local
         run: |
           go vet \
             ./internal/api/handlers/task/ \
