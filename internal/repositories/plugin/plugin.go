@@ -3,6 +3,7 @@ package plugin
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/Autumn-27/ScopeSentry/internal/database/mongodb"
@@ -33,10 +34,20 @@ type Repository interface {
 	CleanAllLogs(ctx context.Context) error
 }
 
+// pluginLogRedis 定义读取/清理插件日志所需的最小 Redis 能力。
+// 依赖接口而不是具体的 *redis.Client，单元测试可以注入内存实现，不需要真实 Redis。
+type pluginLogRedis interface {
+	Type(ctx context.Context, key string) *redisdriver.StatusCmd
+	LRange(ctx context.Context, key string, start, stop int64) *redisdriver.StringSliceCmd
+	SMembers(ctx context.Context, key string) *redisdriver.StringSliceCmd
+	Del(ctx context.Context, keys ...string) *redisdriver.IntCmd
+	Keys(ctx context.Context, pattern string) *redisdriver.StringSliceCmd
+}
+
 // repository 实现插件仓库接口
 type repository struct {
 	collection  *mongo.Collection
-	redisClient *redisdriver.Client
+	redisClient pluginLogRedis
 }
 
 // NewRepository 创建新的插件仓库实例
@@ -176,16 +187,43 @@ func (r *repository) Count(ctx context.Context, query bson.M) (int64, error) {
 	return count, nil
 }
 
+// GetLogs 读取插件日志。
+//
+// 新版把日志写成 Redis list（RPush），但历史版本的 key 可能是 set（SAdd）。
+// 之前无条件用 LRange 读取，遇到老数据会直接报
+// "WRONGTYPE Operation against a key holding the wrong kind of value"（issue #290）。
+// 现在先看 key 的实际类型，list / set 都能读，其它类型返回明确的错误。
 func (r *repository) GetLogs(ctx context.Context, key string) (string, error) {
-	// 从 Redis 获取 set 中的所有日志
-	logs, err := r.redisClient.LRange(ctx, key, 0, -1).Result()
-	if err != nil {
-		return "", fmt.Errorf("failed to get logs from Redis: %w", err)
+	if key == "" {
+		return "", nil
 	}
 
-	logData := strings.Join(logs, "\n")
+	keyType, err := r.redisClient.Type(ctx, key).Result()
+	if err != nil {
+		return "", fmt.Errorf("failed to get type of plugin log key %q: %w", key, err)
+	}
 
-	return logData, nil
+	switch keyType {
+	case "none":
+		// key 不存在：没有日志，而不是错误
+		return "", nil
+	case "list":
+		logs, err := r.redisClient.LRange(ctx, key, 0, -1).Result()
+		if err != nil {
+			return "", fmt.Errorf("failed to get logs from Redis: %w", err)
+		}
+		return strings.Join(logs, "\n"), nil
+	case "set":
+		// 兼容历史版本：日志以 set 存储，成员本身无顺序，这里按行排序保证输出稳定
+		logs, err := r.redisClient.SMembers(ctx, key).Result()
+		if err != nil {
+			return "", fmt.Errorf("failed to get logs from Redis: %w", err)
+		}
+		sort.Strings(logs)
+		return strings.Join(logs, "\n"), nil
+	default:
+		return "", fmt.Errorf("plugin log key %q holds unsupported redis type %q", key, keyType)
+	}
 }
 
 func (r *repository) CleanLogs(ctx context.Context, key string) error {
