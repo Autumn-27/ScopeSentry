@@ -581,5 +581,61 @@ watch(
     }
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Modern 覆盖：标签页改成 pill，浅色/深色统一走 token
+ * （放在 scoped 块末尾，顺序在旧的 .dark 规则之后）
+ * ------------------------------------------------------------------------- */
+.@{prefix-cls}__item {
+  top: 0;
+  height: 28px;
+  margin: 0 4px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--el-text-color-regular);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-xs);
+  transition:
+    color 0.16s ease,
+    background-color 0.16s ease,
+    border-color 0.16s ease;
+
+  &--close {
+    right: 4px;
+  }
+}
+
+.@{prefix-cls}__item:not(.is-active):hover {
+  color: var(--el-text-color-primary);
+  background: var(--el-fill-color-light);
+}
+
+.@{prefix-cls}__item.is-active {
+  color: var(--app-primary);
+  background: var(--app-primary-soft);
+  border-color: transparent;
+  font-weight: 600;
+}
+
+html.dark .@{prefix-cls} {
+  .@{prefix-cls}__item {
+    color: var(--el-text-color-regular);
+    background: var(--app-surface);
+    border-color: var(--app-border);
+  }
+
+  .@{prefix-cls}__item:not(.is-active):hover {
+    color: var(--el-text-color-primary);
+    background: var(--el-fill-color-light);
+  }
+
+  .@{prefix-cls}__item.is-active {
+    color: var(--app-primary);
+    background: var(--app-primary-soft);
+    border-color: transparent;
+  }
+}
 </style>
 @/hooks/web/useTagsView

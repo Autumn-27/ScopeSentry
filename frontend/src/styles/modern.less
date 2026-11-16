@@ -1,0 +1,609 @@
+/**
+ * Modern UI 组件层
+ * 设计语言：中性灰面 + 1px 分隔 + 克制阴影 + 10px 圆角 + GitHub 蓝
+ * 只覆盖 Element Plus 与外壳的“观感”，不改任何业务布局逻辑
+ */
+
+/* ===========================================================================
+ * 1. Element Plus 变量重映射
+ * ========================================================================= */
+html:root {
+  --el-color-primary: var(--app-primary);
+  --el-color-primary-light-3: #6d9af1;
+  --el-color-primary-light-5: #97b7f5;
+  --el-color-primary-light-7: #c1d4f9;
+  --el-color-primary-light-8: #d5e2fb;
+  --el-color-primary-light-9: #eaf1fd;
+  --el-color-primary-dark-2: #2659bc;
+
+  --el-color-success: #16a34a;
+  --el-color-success-light-9: #ecfdf3;
+  --el-color-warning: #d97706;
+  --el-color-warning-light-9: #fffbeb;
+  --el-color-danger: #dc2626;
+  --el-color-danger-light-9: #fef2f2;
+  --el-color-error: #dc2626;
+  --el-color-info: #64748b;
+  --el-color-info-light-9: #f1f5f9;
+
+  --el-text-color-primary: #111827;
+  --el-text-color-regular: #4b5563;
+  --el-text-color-secondary: #6b7280;
+  --el-text-color-placeholder: #9ca3af;
+  --el-text-color-disabled: #c0c6d1;
+
+  --el-border-color: var(--app-border);
+  --el-border-color-light: #eceef3;
+  --el-border-color-lighter: #f1f3f7;
+  --el-border-color-extra-light: #f6f7fa;
+  --el-border-color-dark: var(--app-border-strong);
+  --el-border-color-darker: #c3c9d4;
+
+  --el-fill-color: #f3f4f7;
+  --el-fill-color-light: #f6f7f9;
+  --el-fill-color-lighter: #f9fafb;
+  --el-fill-color-extra-light: #fcfcfd;
+  --el-fill-color-dark: #e9ecf1;
+  --el-fill-color-blank: var(--app-surface);
+
+  --el-bg-color: var(--app-surface);
+  --el-bg-color-page: #f6f7f9;
+  --el-bg-color-overlay: var(--app-surface);
+
+  --el-border-radius-base: var(--app-radius-sm);
+  --el-border-radius-small: var(--app-radius-xs);
+  --el-border-radius-round: 999px;
+
+  --el-font-family: var(--app-font-sans);
+  --el-font-size-base: 14px;
+  --el-font-size-small: 13px;
+  --el-font-size-extra-small: 12px;
+
+  --el-box-shadow: var(--app-shadow-md);
+  --el-box-shadow-light: var(--app-shadow-sm);
+  --el-box-shadow-lighter: var(--app-shadow-xs);
+  --el-box-shadow-dark: var(--app-shadow-lg);
+
+  --el-menu-bg-color: var(--app-surface);
+  --el-menu-text-color: var(--el-text-color-regular);
+  --el-menu-active-color: var(--app-primary);
+  --el-menu-hover-bg-color: var(--el-fill-color-light);
+
+  --el-transition-duration: 0.18s;
+}
+
+html.dark {
+  --el-text-color-primary: #e8eaee;
+  --el-text-color-regular: #c3c8d2;
+  --el-text-color-secondary: #98a1b0;
+  --el-text-color-placeholder: #6f7887;
+  --el-text-color-disabled: #4b525d;
+
+  --el-border-color: var(--app-border);
+  --el-border-color-light: #2b313a;
+  --el-border-color-lighter: #252a32;
+  --el-border-color-extra-light: #20242b;
+  --el-border-color-dark: #3a414c;
+  --el-border-color-darker: #444c58;
+
+  --el-fill-color: #22272f;
+  --el-fill-color-light: #1e232a;
+  --el-fill-color-lighter: #1a1e25;
+  --el-fill-color-extra-light: #171b21;
+  --el-fill-color-dark: #2a3038;
+  --el-fill-color-blank: var(--app-surface);
+
+  --el-bg-color: var(--app-surface);
+  --el-bg-color-page: #0e1013;
+  --el-bg-color-overlay: #1a1e24;
+
+  --el-mask-color: rgb(0 0 0 / 60%);
+  --el-menu-bg-color: var(--app-surface);
+  --el-menu-hover-bg-color: #1e232a;
+}
+
+/* ===========================================================================
+ * 2. 基础排版
+ * ========================================================================= */
+html body{
+  font-family: var(--app-font-sans);
+  font-size: 14px;
+  color: var(--el-text-color-primary);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizelegibility;
+  background-color: var(--el-bg-color-page);
+}
+
+html a{
+  color: var(--app-primary);
+  text-decoration: none;
+}
+
+html h1,
+html h2,
+html h3,
+html h4{
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+  letter-spacing: -0.01em;
+}
+
+/* 数字对齐，表格里不跳动 */
+html .el-table,
+html .el-pagination,
+html .el-descriptions{
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===========================================================================
+ * 3. 按钮
+ * ========================================================================= */
+html .el-button{
+  height: 34px;
+  padding: 0 14px;
+  font-weight: 500;
+  border-radius: var(--app-radius-sm);
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+html .el-button--small{
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+  border-radius: var(--app-radius-xs);
+}
+
+html .el-button--large{
+  height: 40px;
+  padding: 0 18px;
+}
+
+html .el-button--primary{
+  box-shadow: 0 1px 2px rgb(47 111 235 / 24%);
+}
+
+html .el-button--primary:hover{
+  box-shadow: 0 2px 6px rgb(47 111 235 / 28%);
+}
+
+html .el-button.is-text,
+html .el-button.is-link{
+  box-shadow: none;
+}
+
+html .el-button + .el-button{
+  margin-left: 8px;
+}
+
+html .el-button-group > .el-button + .el-button{
+  margin-left: 0;
+}
+
+/* 工具条里成组的操作按钮更紧凑 */
+html .el-button.is-round{
+  border-radius: 999px;
+}
+
+/* ===========================================================================
+ * 4. 输入类
+ * ========================================================================= */
+html .el-input__wrapper,
+html .el-textarea__inner,
+html .el-select__wrapper,
+html .el-input-number,
+html .el-date-editor{
+  border-radius: var(--app-radius-sm);
+}
+
+html .el-input__wrapper,
+html .el-select__wrapper{
+  min-height: 34px;
+  padding: 1px 11px;
+  background-color: var(--app-surface);
+  box-shadow: 0 0 0 1px var(--app-border) inset;
+  transition: box-shadow 0.18s ease;
+}
+
+html .el-input__wrapper:hover,
+html .el-select__wrapper:hover{
+  box-shadow: 0 0 0 1px var(--app-border-strong) inset;
+}
+
+html .el-input__wrapper.is-focus,
+html .el-select__wrapper.is-focused{
+  box-shadow:
+    0 0 0 1px var(--app-primary) inset,
+    0 0 0 3px rgb(47 111 235 / 14%);
+}
+
+html .el-textarea__inner{
+  padding: 9px 11px;
+  box-shadow: 0 0 0 1px var(--app-border) inset;
+}
+
+html .el-textarea__inner:focus{
+  box-shadow:
+    0 0 0 1px var(--app-primary) inset,
+    0 0 0 3px rgb(47 111 235 / 14%);
+}
+
+html .el-form-item__label{
+  font-weight: 500;
+  color: var(--el-text-color-regular);
+}
+
+html .el-checkbox__inner,
+html .el-radio__inner{
+  border-color: var(--app-border-strong);
+}
+
+html .el-switch.is-checked .el-switch__core{
+  background-color: var(--app-primary);
+  border-color: var(--app-primary);
+}
+
+/* ===========================================================================
+ * 5. 卡片
+ * ========================================================================= */
+html .el-card{
+  background-color: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  box-shadow: none;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+html .el-card.is-always-shadow,
+html .el-card.is-hover-shadow:focus,
+html .el-card.is-hover-shadow:hover{
+  box-shadow: var(--app-shadow-sm);
+  border-color: var(--app-border-strong);
+}
+
+html .el-card__header{
+  padding: 14px 18px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--app-border);
+}
+
+html .el-card__body{
+  padding: 18px;
+}
+
+/* ===========================================================================
+ * 6. 表格
+ * ========================================================================= */
+html .el-table{
+  --el-table-border-color: var(--app-border);
+  --el-table-header-bg-color: var(--app-surface-2);
+  --el-table-header-text-color: var(--el-text-color-secondary);
+  --el-table-row-hover-bg-color: var(--el-fill-color-light);
+  --el-table-current-row-bg-color: var(--app-primary-soft);
+  font-size: 13px;
+  border-radius: var(--app-radius-md);
+}
+
+html .el-table th.el-table__cell{
+  height: 42px;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--el-text-color-secondary);
+  background-color: var(--el-table-header-bg-color);
+}
+
+html .el-table td.el-table__cell{
+  padding: 11px 0;
+  border-bottom-color: var(--el-border-color-lighter);
+}
+
+html .el-table__inner-wrapper::before{
+  display: none;
+}
+
+html .el-table--border .el-table__cell{
+  border-right-color: var(--el-border-color-lighter);
+}
+
+html .el-table__empty-text{
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+}
+
+html .el-table .cell{
+  line-height: 1.55;
+}
+
+/* ===========================================================================
+ * 7. 标签 / 徽标
+ * ========================================================================= */
+html .el-tag{
+  height: 24px;
+  padding: 0 9px;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--app-radius-xs);
+}
+
+html .el-tag--large{
+  height: 28px;
+  padding: 0 11px;
+}
+
+html .el-tag--small{
+  height: 20px;
+  padding: 0 7px;
+  font-size: 11px;
+}
+
+html .el-tag.el-tag--info{
+  background-color: var(--el-fill-color);
+  color: var(--el-text-color-regular);
+}
+
+/* ===========================================================================
+ * 8. 分页
+ * ========================================================================= */
+html .el-pagination{
+  --el-pagination-button-height: 30px;
+  --el-pagination-button-width: 30px;
+  font-weight: 500;
+}
+
+html .el-pagination button,
+html .el-pager li{
+  border-radius: var(--app-radius-xs);
+  transition: background-color 0.18s ease;
+}
+
+html .el-pager li.is-active{
+  background-color: var(--app-primary-soft);
+  color: var(--app-primary);
+}
+
+html .el-pagination__sizes .el-select__wrapper{
+  min-height: 30px;
+}
+
+/* ===========================================================================
+ * 9. Tabs
+ * ========================================================================= */
+html .el-tabs__item{
+  font-weight: 500;
+  color: var(--el-text-color-secondary);
+}
+
+html .el-tabs__item.is-active{
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+html .el-tabs__nav-wrap::after{
+  height: 1px;
+  background-color: var(--app-border);
+}
+
+html .el-tabs__active-bar{
+  height: 2px;
+  border-radius: 2px;
+}
+
+/* ===========================================================================
+ * 10. 弹层：dialog / drawer / dropdown / popover / tooltip / message
+ * ========================================================================= */
+html .el-dialog{
+  padding: 0;
+  border-radius: var(--app-radius-lg);
+  box-shadow: var(--app-shadow-lg);
+  overflow: hidden;
+}
+
+html .el-dialog__header{
+  padding: 18px 22px 10px;
+  margin: 0;
+  font-weight: 600;
+}
+
+html .el-dialog__title{
+  font-size: 16px;
+  font-weight: 600;
+}
+
+html .el-dialog__body{
+  padding: 8px 22px 18px;
+}
+
+html .el-dialog__footer{
+  padding: 0 22px 18px;
+}
+
+html .el-drawer{
+  border-radius: var(--app-radius-lg) 0 0 var(--app-radius-lg);
+  box-shadow: var(--app-shadow-lg);
+}
+
+html .el-drawer__header{
+  padding: 18px 20px;
+  margin-bottom: 0;
+  font-weight: 600;
+  border-bottom: 1px solid var(--app-border);
+}
+
+html .el-drawer__body{
+  padding: 18px 20px;
+}
+
+html .el-popper.is-light,
+html .el-dropdown__popper.el-popper,
+html .el-select__popper.el-popper{
+  border: 1px solid var(--app-border) !important;
+  border-radius: var(--app-radius-md) !important;
+  box-shadow: var(--app-shadow-md) !important;
+}
+
+html .el-dropdown-menu{
+  padding: 6px;
+}
+
+html .el-dropdown-menu__item{
+  height: 34px;
+  padding: 0 10px;
+  border-radius: var(--app-radius-xs);
+  line-height: 34px;
+}
+
+html .el-dropdown-menu__item:not(.is-disabled):hover{
+  background-color: var(--el-fill-color-light);
+  color: var(--el-text-color-primary);
+}
+
+html .el-tooltip__popper,
+html .el-popper.is-dark{
+  border-radius: var(--app-radius-sm) !important;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+html .el-message{
+  border-radius: var(--app-radius-md);
+  border: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow-md);
+}
+
+html .el-message-box{
+  border-radius: var(--app-radius-lg);
+  padding: 20px;
+  border: 1px solid var(--app-border);
+}
+
+html .el-notification{
+  border-radius: var(--app-radius-md);
+  border: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow-md);
+}
+
+/* ===========================================================================
+ * 11. 其他控件
+ * ========================================================================= */
+html .el-breadcrumb__inner,
+html .el-breadcrumb__inner a{
+  font-weight: 500;
+  color: var(--el-text-color-secondary);
+}
+
+html .el-breadcrumb__item:last-child .el-breadcrumb__inner{
+  color: var(--el-text-color-primary);
+}
+
+html .el-descriptions__label{
+  font-weight: 500;
+  color: var(--el-text-color-secondary);
+}
+
+html .el-progress-bar__outer{
+  background-color: var(--el-fill-color);
+}
+
+html .el-alert{
+  border-radius: var(--app-radius-sm);
+  border: 1px solid transparent;
+}
+
+html .el-divider{
+  border-color: var(--el-border-color-lighter);
+}
+
+html .el-divider__text{
+  font-weight: 600;
+  color: var(--el-text-color-regular);
+  background-color: var(--app-surface);
+}
+
+html .el-empty__description p{
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+}
+
+/* ===========================================================================
+ * 12. 外壳：顶栏 / 标签页 / 内容区 / 侧边栏
+ * ========================================================================= */
+html #v-tool-header{
+  padding-right: 14px;
+  border-bottom: 1px solid var(--app-border);
+}
+
+html #v-tags-view{
+  background-color: var(--app-surface);
+}
+
+/* 侧边栏与内容区之间的分隔线更轻 */
+html .layout-border__right{
+  border-right: 1px solid var(--app-border);
+}
+
+html .layout-border__bottom{
+  border-bottom: 1px solid var(--app-border);
+}
+
+html .layout-border__top{
+  border-top: none;
+}
+
+/* 内容区给卡片之间留出呼吸感 */
+html #v-app-view,
+html .v-layout-content .v-app-view{
+  animation: app-fade-in 0.18s ease;
+}
+
+@keyframes app-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ===========================================================================
+ * 13. 细节：设置入口 / Logo / 骨架屏
+ * ========================================================================= */
+html .v-setting {
+  border-radius: var(--app-radius-md) 0 0 var(--app-radius-md);
+  box-shadow: var(--app-shadow-md);
+  transition:
+    transform 0.18s ease,
+    background-color 0.18s ease;
+}
+
+html .v-setting:hover {
+  background-color: var(--app-primary-hover) !important;
+  transform: translateX(-2px);
+}
+
+html .v-logo {
+  padding-left: 14px;
+
+  img {
+    border-radius: 8px;
+  }
+
+  div {
+    font-size: 15px;
+    letter-spacing: 0.01em;
+  }
+}
+
+html .el-skeleton__item {
+  border-radius: var(--app-radius-xs);
+}

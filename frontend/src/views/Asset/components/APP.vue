@@ -269,7 +269,7 @@ const { tableRegister, tableState, tableMethods } = useTable({
 const { loading, dataList, total, currentPage, pageSize } = tableState
 const { getList, getElTableExpose } = tableMethods
 function tableHeaderColor() {
-  return { background: 'var(--el-fill-color-light)' }
+  return { background: 'var(--app-surface-2)' }
 }
 const filter = reactive<{ [key: string]: any }>({})
 const filterChange = async (newFilters: any) => {

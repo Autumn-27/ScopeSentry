@@ -71,7 +71,7 @@ const { loading, dataList, total, currentPage, pageSize } = tableState
 pageSize.value = 20
 const { getList, getElTableExpose } = tableMethods
 function tableHeaderColor() {
-  return { background: 'var(--el-fill-color-light)' }
+  return { background: 'var(--app-surface-2)' }
 }
 const dialogVisible = ref(false)
 

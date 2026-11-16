@@ -246,8 +246,13 @@ export default {
     small: '小'
   },
   login: {
-    welcome: '欢迎使用本系统',
+    welcome: '欢迎回来',
     message: '开箱即用的中后台管理系统',
+    subtitle: '使用你的账号继续访问控制台',
+    tagline: '资产测绘、漏洞扫描与分布式节点编排，一处收敛攻击面。',
+    feature1: '子域名、端口、URL、目录资产自动收敛',
+    feature2: 'POC、指纹与敏感信息规则持续运营',
+    feature3: '多节点分布式扫描与任务编排',
     username: '用户名',
     password: '密码',
     register: '注册',

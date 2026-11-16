@@ -24,7 +24,7 @@ appStore.initTheme()
 
 // 初始化标签页高度
 const tagsViewEnabled = appStore.getTagsView
-setCssVar('--tags-view-height', tagsViewEnabled ? '35px' : '0px')
+setCssVar('--tags-view-height', tagsViewEnabled ? '42px' : '0px')
 </script>
 
 <template>

@@ -1,17 +1,13 @@
 import request from '@/axios'
 import type {
-  DashboardTotalTypes,
+  DashboardStatistics,
   UserAccessSource,
   WeeklyUserActivity,
   MonthlySales,
   VersionData
 } from './types'
 
-interface DashboardTotalTypesResponse {
-  data: DashboardTotalTypes
-}
-
-export const getAssetStatisticsApi = (): Promise<IResponse<DashboardTotalTypesResponse[]>> => {
+export const getAssetStatisticsApi = (): Promise<IResponse<DashboardStatistics>> => {
   return request.get({ url: '/api/assets/statistics' })
 }
 

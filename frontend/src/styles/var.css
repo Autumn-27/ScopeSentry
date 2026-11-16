@@ -59,3 +59,56 @@
 .dark {
   --app-content-bg-color: var(--el-bg-color);
 }
+
+/* ===========================================================================
+ * 设计 token（modern UI）：颜色 / 圆角 / 阴影 / 字体 / 布局尺寸
+ * 只放变量，组件级样式见 styles/modern.less
+ * ========================================================================= */
+:root {
+  /* 品牌色（GitHub-flavored blue） */
+  --app-primary: #2f6feb;
+  --app-primary-hover: #2560d4;
+  --app-primary-soft: rgb(47 111 235 / 10%);
+
+  /* 中性面 */
+  --app-surface: #ffffff;
+  --app-surface-2: #f8fafc;
+  --app-border: #e5e8ee;
+  --app-border-strong: #d5dae3;
+
+  /* 圆角 */
+  --app-radius-xs: 6px;
+  --app-radius-sm: 8px;
+  --app-radius-md: 10px;
+  --app-radius-lg: 14px;
+
+  /* 阴影：只有层次，不抢视线 */
+  --app-shadow-xs: 0 1px 2px rgb(16 24 40 / 5%);
+  --app-shadow-sm: 0 1px 3px rgb(16 24 40 / 8%), 0 1px 2px rgb(16 24 40 / 4%);
+  --app-shadow-md: 0 8px 24px rgb(16 24 40 / 8%);
+  --app-shadow-lg: 0 16px 48px rgb(16 24 40 / 12%);
+
+  /* 字体 */
+  --app-font-sans:
+    -apple-system, blinkmacsystemfont, 'Segoe UI', inter, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', arial, sans-serif;
+
+  /* 布局尺寸 */
+  --logo-height: 56px;
+  --top-tool-height: 56px;
+  --tags-view-height: 42px;
+  --app-content-padding: 24px;
+  --app-footer-height: 44px;
+}
+
+html.dark {
+  --app-surface: #15181d;
+  --app-surface-2: #1b1f26;
+  --app-border: #262b33;
+  --app-border-strong: #333a44;
+  --app-primary-soft: rgb(91 141 245 / 16%);
+  --app-shadow-xs: 0 1px 2px rgb(0 0 0 / 40%);
+  --app-shadow-sm: 0 1px 3px rgb(0 0 0 / 45%), 0 1px 2px rgb(0 0 0 / 30%);
+  --app-shadow-md: 0 8px 24px rgb(0 0 0 / 45%);
+  --app-shadow-lg: 0 16px 48px rgb(0 0 0 / 55%);
+}

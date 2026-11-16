@@ -418,7 +418,7 @@ const getTotal = async (
 }
 
 function tableHeaderColor() {
-  return { background: 'var(--el-fill-color-light)' }
+  return { background: 'var(--app-surface-2)' }
 }
 onMounted(() => {
   setMaxHeight()

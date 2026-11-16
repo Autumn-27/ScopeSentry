@@ -247,8 +247,13 @@ export default {
     small: 'Small'
   },
   login: {
-    welcome: 'Welcome to the system',
+    welcome: 'Welcome back',
     message: 'Backstage management system',
+    subtitle: 'Sign in with your account to access the console',
+    tagline: 'Attack surface mapping, vulnerability scanning and distributed orchestration in one place.',
+    feature1: 'Subdomains, ports, URLs and directories converge automatically',
+    feature2: 'Operate POCs, fingerprints and sensitive-data rules continuously',
+    feature3: 'Multi-node distributed scanning and task orchestration',
     username: 'Username',
     password: 'Password',
     register: 'Register',
