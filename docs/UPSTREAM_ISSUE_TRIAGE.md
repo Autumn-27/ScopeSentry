@@ -35,6 +35,13 @@
 | Issue | 已修范围 | 证据 | 遗留 |
 | --- | --- | --- | --- |
 | #342 | 问题 2：`targetSource=UrlScan` 触发服务端 panic | PR #343 / `4626678`：`internal/services/task/common/common.go:55-62` 补 `urlService: url.NewService()`；`common_test.go:13-22` 断言无 nil 依赖 | 问题 1（nuclei `parameter` 不生效）、问题 3（模板目录 `/apps/poc` 写死）在 scan 节点仓库，见深度分析 |
+| #330 | `fmt.Sprintf` 缺占位符 | `internal/api/handlers/task/template.go:73` 改 `"...: %v"`；报告里的 CPU usage 那行在 scan 仓库，本仓库无此文件 | — |
+| #290 | 查看插件日志报错（WRONGTYPE） | `internal/repositories/plugin/plugin.go`：读取前先 `TYPE`，list→`LRange`、set→`SMembers`、none→空；`plugin_log_test.go` 用内存 fake 覆盖三种类型 | — |
+| #295 | 未认证接口 | `internal/api/routes/task/template.go` 的 `POST /api/task/template/delete` 补 `WithAuth()`；新增 `api/routes/audit/route_auth_test.go` 全量扫描 119 条路由，仅 login 允许匿名 | — |
+| #288 | 定时任务未开始显示运行中 | 新增 `constants/task_status.go`（0=待开始）、`services/task/taskstate`；入库写 0，出现进度才转 1，100 转 3；前端 `Task.vue` 补 0 的标签 | 计划任务列表的历史数据仍是旧状态值，需重跑一次任务刷新 |
+| #317 | 同步到项目 request failed | 新增 `POST /api/task/sync`（WithAuth）+ `services/task/tasksync`：合并目标去重、建项目/更新项目后重算资产；空参数与非法 ObjectID 返回明确 400 | — |
+| #225 | 导出"csv"实际是 xlsx 且必 400 | `frontend/src/views/Asset/export/exportData.vue` 默认值与文案改 xlsx；后端消息同步为 "xlsx or json" | — |
+| #262 | 被动扫描期间进度提前 100% | 未修：后端拿不到节点侧 PassiveScan 信号，硬加规则会让任务永久卡 99%；需节点先写 `TaskInfo:progress:<taskID>:<target>` 的 PassiveScan_start/_end | 需 ScopeSentry-Scan 配合 |
 
 ## 可修-后端bug
 
