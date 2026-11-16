@@ -10,11 +10,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/Autumn-27/ScopeSentry/internal/services/plugin"
-	"math"
 	"strings"
 
 	"github.com/Autumn-27/ScopeSentry/internal/logger"
 
+	"github.com/Autumn-27/ScopeSentry/internal/constants"
 	"github.com/Autumn-27/ScopeSentry/internal/database/mongodb"
 	"github.com/Autumn-27/ScopeSentry/internal/models"
 	"github.com/Autumn-27/ScopeSentry/internal/repositories/task/task"
@@ -22,6 +22,7 @@ import (
 	"github.com/Autumn-27/ScopeSentry/internal/services/node"
 	commonTask "github.com/Autumn-27/ScopeSentry/internal/services/task/common"
 	schedulerSvc "github.com/Autumn-27/ScopeSentry/internal/services/task/scheduler"
+	"github.com/Autumn-27/ScopeSentry/internal/services/task/taskstate"
 	"github.com/Autumn-27/ScopeSentry/internal/utils/helper"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -479,10 +480,11 @@ func (s *service) TaskProgressNumber(ctx *gin.Context) error {
 
 // TaskProgress 更新任务进度
 func (s *service) TaskProgress(ctx context.Context) error {
-	// 查询所有进度不为100且状态为1（运行中）的任务
+	// 查询所有进度不为100的任务：既包含运行中（1），也包含待开始（0）。
+	// 待开始的任务必须一起轮询，否则节点产出进度后无法从待开始转为运行中。
 	filter := bson.M{
 		"progress": bson.M{"$ne": 100},
-		"status":   1,
+		"status":   bson.M{"$in": []int{constants.TaskStatusPending, constants.TaskStatusRunning}},
 	}
 
 	tasks, err := s.taskRepo.Find(ctx, filter, nil)
@@ -525,17 +527,12 @@ func (s *service) ProcessTaskProgress(ctx context.Context, task models.Task) err
 			return fmt.Errorf("failed to get set cardinality: %w", err)
 		}
 
-		// 计算进度
-		progressTmp := float64(count) / float64(task.TaskNum)
-		progressTmp = math.Round(progressTmp*100*10) / 10 // 保留一位小数
-
-		// 确保进度不超过100
-		if progressTmp > 100 {
-			progressTmp = 100
-		}
+		// 计算进度与下一个状态：出现进度后待开始的任务转为运行中，
+		// 进度达到 100 时转为运行完成（状态3）。见 issue #288。
+		progress, nextStatus := taskstate.Derive(task.Status, count, int64(task.TaskNum))
 
 		// 如果进度达到100，更新任务状态为完成
-		if progressTmp == 100 {
+		if nextStatus == constants.TaskStatusFinished {
 			// 获取结束时间
 			endTime, err := s.taskRepo.Get(ctx, timeKey)
 			if err != nil {
@@ -546,8 +543,8 @@ func (s *service) ProcessTaskProgress(ctx context.Context, task models.Task) err
 			update := bson.M{
 				"$set": bson.M{
 					"endTime":  endTime,
-					"status":   3,
-					"progress": int(progressTmp),
+					"status":   constants.TaskStatusFinished,
+					"progress": progress,
 				},
 			}
 			if err := s.taskRepo.UpdateOne(ctx, bson.M{"_id": task.ID}, update); err != nil {
@@ -568,10 +565,11 @@ func (s *service) ProcessTaskProgress(ctx context.Context, task models.Task) err
 			}()
 
 		} else {
-			// 更新任务进度
+			// 更新任务进度与状态（待开始 → 运行中）
 			update := bson.M{
 				"$set": bson.M{
-					"progress": int(progressTmp),
+					"progress": progress,
+					"status":   nextStatus,
 				},
 			}
 			if err := s.taskRepo.UpdateOne(ctx, bson.M{"_id": task.ID}, update); err != nil {
