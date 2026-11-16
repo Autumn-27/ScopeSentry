@@ -1,0 +1,57 @@
+/**
+ * 深色模式补丁层
+ * 只收口历史页面里写死的浅色面，Element Plus 自身的深浅色由
+ * element-plus/theme-chalk/dark/css-vars.css 负责
+ */
+html.dark {
+  /* 关于页 */
+  .about-container {
+    background-color: var(--el-bg-color);
+  }
+
+  .sponsor-card {
+    background: linear-gradient(
+      145deg,
+      var(--el-bg-color-overlay) 0%,
+      var(--el-fill-color-light) 100%
+    );
+  }
+
+  /* 扫描模板：模块卡片 / 插件卡片 */
+  .module-card,
+  .plugin-card,
+  .plugin-card-header,
+  .plugin-card-body {
+    background-color: var(--el-bg-color-overlay);
+    border-color: var(--el-border-color);
+  }
+
+  .plugin-card-enabled {
+    background-color: var(--el-fill-color-light);
+  }
+
+  .plugin-name {
+    color: var(--el-text-color-primary);
+  }
+
+  .plugin-desc {
+    color: var(--el-text-color-secondary);
+  }
+
+  /* 资产详情：悬浮图标选择面板 */
+  .icon-selection-float,
+  .icon-selection-float-abs {
+    background: var(--el-bg-color-overlay);
+    border-color: var(--el-border-color);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 60%);
+  }
+
+  /* 资产搜索：分段选择器 */
+  .segment {
+    background-color: var(--el-fill-color-blank);
+  }
+
+  .segment:hover {
+    background-color: var(--el-fill-color-light);
+  }
+}

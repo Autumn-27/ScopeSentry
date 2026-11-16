@@ -207,6 +207,10 @@ export default {
   setting: {
     projectSetting: '项目配置',
     theme: '主题',
+    themeMode: '主题模式',
+    themeAuto: '跟随系统',
+    themeLight: '日间模式',
+    themeDark: '夜间模式',
     layout: '布局',
     systemTheme: '系统主题',
     menuTheme: '菜单主题',

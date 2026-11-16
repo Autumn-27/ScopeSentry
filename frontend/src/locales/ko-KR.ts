@@ -208,6 +208,10 @@ export default {
   setting: {
     projectSetting: '프로젝트 설정',
     theme: '테마',
+    themeMode: '테마 모드',
+    themeAuto: '시스템 설정 따르기',
+    themeLight: '라이트 모드',
+    themeDark: '다크 모드',
     layout: '레이아웃',
     systemTheme: '시스템 테마',
     menuTheme: '메뉴 테마',

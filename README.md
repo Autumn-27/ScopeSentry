@@ -76,6 +76,7 @@ docker-compose -f scan-docker-compose.yml up -d
 - Asset Grouping
 - Multi-Node Scanning
 - Webhook
+- Light / dark / follow-system theme (defaults to follow-system, switchable at any time)
 
 ## To Do
 - Weak Password Cracking

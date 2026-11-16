@@ -24,7 +24,8 @@
     "lint:lint-staged": "lint-staged -c ./.husky/lintstagedrc.js",
     "prepare": "husky install",
     "p": "plop",
-    "icon": "esno ./scripts/icon.ts"
+    "icon": "esno ./scripts/icon.ts",
+    "theme:check": "esno ./scripts/check-theme.ts"
   },
   "dependencies": {
     "@codemirror/lang-javascript": "^6.2.1",

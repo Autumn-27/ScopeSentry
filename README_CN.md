@@ -77,6 +77,7 @@ docker-compose -f scan-docker-compose.yml up -d
 - 多节点扫描
 - webhook
 - 数据导出
+- 日间 / 夜间 / 跟随系统 三态主题（默认跟随系统，用户可手动切换）
 
 ## To DO
 - 弱口令爆破

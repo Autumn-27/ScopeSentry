@@ -207,6 +207,10 @@ export default {
   setting: {
     projectSetting: 'Project setting',
     theme: 'Theme',
+    themeMode: 'Theme mode',
+    themeAuto: 'Follow system',
+    themeLight: 'Light mode',
+    themeDark: 'Dark mode',
     layout: 'Layout',
     systemTheme: 'System theme',
     menuTheme: 'Menu theme',
