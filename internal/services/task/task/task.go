@@ -10,11 +10,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/Autumn-27/ScopeSentry/internal/services/plugin"
-	"math"
 	"strings"
 
 	"github.com/Autumn-27/ScopeSentry/internal/logger"
 
+	"github.com/Autumn-27/ScopeSentry/internal/constants"
 	"github.com/Autumn-27/ScopeSentry/internal/database/mongodb"
 	"github.com/Autumn-27/ScopeSentry/internal/models"
 	"github.com/Autumn-27/ScopeSentry/internal/repositories/task/task"
@@ -22,6 +22,7 @@ import (
 	"github.com/Autumn-27/ScopeSentry/internal/services/node"
 	commonTask "github.com/Autumn-27/ScopeSentry/internal/services/task/common"
 	schedulerSvc "github.com/Autumn-27/ScopeSentry/internal/services/task/scheduler"
+	"github.com/Autumn-27/ScopeSentry/internal/services/task/taskstate"
 	"github.com/Autumn-27/ScopeSentry/internal/utils/helper"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -34,6 +35,7 @@ type Service interface {
 	List(ctx *gin.Context, search string, pageIndex, pageSize int) ([]models.Task, int64, error)
 	CheckTaskNameExists(ctx *gin.Context, name string) (bool, error)
 	GetTaskDetail(ctx *gin.Context, taskID string) (*models.Task, error)
+	GetTasksByIDs(ctx *gin.Context, ids []string) ([]models.Task, error)
 	DeleteTasks(ctx *gin.Context, ids []string, delA bool) error
 	RetestTask(ctx context.Context, id string) error
 	StopTasks(ctx *gin.Context, ids []string) error
@@ -123,6 +125,25 @@ func (s *service) GetTaskDetail(ctx *gin.Context, taskID string) (*models.Task, 
 	}
 
 	return task, nil
+}
+
+// GetTasksByIDs 按任务 ID 批量查询任务（同步到项目时使用，见 issue #317）。
+func (s *service) GetTasksByIDs(ctx *gin.Context, ids []string) ([]models.Task, error) {
+	objIDs := make([]primitive.ObjectID, 0, len(ids))
+	for _, id := range ids {
+		if strings.TrimSpace(id) == "" {
+			continue
+		}
+		oid, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			return nil, fmt.Errorf("invalid task id %q: %w", id, err)
+		}
+		objIDs = append(objIDs, oid)
+	}
+	if len(objIDs) == 0 {
+		return nil, nil
+	}
+	return s.taskRepo.Find(ctx.Request.Context(), bson.M{"_id": bson.M{"$in": objIDs}}, nil)
 }
 
 // DeleteTasks 批量删除任务
@@ -479,10 +500,11 @@ func (s *service) TaskProgressNumber(ctx *gin.Context) error {
 
 // TaskProgress 更新任务进度
 func (s *service) TaskProgress(ctx context.Context) error {
-	// 查询所有进度不为100且状态为1（运行中）的任务
+	// 查询所有进度不为100的任务：既包含运行中（1），也包含待开始（0）。
+	// 待开始的任务必须一起轮询，否则节点产出进度后无法从待开始转为运行中。
 	filter := bson.M{
 		"progress": bson.M{"$ne": 100},
-		"status":   1,
+		"status":   bson.M{"$in": []int{constants.TaskStatusPending, constants.TaskStatusRunning}},
 	}
 
 	tasks, err := s.taskRepo.Find(ctx, filter, nil)
@@ -525,17 +547,12 @@ func (s *service) ProcessTaskProgress(ctx context.Context, task models.Task) err
 			return fmt.Errorf("failed to get set cardinality: %w", err)
 		}
 
-		// 计算进度
-		progressTmp := float64(count) / float64(task.TaskNum)
-		progressTmp = math.Round(progressTmp*100*10) / 10 // 保留一位小数
-
-		// 确保进度不超过100
-		if progressTmp > 100 {
-			progressTmp = 100
-		}
+		// 计算进度与下一个状态：出现进度后待开始的任务转为运行中，
+		// 进度达到 100 时转为运行完成（状态3）。见 issue #288。
+		progress, nextStatus := taskstate.Derive(task.Status, count, int64(task.TaskNum))
 
 		// 如果进度达到100，更新任务状态为完成
-		if progressTmp == 100 {
+		if nextStatus == constants.TaskStatusFinished {
 			// 获取结束时间
 			endTime, err := s.taskRepo.Get(ctx, timeKey)
 			if err != nil {
@@ -546,8 +563,8 @@ func (s *service) ProcessTaskProgress(ctx context.Context, task models.Task) err
 			update := bson.M{
 				"$set": bson.M{
 					"endTime":  endTime,
-					"status":   3,
-					"progress": int(progressTmp),
+					"status":   constants.TaskStatusFinished,
+					"progress": progress,
 				},
 			}
 			if err := s.taskRepo.UpdateOne(ctx, bson.M{"_id": task.ID}, update); err != nil {
@@ -568,10 +585,11 @@ func (s *service) ProcessTaskProgress(ctx context.Context, task models.Task) err
 			}()
 
 		} else {
-			// 更新任务进度
+			// 更新任务进度与状态（待开始 → 运行中）
 			update := bson.M{
 				"$set": bson.M{
-					"progress": int(progressTmp),
+					"progress": progress,
+					"status":   nextStatus,
 				},
 			}
 			if err := s.taskRepo.UpdateOne(ctx, bson.M{"_id": task.ID}, update); err != nil {

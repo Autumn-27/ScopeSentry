@@ -2,11 +2,15 @@ package project
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/Autumn-27/ScopeSentry/internal/logger"
 	"sort"
 	"strings"
 	"sync"
+
+	"github.com/Autumn-27/ScopeSentry/internal/services/task/tasksync"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/Autumn-27/ScopeSentry/internal/utils/helper"
 	"golang.org/x/sync/errgroup"
@@ -15,6 +19,12 @@ import (
 	repo "github.com/Autumn-27/ScopeSentry/internal/repositories/project"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+)
+
+// 同步到项目时可被上层的错误（handler 用它把用户输入问题映射成 400）。
+var (
+	ErrProjectNotFound  = errors.New("project not found")
+	ErrProjectNameTaken = errors.New("project name already exists")
 )
 
 type Service interface {
@@ -29,6 +39,7 @@ type Service interface {
 	DeleteProjects(ctx *gin.Context, ids []string, delA bool) error
 	UpdateProject(ctx *gin.Context, p *models.UpdateProject) error
 	UpdateAssetsProject(ctx *gin.Context, id string) error
+	SyncTargets(ctx *gin.Context, option, projectID, name, tag string, targets []string) (string, int, error)
 	RefreshProjectAssociations(ctx context.Context) error
 }
 
@@ -439,6 +450,104 @@ func (s *service) UpdateAssetsProject(ctx *gin.Context, id string) error {
 	}
 
 	return s.recalcAssetCount(ctx.Request.Context(), id)
+}
+
+// SyncTargets 把一批扫描目标同步到项目，并立即重算项目与资产的关联。
+//
+// 对应前端任务列表的"同步到项目"按钮（issue #317：前端调用 POST /api/task/sync，
+// 但后端没有该路由，按钮必然 404）。两种模式：
+//   - existing：把目标并入指定项目已有 target，去重后保存并重算资产；
+//   - new：以 name/tag 新建项目，写入目标后重算资产。
+//
+// 返回项目 ID 与真正新增的目标数量。
+func (s *service) SyncTargets(ctx *gin.Context, option, projectID, name, tag string, targets []string) (string, int, error) {
+	if len(targets) == 0 {
+		return "", 0, fmt.Errorf("任务目标为空，无法同步到项目")
+	}
+
+	switch strings.TrimSpace(option) {
+	case tasksync.OptionExisting:
+		existing, err := s.projectRepo.FindByID(ctx.Request.Context(), projectID)
+		if err != nil {
+			return "", 0, err
+		}
+		if existing == nil {
+			return "", 0, fmt.Errorf("项目不存在: %w", ErrProjectNotFound)
+		}
+
+		current, err := s.projectRepo.GetTarget(ctx.Request.Context(), projectID)
+		if err != nil {
+			if !errors.Is(err, mongo.ErrNoDocuments) {
+				return "", 0, err
+			}
+			// 老项目可能还没有 ProjectTargetData 记录，按空目标处理
+			current = ""
+		}
+
+		merged := tasksync.MergeExisting(current, targets)
+		updated := &models.UpdateProject{
+			ID:             existing.ID.Hex(),
+			Name:           existing.Name,
+			Tag:            existing.Tag,
+			Logo:           existing.Logo,
+			Target:         strings.Join(merged, "\n"),
+			ScheduledTasks: existing.ScheduledTasks,
+			Hour:           existing.Hour,
+			AllNode:        existing.AllNode,
+			Node:           existing.Node,
+			Duplicates:     existing.Duplicates,
+			Ignore:         existing.Ignore,
+			Template:       existing.Template,
+			Tp:             existing.Tp,
+			RootDomains:    existing.RootDomains,
+			AssetCount:     existing.AssetCount,
+		}
+		if err := s.UpdateProject(ctx, updated); err != nil {
+			return "", 0, err
+		}
+		// UpdateProject 里的资产关联是异步的，这里同步再做一次，保证接口返回时结果已生效
+		if err := s.UpdateAssetsProject(ctx, projectID); err != nil {
+			return "", 0, err
+		}
+		return projectID, tasksync.CountNew(current, targets), nil
+
+	case tasksync.OptionNew:
+		projectName := strings.TrimSpace(name)
+		if projectName == "" {
+			return "", 0, fmt.Errorf("项目名称不能为空")
+		}
+		exists, err := s.projectRepo.ExistsByName(ctx, projectName)
+		if err != nil {
+			return "", 0, err
+		}
+		if exists {
+			return "", 0, fmt.Errorf("项目名称已存在: %w", ErrProjectNameTaken)
+		}
+
+		p := &models.Project{
+			Name:   projectName,
+			Tag:    strings.TrimSpace(tag),
+			Target: strings.Join(targets, "\n"),
+		}
+		if err := s.AddProject(ctx, p); err != nil {
+			return "", 0, err
+		}
+		created, err := s.projectRepo.FindByName(ctx.Request.Context(), projectName)
+		if err != nil {
+			return "", 0, err
+		}
+		if created == nil {
+			return "", 0, fmt.Errorf("创建项目失败")
+		}
+		id := created.ID.Hex()
+		if err := s.UpdateAssetsProject(ctx, id); err != nil {
+			return "", 0, err
+		}
+		return id, len(targets), nil
+
+	default:
+		return "", 0, fmt.Errorf("不支持的同步方式: %q", option)
+	}
 }
 
 // recalcAssetCount 重新统计项目的资产总数并写回 AssetCount 字段。

@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/Autumn-27/ScopeSentry/internal/config"
+	"github.com/Autumn-27/ScopeSentry/internal/constants"
 	"github.com/Autumn-27/ScopeSentry/internal/database/mongodb"
 	redisdb "github.com/Autumn-27/ScopeSentry/internal/database/redis"
 	"github.com/Autumn-27/ScopeSentry/internal/logger"
@@ -164,10 +165,11 @@ func handleMessage(ctx context.Context, payload string) error {
 
 // checkNodeTask 检查节点任务并推送任务数据
 func checkNodeTask(ctx context.Context, nodeName string) error {
-	// 查询未完成且状态为1的任务
+	// 查询未完成且处于待开始/运行中的任务。
+	// 待开始（0）的任务同样需要推送给节点，否则节点上线后永远领不到任务。见 issue #288。
 	filter := bson.M{
 		"progress": bson.M{"$ne": 100},
-		"status":   1,
+		"status":   bson.M{"$in": []int{constants.TaskStatusPending, constants.TaskStatusRunning}},
 		"$or": []bson.M{
 			{"node": nodeName},
 			{"allNode": true},

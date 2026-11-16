@@ -92,6 +92,16 @@ func BadRequest(c *gin.Context, msgKey string, err error) {
 	})
 }
 
+// BadRequestWithError 返回 400，并把具体错误放进 data，便于前端展示失败原因
+// （例如"请选择要同步的任务"、"项目名称已存在"）。
+func BadRequestWithError(c *gin.Context, msgKey string, err error) {
+	c.JSON(http.StatusBadRequest, Response{
+		Code:    http.StatusBadRequest,
+		Message: i18n.Translate(getLocale(c), msgKey),
+		Data:    fmt.Sprintf("%v", err),
+	})
+}
+
 func NotFound(c *gin.Context, msgKey string, err error) {
 	c.JSON(http.StatusNotFound, Response{
 		Code:    http.StatusNotFound,
