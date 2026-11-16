@@ -43,4 +43,4 @@ func PermissionMiddleware(permission string) gin.HandlerFunc {
 
 		c.Next()
 	}
-} 
+}

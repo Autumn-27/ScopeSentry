@@ -72,4 +72,4 @@ func (s *service) GetMPData(ctx *gin.Context, query models.SearchRequest) (*mode
 		List:  results,
 		Total: totalCount,
 	}, nil
-} 
+}

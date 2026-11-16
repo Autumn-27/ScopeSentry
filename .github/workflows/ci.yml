@@ -35,6 +35,23 @@ jobs:
           # cache 里要几分钟，收益为负，直接关掉
           cache: false
 
+      - name: gofmt
+        run: |
+          out="$(gofmt -l .)"
+          if [ -n "$out" ]; then
+            echo "以下文件未格式化（本地跑 make fmt）:"
+            echo "$out"
+            exit 1
+          fi
+
+      - name: go mod tidy check
+        env:
+          GOPROXY: https://goproxy.cn,direct
+          GOTOOLCHAIN: local
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod go.sum
+
       # 国内机器直连 proxy.golang.org 会卡住（IPv6 无路由 / 限速），
       # 用 goproxy.cn；它不在 no_proxy 里时也会被 runner 代理转发
       - name: go build

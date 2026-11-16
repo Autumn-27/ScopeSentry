@@ -62,9 +62,9 @@ func Scan(params string, nextTime string) error {
 		return fmt.Errorf("failed to get scheduled task: %w", err)
 	}
 	task.Name += "-" + helper.GetNowTimeString()
-	
-	task.ID = primitive.NilObjectID    //fix
-	
+
+	task.ID = primitive.NilObjectID //fix
+
 	_, err = taskCommonService.Insert(context.Background(), &task)
 	if err != nil {
 		logger.Error(fmt.Sprintf("AddTask Scan%v", err))

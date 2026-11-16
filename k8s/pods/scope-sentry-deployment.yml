@@ -25,6 +25,25 @@ spec:
           ports:
             - containerPort: 8082
 
+          # /healthz 会 ping Mongo + Redis：任一不可用返回 503
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8082
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8082
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 5
+
           env:
             - name: TIMEZONE
               value: Asia/Shanghai
