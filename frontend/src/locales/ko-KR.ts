@@ -378,6 +378,7 @@ export default {
     deleteTemplate: '템플릿 삭제',
     autoNode: '노드 자동 참여',
     running: '실행 중',
+    waitStart: '시작 대기',
     stop: '중지',
     start: '시작',
     finish: '완료',

@@ -377,6 +377,7 @@ export default {
     deleteTemplate: '删除模板',
     autoNode: '自动加入',
     running: '运行中',
+    waitStart: '待开始',
     stop: '暂停',
     start: '开始',
     finish: '完成',

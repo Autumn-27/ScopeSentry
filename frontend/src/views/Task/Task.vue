@@ -91,9 +91,13 @@ const taskColums = reactive<TableColumn[]>([
     label: t('common.state'),
     minWidth: 200,
     formatter: (_: Recordable, __: TableColumn, cellValue: number) => {
-      // 1为运行中，2为暂停，3为运行完成
+      // 0 待开始，1 为运行中，2 为暂停，3 为运行完成
       let tagType, tagText
       switch (cellValue) {
+        case 0:
+          tagType = 'primary'
+          tagText = t('task.waitStart') // 待开始
+          break
         case 1:
           tagType = 'info'
           tagText = t('task.running') // 运行中

@@ -218,7 +218,8 @@ const handleCheckedCitiesChange = (value: CheckboxValueType[]) => {
   checkAll.value = checkedCount === fields.value.length
   isIndeterminate.value = checkedCount > 0 && checkedCount < fields.value.length
 }
-const filetype = ref('csv')
+// 后端只接受 xlsx / json（之前默认值写成 csv 会直接 400）
+const filetype = ref('xlsx')
 </script>
 
 <template>
@@ -252,7 +253,7 @@ const filetype = ref('csv')
         </ElFormItem>
         <ElFormItem :label="t('export.fileType')">
           <ElRadioGroup v-model="filetype">
-            <ElRadio value="xlsx">csv</ElRadio>
+            <ElRadio value="xlsx">xlsx</ElRadio>
             <ElRadio value="json">json</ElRadio>
           </ElRadioGroup>
         </ElFormItem>

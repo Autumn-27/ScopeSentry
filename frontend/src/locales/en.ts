@@ -380,6 +380,7 @@ export default {
     deleteTemplate: 'Del Template',
     autoNode: 'Auto Join',
     running: 'Running',
+    waitStart: 'Pending',
     stop: 'Stop',
     start: 'Start',
     finish: 'Finish',
