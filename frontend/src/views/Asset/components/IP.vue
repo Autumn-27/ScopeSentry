@@ -180,7 +180,7 @@ const { loading, dataList, total, currentPage, pageSize } = tableState
 pageSize.value = 10 // 可以根据需要修改为你想要的默认值
 const { getList, getElTableExpose } = tableMethods
 function tableHeaderColor() {
-  return { background: 'var(--el-fill-color-light)' }
+  return { background: 'var(--app-surface-2)' }
 }
 const filter = reactive<{ [key: string]: any }>({})
 const filterChange = async (newFilters: any) => {

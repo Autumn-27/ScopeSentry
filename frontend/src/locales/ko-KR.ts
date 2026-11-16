@@ -247,8 +247,13 @@ export default {
     small: '작게'
   },
   login: {
-    welcome: '환영합니다.',
+    welcome: '다시 오신 것을 환영합니다',
     message: '관리 시스템',
+    subtitle: '계정으로 로그인하여 콘솔에 접속하세요',
+    tagline: '자산 정찰, 취약점 스캔, 분산 노드 오케스트레이션을 한곳에서.',
+    feature1: '서브도메인·포트·URL·디렉터리 자산 자동 수집',
+    feature2: 'POC·핑거프린트·민감정보 규칙 지속 운영',
+    feature3: '멀티 노드 분산 스캔과 작업 오케스트레이션',
     username: '사용자 이름',
     password: '비밀번호',
     register: '회원가입',

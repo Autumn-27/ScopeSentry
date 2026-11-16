@@ -112,7 +112,7 @@ export const useAppStore = defineStore('app', {
       currentSize: 'default', // 组件尺寸
       theme: {
         // 主题色
-        elColorPrimary: '#409eff',
+        elColorPrimary: '#2f6feb',
         // 左侧菜单边框颜色
         leftMenuBorderColor: 'inherit',
         // 左侧菜单背景颜色

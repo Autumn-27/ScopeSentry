@@ -2,7 +2,7 @@
 import { reactive, ref, watch, onMounted, unref } from 'vue'
 import { Form, FormSchema } from '@/components/Form'
 import { useI18n } from '@/hooks/web/useI18n'
-import { ElCheckbox, ElLink } from 'element-plus'
+import { ElCheckbox } from 'element-plus'
 import { useForm } from '@/hooks/web/useForm'
 import { loginApi, getTestRoleApi, getAdminRoleApi } from '@/api/login'
 import { useAppStore } from '@/store/modules/app'
@@ -11,13 +11,10 @@ import { useRouter } from 'vue-router'
 import type { RouteLocationNormalizedLoaded, RouteRecordRaw } from 'vue-router'
 import { UserType } from '@/api/login/types'
 import { useValidator } from '@/hooks/web/useValidator'
-import { Icon } from '@/components/Icon'
 import { useUserStore } from '@/store/modules/user'
 import { BaseButton } from '@/components/Button'
 
 const { required } = useValidator()
-
-const emit = defineEmits(['to-register'])
 
 const appStore = useAppStore()
 
@@ -35,19 +32,6 @@ const rules = {
 }
 
 const schema = reactive<FormSchema[]>([
-  {
-    field: 'title',
-    colProps: {
-      span: 24
-    },
-    formItemProps: {
-      slots: {
-        default: () => {
-          return <h2 class="text-2xl font-bold text-center w-[100%]">{t('login.login')}</h2>
-        }
-      }
-    }
-  },
   {
     field: 'username',
     label: t('login.username'),
@@ -118,8 +102,6 @@ const schema = reactive<FormSchema[]>([
   }
 ])
 
-const iconSize = 30
-
 const remember = ref(userStore.getRememberMe)
 
 const initLoginInfo = () => {
@@ -137,10 +119,6 @@ const { formRegister, formMethods } = useForm()
 const { getFormData, getElFormExpose, setValues } = formMethods
 
 const loading = ref(false)
-
-const iconColor = '#999'
-
-const hoverColor = 'var(--el-color-primary)'
 
 const redirect = ref<string>('')
 
@@ -221,11 +199,6 @@ const getRole = async () => {
     permissionStore.setIsAddRouters(true)
     push({ path: redirect.value || permissionStore.addRouters[0].path })
   }
-}
-
-// 去注册页面
-const toRegister = () => {
-  emit('to-register')
 }
 </script>
 

@@ -147,7 +147,7 @@ const getHelp = () => {
   dialogVisible.value = true
 }
 function tableHeaderColor() {
-  return { background: 'var(--el-fill-color-light)' }
+  return { background: 'var(--app-surface-2)' }
 }
 const searchParams = ref('')
 const searchicon = useIcon({ icon: 'iconoir:search' })
