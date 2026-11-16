@@ -693,6 +693,11 @@ function rowstyle() {
   return { maxheight: '10px' }
 }
 const activeNames = ref(['1', '2', '3', '4', '5'])
+
+// 侧栏筛选：有数据时才给固定滚动高度，空数据收成一行提示，
+// 避免三个空列表把整条侧栏拉成一长条空白
+const filterListHeight = (list: unknown[] | undefined, maxRem: number) =>
+  list && list.length ? `${maxRem}rem` : '2.75rem'
 const handleFilterSearch = (data: any, newFilters: any) => {
   Object.assign(filter, newFilters)
   searchParams.value = data
@@ -867,7 +872,13 @@ const confirmSelectedIcons = () => {
     :iconData="AssetstatisticsData.Icon"
   />
   <ElRow :gutter="3" v-if="activeSegment == 'tableSegment'">
-    <ElCol :span="statisticsHidden ? 0 : 3">
+    <ElCol
+      :xs="statisticsHidden ? 0 : 24"
+      :sm="statisticsHidden ? 0 : 12"
+      :md="statisticsHidden ? 0 : 8"
+      :lg="statisticsHidden ? 0 : 5"
+      :xl="statisticsHidden ? 0 : 4"
+    >
       <ElCard v-loading="staticLoading">
         <div>
           <ElRow>
@@ -890,7 +901,10 @@ const confirmSelectedIcons = () => {
             <template #title>
               <ElText tag="b" size="small">{{ t('asset.port') }}</ElText>
             </template>
-            <ElScrollbar height="20rem">
+            <ElScrollbar :height="filterListHeight(AssetstatisticsData.Port, 20)">
+              <ElText v-if="!AssetstatisticsData.Port?.length" size="small" class="filter-empty">
+                {{ t('common.noData') }}
+              </ElText>
               <ElRow v-for="portItem in AssetstatisticsData.Port" :key="portItem.value">
                 <ElCol :span="12">
                   <div
@@ -912,7 +926,10 @@ const confirmSelectedIcons = () => {
             <template #title>
               <ElText tag="b" size="small">{{ t('asset.service') }}</ElText>
             </template>
-            <ElScrollbar height="13rem">
+            <ElScrollbar :height="filterListHeight(AssetstatisticsData.Service, 13)">
+              <ElText v-if="!AssetstatisticsData.Service?.length" size="small" class="filter-empty">
+                {{ t('common.noData') }}
+              </ElText>
               <ElRow v-for="serviceItem in AssetstatisticsData.Service" :key="serviceItem.value">
                 <ElCol :span="12">
                   <div
@@ -934,7 +951,10 @@ const confirmSelectedIcons = () => {
             <template #title>
               <ElText tag="b" size="small">{{ t('asset.products') }}</ElText>
             </template>
-            <ElScrollbar height="20rem">
+            <ElScrollbar :height="filterListHeight(AssetstatisticsData.Product, 20)">
+              <ElText v-if="!AssetstatisticsData.Product?.length" size="small" class="filter-empty">
+                {{ t('common.noData') }}
+              </ElText>
               <ElRow v-for="productItem in AssetstatisticsData.Product" :key="productItem.value">
                 <ElCol :span="12">
                   <div
@@ -990,7 +1010,14 @@ const confirmSelectedIcons = () => {
               </div>
             </template>
             <div class="collapse-item-icon-area">
-              <ElScrollbar ref="scrollbarRef" height="25rem" @scroll="handleScroll">
+              <ElScrollbar
+                ref="scrollbarRef"
+                :height="filterListHeight(AssetstatisticsData.Icon, 25)"
+                @scroll="handleScroll"
+              >
+                <ElText v-if="!AssetstatisticsData.Icon?.length" size="small" class="filter-empty">
+                  {{ t('common.noData') }}
+                </ElText>
                 <ElRow style="margin-top: 10px; margin-left: 10px">
                   <ElCol
                     :span="8"
@@ -1020,7 +1047,13 @@ const confirmSelectedIcons = () => {
         </ElCollapse>
       </ElCard>
     </ElCol>
-    <ElCol :span="statisticsHidden ? 24 : 21">
+    <ElCol
+      :xs="24"
+      :sm="statisticsHidden ? 24 : 12"
+      :md="statisticsHidden ? 24 : 16"
+      :lg="statisticsHidden ? 24 : 19"
+      :xl="statisticsHidden ? 24 : 20"
+    >
       <ElRow>
         <ElCol :span="24">
           <ElCard>
@@ -1315,5 +1348,36 @@ const confirmSelectedIcons = () => {
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
   }
+}
+/* 侧栏筛选区块：紧凑折叠头 + 空态提示，避免空列表撑出长条空白 */
+.filter-empty {
+  display: block;
+  padding: 6px 2px;
+  color: var(--el-text-color-placeholder);
+}
+
+:deep(.el-collapse) {
+  border-top: none;
+  border-bottom: none;
+}
+
+:deep(.el-collapse-item__header) {
+  height: 40px;
+  padding: 0 2px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+  border-bottom: 1px solid var(--app-border);
+}
+
+:deep(.el-collapse-item__wrap) {
+  border-bottom: none;
+}
+
+:deep(.el-collapse-item__content) {
+  padding: 8px 2px 12px;
+}
+
+:deep(.el-card__body) {
+  padding: 16px 16px 8px;
 }
 </style>

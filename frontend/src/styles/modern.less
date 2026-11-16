@@ -740,3 +740,24 @@ html .el-form-item.is-required:not(.is-no-asterisk) > .el-form-item__label::befo
   margin-right: 3px;
   color: var(--el-color-danger);
 }
+
+/* ===========================================================================
+ * 15. 长表单对话框：限制总高、body 可滚动、底部按钮永远可见
+ * ========================================================================= */
+html .el-dialog {
+  --el-dialog-margin-top: 6vh;
+  display: flex;
+  flex-direction: column;
+  max-height: 88vh;
+}
+
+html .el-dialog__header,
+html .el-dialog__footer {
+  flex: none;
+}
+
+html .el-dialog__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
