@@ -1,3 +1,8 @@
+//go:build integration
+
+// These tests construct real services, which initialise the Mongo/Redis clients
+// during package init. They need a reachable database, so they only run with
+// `go test -tags integration ./...`.
 package common
 
 import (
