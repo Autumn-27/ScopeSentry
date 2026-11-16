@@ -98,17 +98,17 @@ const crudSchemas = reactive<CrudSchema[]>([
   },
   {
     field: 'url',
-    label: 'URL',
+    label: t('dashboard.URL'),
     minWidth: 100
   },
   {
     field: 'vulnerability',
-    label: 'Vulnerability',
+    label: t('vulnerability.vulnerabilityName'),
     minWidth: 120
   },
   {
     field: 'level',
-    label: 'Level',
+    label: t('poc.level'),
     minWidth: 100,
     columnKey: 'level',
     formatter: (_: Recordable, __: TableColumn, levelValue: string) => {
@@ -158,7 +158,7 @@ const crudSchemas = reactive<CrudSchema[]>([
   },
   {
     field: 'matched',
-    label: 'Matched',
+    label: t('localization.matched'),
     minWidth: 150
   },
   {
@@ -221,7 +221,7 @@ const crudSchemas = reactive<CrudSchema[]>([
   },
   {
     field: 'tags',
-    label: 'TAG',
+    label: t('localization.tag'),
     fit: 'true',
     showOverflowTooltip: false,
     formatter: (row: Recordable, __: TableColumn, tags: string[]) => {
@@ -586,20 +586,20 @@ const getFilter = () => {
     :max-height="maxHeight"
   >
     <ElDescriptions :border="true" :column="2" style="word-break: break-word">
-      <ElDescriptionsItem label="URL" :span="2">{{ DialogData.URL }}</ElDescriptionsItem>
-      <ElDescriptionsItem label="Level">
+      <ElDescriptionsItem :label="t('dashboard.URL')" :span="2">{{ DialogData.URL }}</ElDescriptionsItem>
+      <ElDescriptionsItem :label="t('poc.level')">
         <Icon icon="clarity:circle-solid" :color="color" />
         <ElText type="info">{{ DialogData.Level }}</ElText>
       </ElDescriptionsItem>
-      <ElDescriptionsItem label="Vulnerability">{{ DialogData.Vulnerability }}</ElDescriptionsItem>
-      <ElDescriptionsItem label="Matched">{{ DialogData.Matched }}</ElDescriptionsItem>
-      <ElDescriptionsItem label="Time">{{ DialogData.Time }}</ElDescriptionsItem>
-      <ElDescriptionsItem label="Request">
+      <ElDescriptionsItem :label="t('vulnerability.vulnerabilityName')">{{ DialogData.Vulnerability }}</ElDescriptionsItem>
+      <ElDescriptionsItem :label="t('localization.matched')">{{ DialogData.Matched }}</ElDescriptionsItem>
+      <ElDescriptionsItem :label="t('asset.time')">{{ DialogData.Time }}</ElDescriptionsItem>
+      <ElDescriptionsItem :label="t('localization.request')">
         <ElScrollbar :max-height="maxHeight" max-width="maxHeight">
           <div :style="{ whiteSpace: 'pre-line', width: '500px' }"> {{ DialogData.Request }}</div>
         </ElScrollbar>
       </ElDescriptionsItem>
-      <ElDescriptionsItem label="Response">
+      <ElDescriptionsItem :label="t('localization.response')">
         <ElScrollbar :max-height="maxHeight">
           <div :style="{ whiteSpace: 'pre-line' }">{{ DialogData.Response }}</div>
         </ElScrollbar>

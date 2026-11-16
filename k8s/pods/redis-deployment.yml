@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: redis
+  namespace: scope-sentry  # Redis属于scope-sentry Namespace
+
+spec:
+  replicas: 1  # Redis pod 的数量为 1
+
+  # selector 决定 Deployment 管理哪些 Pod
+  selector:
+    matchLabels:
+      app: redis  # 用这个 Label 找到需要管理的 Pod
+
+  template:
+    metadata:
+      labels:
+        app: redis  # 给 Pod 打上 app=redis 标签
+
+    spec:
+      containers:
+        - name: redis
+          image: redis:7.0.11
+
+          ports:
+            - containerPort: 6379
+
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: REDIS_PASSWORD
+
+          command:
+            - redis-server
+            - --requirepass
+            - $(REDIS_PASSWORD)

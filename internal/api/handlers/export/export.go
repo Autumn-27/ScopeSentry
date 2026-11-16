@@ -53,7 +53,7 @@ func Export(c *gin.Context) {
 
 	// 验证文件类型
 	if req.FileType != "xlsx" && req.FileType != "json" {
-		response.BadRequest(c, "api.invalid_file_type", fmt.Errorf("filetype must be csv or json"))
+		response.BadRequest(c, "api.invalid_file_type", fmt.Errorf("filetype must be xlsx or json"))
 		return
 	}
 

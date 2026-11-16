@@ -78,7 +78,7 @@ const crudSchemas = reactive<CrudSchema[]>([
             <span>{t('subdomain.subdomainName')}</span>
             <ElInput
               v-model={hostValue.value}
-              placeholder="Search"
+              placeholder={t('common.search')}
               style="width: 200px; margin-left: 10px;"
               size="small"
               onChange={() => filterSearchChange('sub_host')}
@@ -119,7 +119,7 @@ const crudSchemas = reactive<CrudSchema[]>([
             <span>{t('subdomain.recordValue')}</span>
             <ElInput
               v-model={valueValue.value}
-              placeholder="Search"
+              placeholder={t('common.search')}
               style="width: 200px; margin-left: 10px;"
               size="small"
               onChange={() => filterSearchChange('sub_value')}
@@ -131,7 +131,7 @@ const crudSchemas = reactive<CrudSchema[]>([
   },
   {
     field: 'ip',
-    label: 'IP',
+    label: t('asset.IP'),
     minWidth: '150',
     formatter: (_: Recordable, __: TableColumn, IPValue: string[]) => {
       let content = ''
@@ -147,7 +147,7 @@ const crudSchemas = reactive<CrudSchema[]>([
             <span>IP</span>
             <ElInput
               v-model={ipValue.value}
-              placeholder="Search"
+              placeholder={t('common.search')}
               style="width: 180px; margin-left: 10px;"
               size="small"
               onChange={() => filterSearchChange('sub_ip')}
@@ -201,7 +201,7 @@ const filterSearchChange = async (type: string) => {
 const ids = ref<string[]>([])
 const delSelect = async () => {
   console.log('dwa')
-  ElMessageBox.confirm('Whether to delete?', 'Warning', {
+  ElMessageBox.confirm(t('common.delMessage'), t('common.delWarning'), {
     confirmButtonText: 'OK',
     cancelButtonText: 'Cancel',
     type: 'warning'
@@ -216,7 +216,7 @@ const delSelect = async () => {
     .catch(() => {
       ElMessage({
         type: 'info',
-        message: 'Delete canceled'
+        message: t('localization.deleteCanceled')
       })
     })
 }
@@ -238,7 +238,7 @@ const changeDeleteDisplay = async () => {
     <ElCol>
       <ElCard style="height: min-content">
         <ElButton v-if="deleteDisplay" @click="delSelect" type="danger" size="small"
-          >Dlete</ElButton
+          >{{ t('common.delete') }}</ElButton
         >
         <Table
           :columns="allSchemas.tableColumns"

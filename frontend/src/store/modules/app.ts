@@ -6,8 +6,18 @@ import { colorIsDark, hexToRGB, lighten, mix } from '@/utils/color'
 import { unref } from 'vue'
 import { useCssVar } from '@vueuse/core'
 import { useStorage } from '@/hooks/web/useStorage'
+import {
+  ThemeMode,
+  THEME_MODE_STORAGE_KEY,
+  LEGACY_IS_DARK_STORAGE_KEY,
+  DEFAULT_THEME_MODE,
+  getSystemDark,
+  resolveInitialThemeMode,
+  resolveIsDark,
+  applyThemeClass
+} from '@/constants/theme'
 
-const { setStorage } = useStorage('localStorage')
+const { setStorage, getStorage } = useStorage('localStorage')
 
 interface AppState {
   breadcrumb: boolean
@@ -29,12 +39,45 @@ interface AppState {
   layout: LayoutType
   title: string
   isDark: boolean
+  // 主题模式：auto(跟随系统) / light / dark
+  themeMode: ThemeMode
+  // 系统当前是否深色，由 prefers-color-scheme 同步
+  systemDark: boolean
   currentSize: ComponentSize
   sizeMap: ComponentSize[]
   mobile: boolean
   footer: boolean
   theme: ThemeTypes
   fixedMenu: boolean
+}
+
+let mediaQueryList: MediaQueryList | null = null
+let mediaQueryHandler: ((event: MediaQueryListEvent) => void) | null = null
+let themeTransitionTimer: number | null = null
+
+/**
+ * 监听系统深浅色变化，只在“跟随系统”模式下实时生效
+ * 单例绑定，避免 HMR / 重复初始化堆积监听
+ */
+const bindSystemThemeListener = (storeInstance: { setSystemDark: (value: boolean) => void }) => {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+  // matchMedia 每次返回新对象，不能靠引用判断是否已绑定，统一先解绑再绑
+  if (mediaQueryList && mediaQueryHandler) {
+    if (typeof mediaQueryList.removeEventListener === 'function') {
+      mediaQueryList.removeEventListener('change', mediaQueryHandler)
+    } else if (typeof mediaQueryList.removeListener === 'function') {
+      // Safari <= 13 / 旧 WKWebView 只有废弃的 add/removeListener
+      mediaQueryList.removeListener(mediaQueryHandler)
+    }
+  }
+  mediaQueryList = mediaQuery
+  mediaQueryHandler = (event: MediaQueryListEvent) => storeInstance.setSystemDark(event.matches)
+  if (typeof mediaQuery.addEventListener === 'function') {
+    mediaQuery.addEventListener('change', mediaQueryHandler)
+  } else if (typeof mediaQuery.addListener === 'function') {
+    mediaQuery.addListener(mediaQueryHandler)
+  }
 }
 
 export const useAppStore = defineStore('app', {
@@ -63,7 +106,9 @@ export const useAppStore = defineStore('app', {
       fixedMenu: false, // 是否固定菜单
 
       layout: 'classic', // layout布局
-      isDark: false, // 是否是暗黑模式
+      isDark: false, // 是否应用暗黑模式（最终态，由 themeMode + 系统决定）
+      themeMode: DEFAULT_THEME_MODE, // 主题模式，默认跟随系统
+      systemDark: false, // 系统当前是否深色
       currentSize: 'default', // 组件尺寸
       theme: {
         // 主题色
@@ -158,6 +203,12 @@ export const useAppStore = defineStore('app', {
     getIsDark(): boolean {
       return this.isDark
     },
+    getThemeMode(): ThemeMode {
+      return this.themeMode
+    },
+    getSystemDark(): boolean {
+      return this.systemDark
+    },
     getCurrentSize(): ComponentSize {
       return this.currentSize
     },
@@ -236,18 +287,61 @@ export const useAppStore = defineStore('app', {
     setTitle(title: string) {
       this.title = title
     },
+    /**
+     * 应用最终的主题状态（dark 类、color-scheme、菜单/头部配色）
+     * 一般不直接调用，请用 setThemeMode / setSystemDark
+     */
     setIsDark(isDark: boolean) {
       this.isDark = isDark
-      // 保存到 localStorage
-      setStorage('isDark', isDark)
-      if (this.isDark) {
-        document.documentElement.classList.add('dark')
-        document.documentElement.classList.remove('light')
-      } else {
-        document.documentElement.classList.add('light')
-        document.documentElement.classList.remove('dark')
-      }
+      // 兼容旧版本：老版本只认 isDark 布尔值
+      setStorage(LEGACY_IS_DARK_STORAGE_KEY, isDark)
+      applyThemeClass(isDark)
       this.setPrimaryLight()
+      // 深浅切换后让菜单与头部跟随新的基底背景色
+      const baseBgColor = getCssVar('--el-bg-color').trim()
+      if (baseBgColor) {
+        this.setMenuTheme(baseBgColor)
+        this.setHeaderTheme(baseBgColor)
+      }
+    },
+    /** 手动切换：日间 / 夜间 / 跟随系统 */
+    setThemeMode(themeMode: ThemeMode) {
+      if (themeMode === this.themeMode) return
+      this.themeMode = themeMode
+      setStorage(THEME_MODE_STORAGE_KEY, themeMode)
+      // 手动切换时给整页一次短过渡，避免颜色硬切；首次加载/跟随系统变化不加
+      this.playThemeTransition()
+      this.setIsDark(resolveIsDark(themeMode, this.systemDark))
+    },
+    /** 主题切换的 260ms 全局过渡（系统级变化与人机切换的手感差异） */
+    playThemeTransition() {
+      if (typeof window === 'undefined' || typeof document === 'undefined') return
+      const root = document.documentElement
+      if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+      root.classList.add('theme-transition')
+      if (themeTransitionTimer) window.clearTimeout(themeTransitionTimer)
+      themeTransitionTimer = window.setTimeout(() => {
+        root.classList.remove('theme-transition')
+        themeTransitionTimer = null
+      }, 260)
+    },
+    /** 系统主题变化（prefers-color-scheme） */
+    setSystemDark(systemDark: boolean) {
+      this.systemDark = systemDark
+      if (this.themeMode === 'auto') {
+        this.setIsDark(systemDark)
+      }
+    },
+    /** 启动时初始化主题：读取持久化模式（缺省/非法 -> 跟随系统）并监听系统变化 */
+    initTheme() {
+      // SSR/预渲染环境没有 window，直接跳过（其余主题逻辑都有 typeof window 守卫）
+      if (typeof window === 'undefined') return
+      this.systemDark = getSystemDark()
+      const themeMode = resolveInitialThemeMode(getStorage(THEME_MODE_STORAGE_KEY))
+      this.themeMode = themeMode
+      setStorage(THEME_MODE_STORAGE_KEY, themeMode)
+      this.setIsDark(resolveIsDark(themeMode, this.systemDark))
+      bindSystemThemeListener(this)
     },
     setCurrentSize(currentSize: ComponentSize) {
       this.currentSize = currentSize

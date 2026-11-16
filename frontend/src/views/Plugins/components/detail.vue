@@ -80,20 +80,20 @@ const rules = ref({
 
 // 模块选项
 const moduleOptions = ref([
-  { label: 'TargetHandler', value: 'TargetHandler' },
-  { label: 'SubdomainScan', value: 'SubdomainScan' },
-  { label: 'SubdomainSecurity', value: 'SubdomainSecurity' },
-  { label: 'PortScanPreparation', value: 'PortScanPreparation' },
-  { label: 'PortScan', value: 'PortScan' },
-  { label: 'AssetMapping', value: 'AssetMapping' },
-  { label: 'URLScan', value: 'URLScan' },
-  { label: 'WebCrawler', value: 'WebCrawler' },
-  { label: 'DirScan', value: 'DirScan' },
-  { label: 'VulnerabilityScan', value: 'VulnerabilityScan' },
-  { label: 'AssetHandle', value: 'AssetHandle' },
-  { label: 'PortFingerprint', value: 'PortFingerprint' },
-  { label: 'URLSecurity', value: 'URLSecurity' },
-  { label: 'PassiveScan', value: 'PassiveScan' }
+  { label: t('scanTemplate.TargetHandler'), value: 'TargetHandler' },
+  { label: t('scanTemplate.SubdomainScan'), value: 'SubdomainScan' },
+  { label: t('scanTemplate.SubdomainSecurity'), value: 'SubdomainSecurity' },
+  { label: t('scanTemplate.PortScanPreparation'), value: 'PortScanPreparation' },
+  { label: t('scanTemplate.PortScan'), value: 'PortScan' },
+  { label: t('scanTemplate.AssetMapping'), value: 'AssetMapping' },
+  { label: t('scanTemplate.URLScan'), value: 'URLScan' },
+  { label: t('scanTemplate.WebCrawler'), value: 'WebCrawler' },
+  { label: t('scanTemplate.DirScan'), value: 'DirScan' },
+  { label: t('scanTemplate.VulnerabilityScan'), value: 'VulnerabilityScan' },
+  { label: t('scanTemplate.AssetHandle'), value: 'AssetHandle' },
+  { label: t('scanTemplate.PortFingerprint'), value: 'PortFingerprint' },
+  { label: t('scanTemplate.URLSecurity'), value: 'URLSecurity' },
+  { label: t('scanTemplate.PassiveScan'), value: 'PassiveScan' }
 ])
 
 // Codemirror 配置
@@ -258,7 +258,7 @@ const fetchData = async (id: string) => {
         form.value.parameterList = []
       }
     } else {
-      ElMessage.error(`数据加载失败：${res.message}`)
+      ElMessage.error(t('localization.loadFailedDetail', { message: res.message }))
     }
   } catch (error) {
     console.error('查询数据时发生错误:', error)
@@ -281,18 +281,18 @@ watch(
 const save = async () => {
   saveLoading.value = true // 开始加载状态
   if (form.value.name == '') {
-    ElMessage.error('name 不能为空')
+    ElMessage.error(t('localization.nameRequired'))
     saveLoading.value = false // 结束加载状态
     return
   }
   if (form.value.module == '' && props.tp == 'scan') {
-    ElMessage.error('module 不能为空')
+    ElMessage.error(t('localization.moduleRequired'))
     saveLoading.value = false // 结束加载状态
     return
   }
   if (!isSystem.value) {
     if (content.value == '') {
-      ElMessage.error('源码 不能为空')
+      ElMessage.error(t('localization.sourceRequired'))
       saveLoading.value = false // 结束加载状态
       return
     }
@@ -321,7 +321,7 @@ const save = async () => {
     props.getList()
   } catch (error) {
     console.error('保存数据时发生错误:', error)
-    ElMessage.error('保存失败，请稍后再试。')
+    ElMessage.error(t('localization.saveFailed'))
   } finally {
     saveLoading.value = false // 结束加载状态
   }
@@ -419,8 +419,8 @@ const save = async () => {
                               style="width: 90px"
                               @change="handleParameterListChange"
                             >
-                              <ElOption label="true" value="true" />
-                              <ElOption label="false" value="false" />
+                              <ElOption :label="t('common.true')" value="true" />
+                              <ElOption :label="t('common.false')" value="false" />
                             </ElSelect>
                             <ElInput
                               v-else

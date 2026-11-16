@@ -82,7 +82,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
     <ElFormItem :label="t('node.nodeName')" prop="name">
       <ElInput v-model="localForm.name" />
     </ElFormItem>
-    <ElFormItem label="Module Config">
+    <ElFormItem :label="t('localization.moduleConfig')">
       <Codemirror
         v-model="localForm.ModulesConfig"
         :extensions="extensions"

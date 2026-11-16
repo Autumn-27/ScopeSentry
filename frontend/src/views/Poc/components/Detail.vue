@@ -17,11 +17,16 @@ import { useI18n } from '@/hooks/web/useI18n'
 import { Codemirror } from 'vue-codemirror'
 import { javascript } from '@codemirror/lang-javascript'
 import { oneDark } from '@codemirror/theme-one-dark'
-import { nextTick, reactive, ref } from 'vue'
+import { computed, nextTick, reactive, ref } from 'vue'
 import { toRefs } from '@vueuse/core'
 import { updatePocDataApi, addPocDataApi } from '@/api/poc'
+import { useAppStore } from '@/store/modules/app'
 const { t } = useI18n()
-const extensions = [javascript(), oneDark]
+
+const appStore = useAppStore()
+
+// 深色才挂 oneDark，浅色用 CodeMirror 默认亮色
+const extensions = computed(() => (appStore.getIsDark ? [javascript(), oneDark] : [javascript()]))
 const props = defineProps<{
   closeDialog: () => void
   getList: () => void
@@ -39,27 +44,27 @@ const localForm = ref({ ...pocForm.value })
 const levelOptions = [
   {
     value: 'critical',
-    label: 'critical'
+    label: t('poc.critical')
   },
   {
     value: 'high',
-    label: 'high'
+    label: t('poc.high')
   },
   {
     value: 'medium',
-    label: 'medium'
+    label: t('poc.medium')
   },
   {
     value: 'low',
-    label: 'low'
+    label: t('poc.low')
   },
   {
     value: 'info',
-    label: 'info'
+    label: t('poc.info')
   },
   {
     value: 'unknown',
-    label: 'unknown'
+    label: t('poc.unknown')
   }
 ]
 const saveLoading = ref(false)
@@ -130,6 +135,7 @@ const handleInputConfirm = () => {
   <ElForm :model="localForm" label-width="120px" status-icon ref="ruleFormRef">
     <ElFormItem :label="t('poc.content')" prop="content">
       <codemirror
+        :key="appStore.getIsDark ? 'cm-dark' : 'cm-light'"
         v-model="localForm.content"
         :style="{ height: '600px', width: '100%' }"
         :autofocus="true"

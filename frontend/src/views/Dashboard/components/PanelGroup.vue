@@ -41,7 +41,7 @@ getCount()
 
 <template>
   <ElRow justify="space-between" :class="prefixCls" :gutter="20">
-    <ElCol :span="5">
+    <ElCol :xs="24" :sm="12" :md="8" :lg="5">
       <ElCard shadow="hover" class="mb-20px">
         <ElSkeleton :loading="loading" animated :rows="2">
           <template #default>
@@ -70,7 +70,7 @@ getCount()
       </ElCard>
     </ElCol>
 
-    <ElCol :span="5">
+    <ElCol :xs="24" :sm="12" :md="8" :lg="5">
       <ElCard shadow="hover" class="mb-20px">
         <ElSkeleton :loading="loading" animated :rows="2">
           <template #default>
@@ -99,7 +99,7 @@ getCount()
       </ElCard>
     </ElCol>
 
-    <ElCol :span="5">
+    <ElCol :xs="24" :sm="12" :md="8" :lg="5">
       <ElCard shadow="hover" class="mb-20px">
         <ElSkeleton :loading="loading" animated :rows="2">
           <template #default>
@@ -128,7 +128,7 @@ getCount()
       </ElCard>
     </ElCol>
 
-    <ElCol :span="5">
+    <ElCol :xs="24" :sm="12" :md="8" :lg="5">
       <ElCard shadow="hover" class="mb-20px">
         <ElSkeleton :loading="loading" animated :rows="2">
           <template #default>
@@ -156,7 +156,7 @@ getCount()
         </ElSkeleton>
       </ElCard>
     </ElCol>
-    <ElCol :span="4">
+    <ElCol :xs="24" :sm="12" :md="8" :lg="4">
       <ElCard shadow="hover" class="mb-20px">
         <ElSkeleton :loading="loading" animated :rows="2">
           <template #default>

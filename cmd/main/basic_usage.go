@@ -1,3 +1,5 @@
+//go:build example
+
 // examples----------------------------------
 // @file      : basic_usage.go
 // @author    : Autumn

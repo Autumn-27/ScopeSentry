@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, unref } from 'vue'
-import { ElDropdown, ElDropdownMenu, ElDropdownItem } from 'element-plus'
+import { computed, ref, unref } from 'vue'
+import { ElDropdown, ElDropdownMenu, ElDropdownItem, ElMessageBox } from 'element-plus'
 import { useLocaleStore } from '@/store/modules/locale'
+import { useI18n } from '@/hooks/web/useI18n'
 import { useLocale } from '@/hooks/web/useLocale'
 import { propTypes } from '@/utils/propTypes'
 import { useDesign } from '@/hooks/web/useDesign'
@@ -20,20 +21,35 @@ const langMap = computed(() => localeStore.getLocaleMap)
 
 const currentLang = computed(() => localeStore.getCurrentLocale)
 
-const setLang = (lang: LocaleType) => {
-  if (lang === unref(currentLang).lang) return
-  // 需要重新加载页面让整个语言多初始化
-  window.location.reload()
-  localeStore.setCurrentLocale({
-    lang
-  })
-  const { changeLocale } = useLocale()
-  changeLocale(lang)
+const { t } = useI18n()
+const { changeLocale } = useLocale()
+const isChanging = ref(false)
+
+const setLang = async (lang: LocaleType) => {
+  if (isChanging.value || lang === unref(currentLang).lang) return
+  isChanging.value = true
+  try {
+    // Setup-time translated schemas currently require recreating the view.
+    // Ask before discarding input; do not cancel or replay requests here.
+    try {
+      await ElMessageBox.confirm(t('common.changeLanguageMessage'), t('common.reminder'), {
+        confirmButtonText: t('common.ok'),
+        cancelButtonText: t('common.cancel'),
+        type: 'warning'
+      })
+    } catch (action) {
+      if (action === 'cancel' || action === 'close') return
+      throw action
+    }
+    await changeLocale(lang)
+  } finally {
+    isChanging.value = false
+  }
 }
 </script>
 
 <template>
-  <ElDropdown :class="prefixCls" trigger="click" @command="setLang">
+  <ElDropdown :class="prefixCls" :disabled="isChanging" trigger="click" @command="setLang">
     <Icon
       :size="18"
       icon="ion:language-sharp"

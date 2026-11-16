@@ -11,6 +11,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/Autumn-27/ScopeSentry/internal/constants"
 	"github.com/Autumn-27/ScopeSentry/internal/logger"
 	"github.com/Autumn-27/ScopeSentry/internal/models"
 	"github.com/Autumn-27/ScopeSentry/internal/repositories/task/task"
@@ -55,6 +56,7 @@ func NewService() Service {
 		assetService:      asset.NewService(),
 		rootDomainService: root_domain.NewService(),
 		subdomainService:  subdomain.NewService(),
+		urlService:        url.NewService(),
 		nodeService:       node.NewService(),
 		dictionaryService: dictionary.NewManageService(),
 		portsService:      dictionary.NewPortService(),
@@ -147,7 +149,9 @@ func (s *service) Insert(ctx context.Context, task *models.Task) (string, error)
 	task.Progress = 0
 	task.CreatTime = helper.GetNowTimeString()
 	task.EndTime = ""
-	task.Status = 1
+	// 任务刚入库时扫描节点还没有领取，先标记为待开始（0），
+	// 等节点产出进度后由 TaskProgress 转为运行中（1）。见 issue #288。
+	task.Status = constants.TaskStatusPending
 	task.Type = task.TargetSource
 	insertId, err := s.taskRepo.Insert(ctx, task)
 	if err != nil {

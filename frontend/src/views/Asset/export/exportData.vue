@@ -156,7 +156,7 @@ const onClick = (name) => {
 }
 const delLoading = ref(false)
 const confirmDelete = async (data) => {
-  const confirmed = window.confirm('Are you sure you want to delete the selected data?')
+  const confirmed = window.confirm(t('common.delMessage'))
   if (confirmed) {
     await del(data)
   }
@@ -175,7 +175,7 @@ const del = async (data) => {
   }
 }
 const confirmDeleteSelect = async () => {
-  const confirmed = window.confirm('Are you sure you want to delete the selected data?')
+  const confirmed = window.confirm(t('common.delMessage'))
   if (confirmed) {
     await delSelect()
   }
@@ -218,7 +218,8 @@ const handleCheckedCitiesChange = (value: CheckboxValueType[]) => {
   checkAll.value = checkedCount === fields.value.length
   isIndeterminate.value = checkedCount > 0 && checkedCount < fields.value.length
 }
-const filetype = ref('csv')
+// 后端只接受 xlsx / json（之前默认值写成 csv 会直接 400）
+const filetype = ref('xlsx')
 </script>
 
 <template>
@@ -240,7 +241,7 @@ const filetype = ref('csv')
             :indeterminate="isIndeterminate"
             @change="handleCheckAllChange"
           >
-            All
+            {{ t('common.all') }}
           </ElCheckbox>
         </ElFormItem>
         <ElFormItem label=" ">
@@ -252,7 +253,7 @@ const filetype = ref('csv')
         </ElFormItem>
         <ElFormItem :label="t('export.fileType')">
           <ElRadioGroup v-model="filetype">
-            <ElRadio value="xlsx">csv</ElRadio>
+            <ElRadio value="xlsx">xlsx</ElRadio>
             <ElRadio value="json">json</ElRadio>
           </ElRadioGroup>
         </ElFormItem>

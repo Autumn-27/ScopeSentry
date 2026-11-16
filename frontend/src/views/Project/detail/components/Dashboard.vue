@@ -272,7 +272,7 @@ getAllApi()
                       <ElIcon style="position: relative; top: 3px">
                         <projectTagIcon />
                       </ElIcon>
-                      TAG
+                      {{ t('localization.tag') }}
                     </div>
                   </template>
                   <ElTag> {{ projectInfo.tag }}</ElTag>

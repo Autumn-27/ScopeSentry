@@ -26,17 +26,10 @@ const props = defineProps({
 
 const isDark = computed(() => appStore.getIsDark)
 
-const theme = computed(() => {
-  const echartTheme: boolean | string = unref(isDark) ? true : 'auto'
+// ECharts 的主题只能在 init 时指定，主题切换需要 dispose 后重建实例
+const echartsTheme = computed(() => (unref(isDark) ? 'dark' : undefined))
 
-  return echartTheme
-})
-
-const options = computed(() => {
-  return Object.assign(props.options, {
-    darkMode: unref(theme)
-  })
-})
+const options = computed(() => props.options)
 
 const elRef = ref<ElRef>()
 
@@ -55,11 +48,19 @@ const styles = computed(() => {
 })
 
 const initChart = () => {
-  if (unref(elRef) && props.options) {
-    echartRef = echarts.init(unref(elRef) as HTMLElement)
-    echartRef?.setOption(unref(options))
+  if (!unref(elRef) || !props.options) return
+  if (echartRef) {
+    echartRef.dispose()
+    echartRef = null
   }
+  echartRef = echarts.init(unref(elRef) as HTMLElement, unref(echartsTheme))
+  echartRef?.setOption(unref(options))
 }
+
+// 日间/夜间切换后重建实例，保证坐标轴、图例、tooltip 均为对应配色
+watch(echartsTheme, () => {
+  initChart()
+})
 
 watch(
   () => options.value,
@@ -96,6 +97,11 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  // 卸载时释放实例，避免路由切换/骨架屏替换后 canvas、ResizeObserver 泄漏
+  if (echartRef) {
+    echartRef.dispose()
+    echartRef = null
+  }
   window.removeEventListener('resize', resizeHandler)
   unref(contentEl) &&
     (unref(contentEl) as Element).removeEventListener('transitionend', contentResizeHandler)

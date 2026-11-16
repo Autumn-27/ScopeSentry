@@ -39,7 +39,7 @@ onBeforeMount(async () => {
   }
 })
 const confirmAdd = async () => {
-  const confirmed = window.confirm('Do you want to save the data?')
+  const confirmed = window.confirm(t('localization.saveConfirm'))
   if (confirmed) {
     await save()
   }
@@ -69,7 +69,7 @@ const saveLoading = ref(false)
       <ElFormItem :label="t('configuration.timezone')">
         <ElInput v-model="form.timezone" />
       </ElFormItem>
-      <ElFormItem label="Module Config">
+      <ElFormItem :label="t('localization.moduleConfig')">
         <Codemirror
           v-model="form.ModulesConfig"
           :extensions="extensions"
@@ -84,7 +84,7 @@ const saveLoading = ref(false)
     <ElRow>
       <!-- <ElCol :span="20" :offset="12"/> -->
       <ElCol :span="12" :offset="2">
-        <ElButton type="primary" @click="confirmAdd" :loading="saveLoading">Save</ElButton>
+        <ElButton type="primary" @click="confirmAdd" :loading="saveLoading">{{ t('common.save') }}</ElButton>
         <ElDivider direction="vertical" />
         <ElText size="small" type="danger">{{ t('configuration.threadMsg') }}</ElText>
       </ElCol>

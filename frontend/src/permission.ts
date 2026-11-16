@@ -1,7 +1,7 @@
 import router from './router'
 import { useAppStoreWithOut } from '@/store/modules/app'
 import type { RouteRecordRaw } from 'vue-router'
-import { useTitle } from '@/hooks/web/useTitle'
+import { setPageTitle } from '@/hooks/web/useTitle'
 import { useNProgress } from '@/hooks/web/useNProgress'
 import { usePermissionStoreWithOut } from '@/store/modules/permission'
 import { usePageLoading } from '@/hooks/web/usePageLoading'
@@ -58,7 +58,7 @@ router.beforeEach(async (to, from, next) => {
 })
 
 router.afterEach((to) => {
-  useTitle(to?.meta?.title as string)
+  setPageTitle(to?.meta?.title as string)
   done() // 结束Progress
   loadDone()
 })

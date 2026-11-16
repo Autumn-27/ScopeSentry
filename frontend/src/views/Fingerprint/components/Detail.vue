@@ -5,8 +5,11 @@ import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { toRefs } from '@vueuse/core'
 import { updateFingerprintDataApi, addFingerprintDataApi } from '@/api/Fingerprint'
 import * as monaco from 'monaco-editor'
+import { useAppStore } from '@/store/modules/app'
 
 const { t } = useI18n()
+
+const appStore = useAppStore()
 const props = defineProps<{
   closeDialog: () => void
   getList: () => void
@@ -49,7 +52,7 @@ onMounted(() => {
     editor = monaco.editor.create(editorContainer.value, {
       value: initialValue,
       language: 'yaml',
-      theme: 'vs-dark',
+      theme: appStore.getIsDark ? 'vs-dark' : 'vs',
       automaticLayout: true,
       minimap: { enabled: false },
       scrollBeyondLastLine: false,
@@ -67,6 +70,12 @@ onMounted(() => {
 })
 
 // 监听外部数据变化
+// 主题切换后同步 monaco 全局主题（实例不需要重建）
+watch(
+  () => appStore.getIsDark,
+  (dark) => monaco.editor.setTheme(dark ? 'vs-dark' : 'vs')
+)
+
 watch(
   () => [props.fingerprintForm.content, props.fingerprintForm.id],
   ([newValue, id]) => {
@@ -174,14 +183,6 @@ const submitForm = async () => {
 /* Monaco Editor 样式优化 */
 :deep(.monaco-editor) {
   border-radius: 8px;
-}
-
-:deep(.monaco-editor .margin) {
-  background-color: #1e1e1e !important;
-}
-
-:deep(.monaco-editor .monaco-editor-background) {
-  background-color: #1e1e1e !important;
 }
 
 :deep(.monaco-scrollable-element > .scrollbar) {

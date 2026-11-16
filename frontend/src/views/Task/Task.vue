@@ -91,9 +91,13 @@ const taskColums = reactive<TableColumn[]>([
     label: t('common.state'),
     minWidth: 200,
     formatter: (_: Recordable, __: TableColumn, cellValue: number) => {
-      // 1为运行中，2为暂停，3为运行完成
+      // 0 待开始，1 为运行中，2 为暂停，3 为运行完成
       let tagType, tagText
       switch (cellValue) {
+        case 0:
+          tagType = 'primary'
+          tagText = t('task.waitStart') // 待开始
+          break
         case 1:
           tagType = 'info'
           tagText = t('task.running') // 运行中
@@ -285,7 +289,7 @@ const getTaskContent = async (data) => {
 const confirmDeleteSelect = async () => {
   const deleteAssetS = ref<boolean | string | number>(false)
   ElMessageBox({
-    title: 'Delete',
+    title: t('common.delete'),
     draggable: true,
     // Should pass a function if VNode contains dynamic props
     message: () =>
@@ -450,7 +454,7 @@ const confirmSyncToProjectSelect = async () => {
 const confirmDelete = async (data) => {
   const deleteAsset = ref<boolean | string | number>(false)
   ElMessageBox({
-    title: 'Delete',
+    title: t('common.delete'),
     draggable: true,
     // Should pass a function if VNode contains dynamic props
     message: () =>
@@ -499,7 +503,7 @@ const delSelect = async (delA) => {
   }
 }
 const confirmRetest = async (data) => {
-  const confirmed = window.confirm('Are you sure you want to retest?')
+  const confirmed = window.confirm(t('localization.retestConfirm'))
   if (confirmed) {
     await retestTask(data)
   }
@@ -527,16 +531,16 @@ const setMaxHeight = () => {
 
 <template>
   <ContentWrap>
-    <ElRow>
+    <ElRow class="locale-search-row">
       <ElCol :span="1">
-        <ElText class="mx-1" style="position: relative; top: 8px">{{ t('task.taskName') }}:</ElText>
+        <ElText class="mx-1">{{ t('task.taskName') }}:</ElText>
       </ElCol>
       <ElCol :span="5">
         <ElInput v-model="search" :placeholder="t('common.inputText')" style="height: 38px" />
       </ElCol>
-      <ElCol :span="5" style="position: relative; left: 16px">
+      <ElCol :span="5">
         <ElButton type="primary" :icon="searchicon" style="height: 100%" @click="handleSearch"
-          >Search</ElButton
+          >{{ t('common.search') }}</ElButton
         >
       </ElCol>
     </ElRow>
@@ -626,3 +630,22 @@ const setMaxHeight = () => {
       getProgressInforunnerid=""
   /></Dialog>
 </template>
+
+<style scoped>
+.locale-search-row {
+  align-items: center;
+  gap: 12px;
+}
+.locale-search-row > .el-col {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: 100%;
+}
+.locale-search-row > .el-col:nth-child(2) {
+  flex: 0 1 260px;
+  min-width: 0;
+}
+.locale-search-row .el-text {
+  white-space: nowrap;
+}
+</style>

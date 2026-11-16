@@ -2,7 +2,7 @@
 	<img src="docs/images/favicon.ico"/>
 </div>
 
-中文 | [English](./README.md)
+中文 | [English](./README.md) | [한국어](./README_KR.md)
 
 ## 介绍
 Scope Sentry是一款具有分布式资产测绘、子域名枚举、信息泄露检测、漏洞扫描、目录扫描、子域名接管、爬虫、页面监控功能的工具，通过构建多个节点，自由选择节点运行扫描任务。当出现新漏洞时可以快速排查关注资产是否存在相关组件。
@@ -77,6 +77,7 @@ docker-compose -f scan-docker-compose.yml up -d
 - 多节点扫描
 - webhook
 - 数据导出
+- 日间 / 夜间 / 跟随系统 三态主题（默认跟随系统，用户可手动切换）
 
 ## To DO
 - 弱口令爆破
