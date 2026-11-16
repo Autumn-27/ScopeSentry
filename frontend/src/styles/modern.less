@@ -805,3 +805,60 @@ html .el-collapse {
 html .el-collapse-item__wrap {
   background-color: transparent;
 }
+
+/* ===========================================================================
+ * 17. 语义色按钮：页面级也统一成柔和着色，只保留 primary 实心作为主行动
+ * ========================================================================= */
+html .el-button--danger:not(.is-plain):not(.is-text):not(.is-link),
+html .el-button--success:not(.is-plain):not(.is-text):not(.is-link),
+html .el-button--warning:not(.is-plain):not(.is-text):not(.is-link),
+html .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+html .el-button--danger:not(.is-plain):not(.is-text):not(.is-link) {
+  color: var(--el-color-danger);
+  background-color: color-mix(in srgb, var(--el-color-danger) 12%, transparent);
+}
+
+html .el-button--danger:not(.is-plain):not(.is-text):not(.is-link):hover {
+  background-color: color-mix(in srgb, var(--el-color-danger) 20%, transparent);
+}
+
+html .el-button--success:not(.is-plain):not(.is-text):not(.is-link) {
+  color: var(--el-color-success);
+  background-color: color-mix(in srgb, var(--el-color-success) 12%, transparent);
+}
+
+html .el-button--success:not(.is-plain):not(.is-text):not(.is-link):hover {
+  background-color: color-mix(in srgb, var(--el-color-success) 20%, transparent);
+}
+
+html .el-button--warning:not(.is-plain):not(.is-text):not(.is-link) {
+  color: var(--el-color-warning);
+  background-color: color-mix(in srgb, var(--el-color-warning) 12%, transparent);
+}
+
+html .el-button--warning:not(.is-plain):not(.is-text):not(.is-link):hover {
+  background-color: color-mix(in srgb, var(--el-color-warning) 20%, transparent);
+}
+
+html .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
+  color: var(--el-text-color-regular);
+  background-color: var(--el-fill-color-light);
+}
+
+html .el-button--info:not(.is-plain):not(.is-text):not(.is-link):hover {
+  background-color: var(--el-fill-color);
+}
+
+/* 大数字徽标不要压住按钮圆角 */
+html .el-badge {
+  line-height: 1;
+}
+
+html .el-badge__content.is-fixed {
+  top: 4px;
+  right: 10px;
+}

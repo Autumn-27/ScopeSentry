@@ -18,4 +18,4 @@ func CORS() gin.HandlerFunc {
 
 		c.Next()
 	}
-} 
+}

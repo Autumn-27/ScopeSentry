@@ -3,6 +3,10 @@ package routes
 import (
 	"strings"
 
+	"context"
+	"errors"
+
+	"github.com/Autumn-27/ScopeSentry/internal/api/handlers/health"
 	"github.com/Autumn-27/ScopeSentry/internal/api/middleware"
 	"github.com/Autumn-27/ScopeSentry/internal/api/middleware/compress"
 	"github.com/Autumn-27/ScopeSentry/internal/api/routes/assets"
@@ -17,10 +21,12 @@ import (
 	"github.com/Autumn-27/ScopeSentry/internal/api/routes/system"
 	"github.com/Autumn-27/ScopeSentry/internal/api/routes/task"
 	"github.com/Autumn-27/ScopeSentry/internal/api/routes/user"
+	"github.com/Autumn-27/ScopeSentry/internal/database/mongodb"
+	"github.com/Autumn-27/ScopeSentry/internal/database/redis"
 	"github.com/gin-gonic/gin"
 
-	"github.com/Autumn-27/ScopeSentry/internal/api/routes/node"
 	apikeyRoutes "github.com/Autumn-27/ScopeSentry/internal/api/routes/apikey"
+	"github.com/Autumn-27/ScopeSentry/internal/api/routes/node"
 )
 
 // loggerWithSkipPaths 自定义日志中间件，支持跳过指定前缀的路径
@@ -59,6 +65,22 @@ func SetupRouter() *gin.Engine {
 	// 前端内嵌资源：带 hash 的长缓存 + 文本响应 gzip
 	router.Use(compress.StaticCache())
 	router.Use(compress.Gzip())
+
+	// 探活：K8s readiness/liveness 用；任一依赖不可用返回 503
+	router.GET("/healthz", health.Handler(
+		func(ctx context.Context) error {
+			if mongodb.Client == nil {
+				return errors.New("mongo client not initialized")
+			}
+			return mongodb.Client.Ping(ctx, nil)
+		},
+		func(ctx context.Context) error {
+			if redis.Client == nil {
+				return errors.New("redis client not initialized")
+			}
+			return redis.Client.Ping(ctx).Err()
+		},
+	))
 
 	// 注册API路由
 	api := router.Group("/api")

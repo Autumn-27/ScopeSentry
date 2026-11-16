@@ -549,44 +549,15 @@ watch(
   }
 }
 
-.dark {
-  .@{prefix-cls} {
-    &__tool {
-      &--first {
-        &::after {
-          display: none;
-        }
-      }
-    }
-
-    &__item {
-      border: 1px solid var(--el-border-color);
-    }
-
-    &__item:not(.is-active) {
-      &:hover {
-        color: var(--el-color-primary);
-      }
-    }
-
-    &__item.is-active {
-      color: var(--el-color-white);
-      background-color: var(--el-color-primary);
-      border: 1px solid var(--el-color-primary);
-      .@{prefix-cls}__item--close {
-        :deep(svg) {
-          color: var(--el-color-white) !important;
-        }
-      }
-    }
-  }
-}
-
 /* ---------------------------------------------------------------------------
  * Modern 覆盖：标签页改成 pill，浅色/深色统一走 token
  * （放在 scoped 块末尾，顺序在旧的 .dark 规则之后）
  * ------------------------------------------------------------------------- */
-/* 去掉左右工具按钮上的竖分隔线，标签栏更干净 */
+/* 标签栏：浅色底 + 无边框纸片式标签；选中态用阴影浮起，不再描边 */
+#v-tags-view {
+  background-color: var(--app-surface-2);
+}
+
 .@{prefix-cls}__tool::before,
 .@{prefix-cls}__tool--first::before {
   display: none;
@@ -594,23 +565,22 @@ watch(
 
 .@{prefix-cls}__item {
   top: 0;
-  height: 28px;
-  margin: 7px 6px 0 0;
-  padding: 0 10px;
+  height: 30px;
+  margin: 6px 4px 0 0;
+  padding: 0 12px;
   overflow: hidden;
   font-size: 12px;
+  font-weight: 500;
+  color: var(--el-text-color-secondary);
   white-space: nowrap;
   text-overflow: ellipsis;
-
-  font-weight: 500;
-  color: var(--el-text-color-regular);
-  background: var(--app-surface);
-  border: 1px solid var(--app-border);
-  border-radius: var(--app-radius-xs);
+  background: transparent;
+  border: none;
+  border-radius: var(--app-radius-sm);
   transition:
     color 0.16s ease,
     background-color 0.16s ease,
-    border-color 0.16s ease;
+    box-shadow 0.16s ease;
 
   &--close {
     right: 4px;
@@ -623,29 +593,17 @@ watch(
 }
 
 .@{prefix-cls}__item.is-active {
-  color: var(--app-primary);
-  background: var(--app-primary-soft);
-  border-color: transparent;
+  color: var(--el-text-color-primary);
+  background: var(--app-surface);
+  box-shadow: var(--app-shadow-xs);
   font-weight: 600;
 }
 
-html.dark .@{prefix-cls} {
-  .@{prefix-cls}__item {
-    color: var(--el-text-color-regular);
-    background: var(--app-surface);
-    border-color: var(--app-border);
-  }
-
-  .@{prefix-cls}__item:not(.is-active):hover {
-    color: var(--el-text-color-primary);
-    background: var(--el-fill-color-light);
-  }
-
-  .@{prefix-cls}__item.is-active {
-    color: var(--app-primary);
-    background: var(--app-primary-soft);
-    border-color: transparent;
-  }
+/* 彻底去掉旧规则残留的 1px 边框与点击后的焦点环 */
+html #v-tags-view .@{prefix-cls}__item,
+html #v-tags-view .@{prefix-cls}__item.is-active {
+  border: none;
+  outline: none;
 }
 </style>
 @/hooks/web/useTagsView

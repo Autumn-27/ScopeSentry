@@ -18,4 +18,4 @@ func registerRootDomainRoutes() models.RouteGroup {
 			},
 		},
 	}
-} 
+}

@@ -267,16 +267,12 @@ const closepluginDialogVisible = () => {
         >
       </ElCol>
     </ElRow> -->
-    <ElRow>
-      <ElCol style="position: relative; top: 16px">
-        <div class="mb-10px">
-          <BaseButton type="danger" :loading="delLoading" @click="confirmDelete">
-            {{ t('common.delete') }}
-          </BaseButton>
-        </div>
-      </ElCol>
-    </ElRow>
-    <div style="position: relative; top: 12px">
+    <div class="node-toolbar">
+      <BaseButton type="danger" :loading="delLoading" @click="confirmDelete">
+        {{ t('common.delete') }}
+      </BaseButton>
+    </div>
+    <div>
       <Table
         v-model:pageSize="pageSize"
         v-model:currentPage="currentPage"
@@ -329,3 +325,9 @@ const closepluginDialogVisible = () => {
     <plugin :closeDialog="closepluginDialogVisible" :name="nodeName" />
   </Dialog>
 </template>
+
+<style scoped>
+.node-toolbar {
+  margin-bottom: 12px;
+}
+</style>

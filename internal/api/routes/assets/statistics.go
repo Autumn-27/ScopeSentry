@@ -42,4 +42,4 @@ func registerStatisticsRoutes() models.RouteGroup {
 			},
 		},
 	}
-} 
+}

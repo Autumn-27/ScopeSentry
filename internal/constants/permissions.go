@@ -215,4 +215,4 @@ var RolePermissions = map[string][]string{
 		PermissionTaskRead,
 		PermissionProjectRead,
 	},
-} 
+}

@@ -30,4 +30,4 @@ type RoleUpdate struct {
 	Description string   `json:"description"`
 	Permissions []string `json:"permissions"`
 	Status      string   `json:"status"`
-} 
+}
