@@ -1,0 +1,102 @@
+name: CI
+
+# 跑在自建 runner 上（dev-tx-sh-app-01），与 ARTEX 同一台机器、独立 runner 进程。
+# 触发器：PR / push main / 手动。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  go:
+    name: Go build / vet / hermetic tests
+    runs-on: [self-hosted, linux, x64, scopesentry-ci]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: go build
+        run: go build ./...
+
+      # 只跑不依赖 Mongo/Redis 的叶子包；依赖 bootstrap 的包在 init 阶段就会连库
+      - name: go test (hermetic packages)
+        run: |
+          go test -count=1 \
+            ./internal/services/task/tasksync/ \
+            ./internal/services/task/taskstate/ \
+            ./internal/services/task/audit/ \
+            ./internal/api/routes/audit/ \
+            ./internal/repositories/plugin/ \
+            ./internal/services/project/ \
+            ./internal/api/handlers/sensitiveRule/
+
+      - name: go vet (本次维护的包)
+        run: |
+          go vet \
+            ./internal/api/handlers/task/ \
+            ./internal/api/routes/task/ \
+            ./internal/services/task/... \
+            ./internal/repositories/plugin/
+
+  frontend:
+    name: Frontend build / locale / theme checks
+    runs-on: [self-hosted, linux, x64, scopesentry-ci]
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.1.1 --activate
+          pnpm -v
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('frontend/package.json') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      # 仓库没有提交 lockfile；husky 的 prepare 在子目录里会失败，用 HUSKY=0 跳过
+      - name: Install dependencies
+        env:
+          HUSKY: '0'
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build (mode=pro)
+        run: pnpm build:pro
+
+      - name: Locale parity (en / zh-CN / ko-KR)
+        run: node scripts/check-locales.mjs
+
+      - name: Theme tri-state self-check
+        run: npx esno ./scripts/check-theme.ts
+
+      # 历史遗留类型错误较多，先只告警不阻断，避免 CI 一上来就红
+      - name: vue-tsc (non-blocking)
+        continue-on-error: true
+        run: npx vue-tsc --noEmit --skipLibCheck
