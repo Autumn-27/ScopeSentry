@@ -55,6 +55,7 @@ func NewService() Service {
 		assetService:      asset.NewService(),
 		rootDomainService: root_domain.NewService(),
 		subdomainService:  subdomain.NewService(),
+		urlService:        url.NewService(),
 		nodeService:       node.NewService(),
 		dictionaryService: dictionary.NewManageService(),
 		portsService:      dictionary.NewPortService(),
