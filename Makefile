@@ -35,6 +35,9 @@ run: ## 本地启动服务（需先配置 Mongo/Redis 环境变量）
 test-hermetic: ## 跑不依赖 Mongo/Redis 的单元测试
 	$(GO) test -count=1 $(HERMETIC_PKGS)
 
+test-integration: ## 全量测试（需要可用的 Mongo/Redis，读 MONGODB_*/REDIS_* 环境变量）
+	$(GO) test -count=1 ./...
+
 vet: ## 对本次维护的包做 go vet
 	$(GO) vet ./internal/api/handlers/task/ ./internal/api/routes/task/ \
 		./internal/services/task/... ./internal/repositories/plugin/

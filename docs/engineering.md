@@ -37,6 +37,9 @@ npx esno ./scripts/check-theme.ts
   - 维护包 `go vet`（阻塞）
   - 前端 `build:pro` + 语言包 + 主题自检（阻塞）
   - `vue-tsc`（非阻塞，历史类型错误较多）
+  - **Integration job**（阻塞）：临时起 Mongo + Redis（随机端口、run_id 命名、跑完清理），
+    先跑一个包把空库初始化一次，再 `go test ./...`；CI 上等价于 `make test-integration`
+- Go 单测产出 `coverage.out` 并上传 artifact（`go-coverage`）。
 - Go 模块走 `goproxy.cn`（这台机器到 proxy.golang.org 的 IPv6 无路由）；`setup-go` 的 Actions 缓存关闭，模块缓存在 runner 的 `~/go/pkg/mod` 常驻。
 
 ## 探活
@@ -53,6 +56,12 @@ npx esno ./scripts/check-theme.ts
 | frontend | 语言包/主题自检 | `make frontend-check` |
 
 新增测试优先放叶子包（不 import `internal/bootstrap`），否则包级 init 会直接连库、CI 无法运行。
+
+## 本地 Git hook（可选）
+
+```bash
+git config core.hooksPath .githooks   # 启用 pre-commit：暂存的 .go 文件必须已 gofmt
+```
 
 ## 仓库规范
 

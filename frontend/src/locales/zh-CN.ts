@@ -4,7 +4,8 @@ export default {
     system: { version: { success: '版本信息获取成功' } }
   },
   common: {
-    changeLanguageMessage: "切换语言会重置当前页面及未保存的输入。已发送的请求仍可能完成。是否继续？",
+    changeLanguageMessage:
+      '切换语言会重置当前页面及未保存的输入。已发送的请求仍可能完成。是否继续？',
     clearAll: '清空',
     selectCategory: '分类选择',
     about: '关于',

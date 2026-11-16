@@ -401,7 +401,11 @@ const delSelect = async () => {
       <ElFormItem :label="t('dashboard.URL')" prop="url">
         <ElInput v-model="notificationForm.url" placeholder="Input URL." />
       </ElFormItem>
-      <ElFormItem :label="t('localization.dataType')" prop="contentType" v-if="notificationForm.method == 'POST'">
+      <ElFormItem
+        :label="t('localization.dataType')"
+        prop="contentType"
+        v-if="notificationForm.method == 'POST'"
+      >
         <ElRadioGroup v-model="notificationForm.contentType">
           <ElRadio value="raw">Raw</ElRadio>
           <ElRadio value="json">Json</ElRadio>

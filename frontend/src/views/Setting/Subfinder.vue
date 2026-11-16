@@ -69,9 +69,9 @@ function tableHeaderColor() {
         <ElInput v-model="search" :placeholder="t('common.inputText')" style="height: 38px" />
       </ElCol>
       <ElCol :span="5" style="position: relative; left: 16px">
-        <ElButton type="primary" :icon="searchicon" style="height: 100%" @click="handleSearch"
-          >{{ t('common.search') }}</ElButton
-        >
+        <ElButton type="primary" :icon="searchicon" style="height: 100%" @click="handleSearch">{{
+          t('common.search')
+        }}</ElButton>
       </ElCol>
     </ElRow>
     <ElRow>

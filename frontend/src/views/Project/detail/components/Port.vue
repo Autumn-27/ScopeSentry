@@ -228,9 +228,9 @@ const changeDeleteDisplay = async () => {
   <ElRow>
     <ElCol>
       <ElCard style="height: min-content">
-        <ElButton v-if="deleteDisplay" @click="delSelect" type="danger" size="small"
-          >{{ t('common.delete') }}</ElButton
-        >
+        <ElButton v-if="deleteDisplay" @click="delSelect" type="danger" size="small">{{
+          t('common.delete')
+        }}</ElButton>
         <Table
           :columns="allSchemas.tableColumns"
           :data="dataList"

@@ -18,11 +18,7 @@ const { t } = useI18n()
 
 const title = computed(() => underlineToHump(appStore.getTitle))
 
-const features = computed(() => [
-  t('login.feature1'),
-  t('login.feature2'),
-  t('login.feature3')
-])
+const features = computed(() => [t('login.feature1'), t('login.feature2'), t('login.feature3')])
 
 const year = new Date().getFullYear()
 </script>

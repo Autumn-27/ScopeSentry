@@ -6,12 +6,12 @@ const TIME_AGO_MESSAGE_MAP: {
   'zh-CN': UseTimeAgoMessages
   en: UseTimeAgoMessages
   'ko-KR': UseTimeAgoMessages
- } = {
+} = {
   'ko-KR': {
     justNow: '방금',
     invalid: '유효하지 않은 날짜',
-    past: (n) => /\d/.test(n) ? n + ' 전' : n,
-    future: (n) => /\d/.test(n) ? n + ' 후' : n,
+    past: (n) => (/\d/.test(n) ? n + ' 전' : n),
+    future: (n) => (/\d/.test(n) ? n + ' 후' : n),
     month: (n) => n + '개월',
     year: (n) => n + '년',
     day: (n) => n + '일',

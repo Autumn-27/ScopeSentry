@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# 本地 Go 预提交检查：只检查本次暂存的 .go 文件
+# 启用：git config core.hooksPath .githooks
+set -euo pipefail
+
+staged=$(git diff --cached --name-only --diff-filter=ACM -- '*.go' || true)
+[ -z "$staged" ] && exit 0
+
+bad=$(gofmt -l $staged || true)
+if [ -n "$bad" ]; then
+  echo "以下 Go 文件未格式化，请运行 make fmt 后重新提交:" >&2
+  echo "$bad" >&2
+  exit 1
+fi

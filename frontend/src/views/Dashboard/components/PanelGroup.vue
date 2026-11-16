@@ -89,7 +89,14 @@ const cards = computed(() => [
 
 <template>
   <ElRow :class="prefixCls" :gutter="16" justify="space-between">
-    <ElCol v-for="card in cards" :key="card.key" :xs="24" :sm="12" :md="8" :lg="card.key === 'vul' ? 4 : 5">
+    <ElCol
+      v-for="card in cards"
+      :key="card.key"
+      :xs="24"
+      :sm="12"
+      :md="8"
+      :lg="card.key === 'vul' ? 4 : 5"
+    >
       <ElCard shadow="never" :class="`${prefixCls}__card`" class="mb-16px">
         <ElSkeleton :loading="loading" animated :rows="2">
           <template #default>

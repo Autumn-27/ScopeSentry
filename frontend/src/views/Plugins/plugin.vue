@@ -62,7 +62,10 @@ const loadRemotePlugins = async () => {
 
         return {
           id: plugin.id,
-          name: plugin.name?.trim() || plugin.hash || t('localization.pluginFallback', { id: plugin.id }),
+          name:
+            plugin.name?.trim() ||
+            plugin.hash ||
+            t('localization.pluginFallback', { id: plugin.id }),
           module: plugin.module || '',
           priceStatus: plugin.priceStatus,
           price: plugin.price,

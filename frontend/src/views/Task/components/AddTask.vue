@@ -632,7 +632,9 @@ getProjectList()
       <ElCol :span="24">
         <ElFormItem :label="t('task.duplicates')" prop="type">
           <ElRadioGroup v-model="taskData.duplicates">
-            <ElRadio label="None" name="duplicates" :checked="true" value="None" >{{ t('localization.none') }}</ElRadio>
+            <ElRadio label="None" name="duplicates" :checked="true" value="None">{{
+              t('localization.none')
+            }}</ElRadio>
             <ElTooltip effect="dark" :content="t('task.duplicatesMsg')" placement="top">
               <ElRadio :label="t('task.duplicatesSubdomain')" name="duplicates" value="subdomain" />
             </ElTooltip>
@@ -645,7 +647,11 @@ getProjectList()
     }}</ElDivider>
     <ElFormItem :label="t('router.scanTemplate')" prop="template">
       <!-- <ElSelectV2 v-model="taskData.template" :placeholder="t('task.nodeMsg')" style="width: 50%" /> -->
-      <ElSelect v-model="taskData.template" :placeholder="t('localization.selectTemplate')" style="width: 30%">
+      <ElSelect
+        v-model="taskData.template"
+        :placeholder="t('localization.selectTemplate')"
+        style="width: 30%"
+      >
         <ElOption
           v-for="item in templateOptions"
           :key="item.value"

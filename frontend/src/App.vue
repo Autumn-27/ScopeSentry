@@ -1,6 +1,4 @@
-/**
- * App 根组件：初始化主题（日间/夜间/跟随系统）
- */
+/** * App 根组件：初始化主题（日间/夜间/跟随系统） */
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useAppStore } from '@/store/modules/app'

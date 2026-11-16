@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/Autumn-27/ScopeSentry/internal/utils"
@@ -271,7 +272,7 @@ func handlePluginKey() error {
 
 // GetMongoURI 获取MongoDB连接URI
 func GetMongoURI() string {
-	uri := GlobalConfig.MongoDB.IP + ":" + string(GlobalConfig.MongoDB.Port)
+	uri := GlobalConfig.MongoDB.IP + ":" + strconv.Itoa(GlobalConfig.MongoDB.Port)
 	if GlobalConfig.MongoDB.Username != "" && GlobalConfig.MongoDB.Password != "" {
 		uri = "mongodb://" + GlobalConfig.MongoDB.Username + ":" + GlobalConfig.MongoDB.Password + "@" + uri
 	}

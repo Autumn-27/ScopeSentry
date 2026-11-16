@@ -1,7 +1,5 @@
-/**
- * 主题切换：日间 / 夜间 / 跟随系统（设备）
- * 只负责 UI，状态与持久化在 app store（setThemeMode）
- */
+/** * 主题切换：日间 / 夜间 / 跟随系统（设备） * 只负责 UI，状态与持久化在 app store（setThemeMode）
+*/
 <script setup lang="ts">
 import { computed } from 'vue'
 import { ElDropdown, ElDropdownItem, ElDropdownMenu, ElTooltip } from 'element-plus'

@@ -1106,8 +1106,8 @@ const confirmSelectedIcons = () => {
     <ElRow :gutter="20" type="flex" justify="start" wrap>
       <ElCol
         :span="6"
-        v-for="(site, index) in websites"
-        :key="index"
+        v-for="(site, idx) in websites"
+        :key="idx"
         style="margin-bottom: 20px; display: flex; flex-direction: column; height: 350px"
       >
         <ElCard

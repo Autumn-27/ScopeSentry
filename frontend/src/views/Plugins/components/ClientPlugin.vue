@@ -488,9 +488,9 @@ defineExpose({
         <ElInput v-model="search" :placeholder="t('common.inputText')" style="height: 38px" />
       </ElCol>
       <ElCol :span="5">
-        <ElButton type="primary" :icon="searchicon" @click="handleSearch"
-          >{{ t('common.search') }}</ElButton
-        >
+        <ElButton type="primary" :icon="searchicon" @click="handleSearch">{{
+          t('common.search')
+        }}</ElButton>
       </ElCol>
       <ElCol :span="1">
         <ElText class="mx-1">{{ t('plugin.key') }}:</ElText>
@@ -688,7 +688,9 @@ defineExpose({
       <el-tooltip class="item" effect="dark" :content="t('plugin.keyMsg')" placement="top">
         <ElInput v-model="pluginKey" />
       </el-tooltip>
-      <BaseButton @click="savePluginKey" type="primary" class="w-full">{{ t('common.save') }}</BaseButton>
+      <BaseButton @click="savePluginKey" type="primary" class="w-full">{{
+        t('common.save')
+      }}</BaseButton>
     </div>
   </Dialog>
 </template>

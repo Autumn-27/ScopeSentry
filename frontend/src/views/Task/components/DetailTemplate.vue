@@ -776,7 +776,9 @@ const handleCheckChange = (data, checked) => {
     </div>
     <ElRow>
       <ElCol :span="12" style="text-align: right">
-        <ElButton type="primary" @click="onSubmit" :loading="saveLoading"> {{ t('common.save') }} </ElButton>
+        <ElButton type="primary" @click="onSubmit" :loading="saveLoading">
+          {{ t('common.save') }}
+        </ElButton>
       </ElCol>
     </ElRow>
   </ElForm>
