@@ -111,6 +111,30 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
           drop_debugger: env.VITE_DROP_DEBUGGER === 'true',
           drop_console: env.VITE_DROP_CONSOLE === 'true'
         }
+      },
+      rollupOptions: {
+        output: {
+          // Element Plus 之前被拆成 80+ 个小 chunk，切换页面时要发几十个请求。
+          // 按"体积大、变动少"的依赖合并成少数 vendor chunk，减少请求数并利于缓存。
+          manualChunks(id: string) {
+            if (!id.includes('node_modules')) return
+            if (id.includes('monaco-editor')) return 'vendor-monaco'
+            if (id.includes('element-plus')) return 'vendor-element'
+            if (id.includes('echarts') || id.includes('zrender')) return 'vendor-echarts'
+            if (id.includes('codemirror')) return 'vendor-codemirror'
+            if (id.includes('xgplayer')) return 'vendor-xgplayer'
+            if (
+              id.includes('/vue/') ||
+              id.includes('vue-router') ||
+              id.includes('vue-i18n') ||
+              id.includes('pinia') ||
+              id.includes('@vueuse')
+            ) {
+              return 'vendor-vue'
+            }
+            return 'vendor'
+          }
+        }
       }
     },
     server: {

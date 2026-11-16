@@ -501,7 +501,11 @@ defineExpose({
           :placeholder="t('plugin.key')"
           style="height: 38px"
           @blur="handlePluginKeyChange"
-        />
+        >
+          <template #append>
+            <ElButton @click="keyDialogVisible = true">{{ t('common.config') }}</ElButton>
+          </template>
+        </ElInput>
       </ElCol>
     </ElRow>
     <ElRow :gutter="16" class="mt-4">
