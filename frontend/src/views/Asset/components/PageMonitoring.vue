@@ -1,6 +1,6 @@
 <script setup lang="tsx">
 import { useI18n } from '@/hooks/web/useI18n'
-import { h, nextTick, reactive, Ref, ref } from 'vue'
+import { defineAsyncComponent, h, nextTick, reactive, Ref, ref } from 'vue'
 import { onMounted } from 'vue'
 import { useTable } from '@/hooks/web/useTable'
 import {
@@ -25,7 +25,8 @@ import {
 } from '@/api/asset'
 import { BaseButton } from '@/components/Button'
 import Csearch from '../search/Csearch.vue'
-import MonacoDiffEditor from '../detail/MonacoDiffEditor.vue'
+// Monaco 体积大（约 1MB gzip 前），只在打开 Body Diff 时加载
+const MonacoDiffEditor = defineAsyncComponent(() => import('../detail/MonacoDiffEditor.vue'))
 import beautify from 'js-beautify'
 import { RowState } from '@/api/asset/types'
 const { t } = useI18n()
@@ -432,7 +433,11 @@ const getFilter = () => {
     width="80%"
     :max-height="maxHeight"
   >
-    <MonacoDiffEditor :original="historyDiff[0]" :modified="historyDiff[1]" />
+    <MonacoDiffEditor
+      v-if="HistoryDiffDialogVisible"
+      :original="historyDiff[0]"
+      :modified="historyDiff[1]"
+    />
   </Dialog>
 </template>
 
