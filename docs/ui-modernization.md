@@ -76,3 +76,13 @@ node scripts/check-locales.mjs        # en/zh-CN/ko-KR 869 键一致
 | 登录 | ![login-light](./images/ui/login-light.png) | ![login-dark](./images/ui/login-dark.png) |
 | 任务列表 | — | ![task-dark](./images/ui/task-dark.png) |
 | 设置抽屉 | — | ![settings-dark](./images/ui/settings-dark.png) |
+
+## 改造前后
+
+| 改造前（浅色） | 改造后（浅色） |
+| --- | --- |
+| ![before](./images/ui/before-dashboard-light.png) | ![after](./images/ui/dashboard-light.png) |
+
+| 改造前（深色） | 改造后（深色） |
+| --- | --- |
+| ![before](./images/ui/before-dashboard-dark.png) | ![after](./images/ui/dashboard-dark.png) |
