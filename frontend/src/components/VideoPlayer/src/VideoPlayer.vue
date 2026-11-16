@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import Player from 'xgplayer'
+// xgplayer 只在真正需要播放时加载（约 75KB gzip 前 + 播放器样式）
+import type PlayerType from 'xgplayer'
 import { ref, unref, onMounted, watch, onBeforeUnmount, nextTick } from 'vue'
-import 'xgplayer/dist/index.min.css'
 
 const props = defineProps({
   url: {
@@ -15,21 +15,27 @@ const props = defineProps({
   }
 })
 
-const playerRef = ref<Player>()
+const playerRef = ref<InstanceType<typeof PlayerType>>()
 
 const videoEl = ref<HTMLDivElement>()
 
-const intiPlayer = () => {
+let PlayerCtor: typeof PlayerType | null = null
+
+const initPlayer = async () => {
   if (!unref(videoEl)) return
-  new Player({
+  if (!PlayerCtor) {
+    const [mod] = await Promise.all([import('xgplayer'), import('xgplayer/dist/index.min.css')])
+    PlayerCtor = mod.default
+  }
+  playerRef.value = new PlayerCtor({
     autoplay: false,
     ...props,
     el: unref(videoEl)
-  })
+  }) as InstanceType<typeof PlayerType>
 }
 
 onMounted(() => {
-  intiPlayer()
+  void initPlayer()
 })
 
 watch(

@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/Autumn-27/ScopeSentry/internal/api/middleware"
+	"github.com/Autumn-27/ScopeSentry/internal/api/middleware/compress"
 	"github.com/Autumn-27/ScopeSentry/internal/api/routes/assets"
 	confRoutes "github.com/Autumn-27/ScopeSentry/internal/api/routes/configuration"
 	dictRoutes "github.com/Autumn-27/ScopeSentry/internal/api/routes/dictionary"
@@ -55,6 +56,9 @@ func SetupRouter() *gin.Engine {
 
 	// 添加全局中间件
 	router.Use(middleware.I18nMiddleware())
+	// 前端内嵌资源：带 hash 的长缓存 + 文本响应 gzip
+	router.Use(compress.StaticCache())
+	router.Use(compress.Gzip())
 
 	// 注册API路由
 	api := router.Group("/api")
