@@ -42,6 +42,14 @@ npx esno ./scripts/check-theme.ts
 - Go 单测产出 `coverage.out` 并上传 artifact（`go-coverage`）。
 - Go 模块走 `goproxy.cn`（这台机器到 proxy.golang.org 的 IPv6 无路由）；`setup-go` 的 Actions 缓存关闭，模块缓存在 runner 的 `~/go/pkg/mod` 常驻。
 
+## 节点存活判定
+
+- 节点心跳写在 Redis `node:<name>` 哈希里（`state` / `updateTime`），服务端只读。
+- 判定用 `ClassifyLiveness`：同一时间字符串按「服务器时区」和「UTC」各解释一次，取与服务器时间最接近者；
+  因此节点与服务器时区不同（例如节点跑 UTC）不会再被误判离线，节点时钟略快也只标记 ClockSkew。
+- 超时窗口默认 300s，可用 `NODE_TIMEOUT_SECONDS` 覆盖（节点多、网络慢时可放宽）。
+- 时间字符串解析失败时保留节点并打 Warn，而不是把它从列表里抹掉。
+
 ## 探活
 
 - `GET /healthz`：ping Mongo + Redis，正常 200 `{status:"ok",version,time,checks:{mongo,redis}}`；任一依赖不可用返回 **503**。
