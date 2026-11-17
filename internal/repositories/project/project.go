@@ -341,11 +341,11 @@ func (r *repository) assetAddProject(ctx context.Context, rootDomains []string, 
 
 	switch collectionName {
 	case "RootDomain":
-		query = r.buildRootDomainQuery(rootDomains, false)
+		query = r.buildRootDomainQuery(rootDomains, projectID, false)
 	case "app":
-		query = r.buildAppQuery(rootDomains, false)
+		query = r.buildAppQuery(rootDomains, projectID, false)
 	case "mp":
-		query = r.buildMpQuery(rootDomains, false)
+		query = r.buildMpQuery(rootDomains, projectID, false)
 	default:
 		query = bson.M{"rootDomain": bson.M{"$in": rootDomains}}
 	}
@@ -371,11 +371,11 @@ func (r *repository) assetUpdateProject(ctx context.Context, rootDomains []strin
 
 	switch collectionName {
 	case "RootDomain":
-		query = r.buildRootDomainQuery(rootDomains, true)
+		query = r.buildRootDomainQuery(rootDomains, projectID, true)
 	case "app":
-		query = r.buildAppQuery(rootDomains, true)
+		query = r.buildAppQuery(rootDomains, projectID, true)
 	case "mp":
-		query = r.buildMpQuery(rootDomains, true)
+		query = r.buildMpQuery(rootDomains, projectID, true)
 	default:
 		query = bson.M{
 			"$and": []bson.M{
@@ -423,103 +423,4 @@ func (r *repository) SetAssetCount(ctx context.Context, projectID string, count 
 		return fmt.Errorf("failed to set AssetCount: %w", err)
 	}
 	return nil
-}
-
-// buildRootDomainQuery 构建RootDomain查询条件
-func (r *repository) buildRootDomainQuery(rootDomains []string, isUpdate bool) bson.M {
-	regexPatterns := make([]string, len(rootDomains))
-	for i, domain := range rootDomains {
-		regexPatterns[i] = "^" + strings.ReplaceAll(domain, ".", "\\.")
-	}
-	regexPattern := strings.Join(regexPatterns, "|")
-
-	if isUpdate {
-		return bson.M{
-			"$and": []bson.M{
-				{"project": bson.M{"$exists": true}},
-				{"domain": bson.M{"$nin": rootDomains}},
-				{"company": bson.M{"$nin": rootDomains}},
-				{
-					"icp": bson.M{
-						"$nin": rootDomains,
-						"$not": bson.M{"$regex": regexPattern, "$options": "i"},
-					},
-				},
-			},
-		}
-	}
-
-	return bson.M{
-		"$or": []bson.M{
-			{"domain": bson.M{"$in": rootDomains}},
-			{"company": bson.M{"$in": rootDomains}},
-			{"icp": bson.M{"$regex": regexPattern, "$options": "i"}},
-		},
-	}
-}
-
-// buildAppQuery 构建app查询条件
-func (r *repository) buildAppQuery(rootDomains []string, isUpdate bool) bson.M {
-	regexPatterns := make([]string, len(rootDomains))
-	for i, domain := range rootDomains {
-		regexPatterns[i] = "^" + strings.ReplaceAll(domain, ".", "\\.")
-	}
-	regexPattern := strings.Join(regexPatterns, "|")
-
-	if isUpdate {
-		return bson.M{
-			"$and": []bson.M{
-				{"project": bson.M{"$exists": true}},
-				{"company": bson.M{"$nin": rootDomains}},
-				{
-					"icp": bson.M{
-						"$nin": rootDomains,
-						"$not": bson.M{"$regex": regexPattern, "$options": "i"},
-					},
-				},
-			},
-		}
-	}
-
-	return bson.M{
-		"$or": []bson.M{
-			{"name": bson.M{"$in": rootDomains}},
-			{"bundleID": bson.M{"$in": rootDomains}},
-			{"company": bson.M{"$in": rootDomains}},
-			{"icp": bson.M{"$regex": regexPattern, "$options": "i"}},
-		},
-	}
-}
-
-// buildMpQuery 构建mp查询条件
-func (r *repository) buildMpQuery(rootDomains []string, isUpdate bool) bson.M {
-	regexPatterns := make([]string, len(rootDomains))
-	for i, domain := range rootDomains {
-		regexPatterns[i] = "^" + strings.ReplaceAll(domain, ".", "\\.")
-	}
-	regexPattern := strings.Join(regexPatterns, "|")
-
-	if isUpdate {
-		return bson.M{
-			"$and": []bson.M{
-				{"project": bson.M{"$exists": true}},
-				{"name": bson.M{"$nin": rootDomains}},
-				{"company": bson.M{"$nin": rootDomains}},
-				{"bundleID": bson.M{"$nin": rootDomains}},
-				{
-					"icp": bson.M{
-						"$nin": rootDomains,
-						"$not": bson.M{"$regex": regexPattern, "$options": "i"},
-					},
-				},
-			},
-		}
-	}
-
-	return bson.M{
-		"$or": []bson.M{
-			{"company": bson.M{"$in": rootDomains}},
-			{"icp": bson.M{"$regex": regexPattern, "$options": "i"}},
-		},
-	}
 }

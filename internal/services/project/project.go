@@ -244,34 +244,7 @@ func (s *service) AddProject(ctx *gin.Context, p *models.Project) error {
 	if err != nil {
 		return err
 	}
-	rootDomains := []string{}
-	for _, tg := range targetList {
-		var rootDomain string
-		if strings.Contains(tg, "CMP:") || strings.Contains(tg, "ICP:") ||
-			strings.Contains(tg, "APP:") || strings.Contains(tg, "APP-ID:") {
-
-			if strings.Contains(tg, "ICP:") {
-				rootDomain = getBeforeLastDash(strings.ReplaceAll(tg, "ICP:", ""))
-				rootDomain = "ICP:" + rootDomain
-			} else {
-				rootDomain = tg
-			}
-		} else {
-			rootDomain, _ = helper.GetRootDomain(tg)
-		}
-
-		// 检查是否已经存在于 rootDomains
-		exists := false
-		for _, rd := range rootDomains {
-			if rd == rootDomain {
-				exists = true
-				break
-			}
-		}
-		if !exists {
-			rootDomains = append(rootDomains, rootDomain)
-		}
-	}
+	rootDomains := BuildRootDomains(targetList)
 	p.RootDomains = rootDomains
 	rawTarget := p.Target
 	p.Target = ""
@@ -316,34 +289,7 @@ func (s *service) UpdateProject(ctx *gin.Context, p *models.UpdateProject) error
 	if err != nil {
 		return err
 	}
-	rootDomains := []string{}
-	for _, tg := range targetList {
-		var rootDomain string
-		if strings.Contains(tg, "CMP:") || strings.Contains(tg, "ICP:") ||
-			strings.Contains(tg, "APP:") || strings.Contains(tg, "APP-ID:") {
-
-			if strings.Contains(tg, "ICP:") {
-				rootDomain = getBeforeLastDash(strings.ReplaceAll(tg, "ICP:", ""))
-				rootDomain = "ICP:" + rootDomain
-			} else {
-				rootDomain = tg
-			}
-		} else {
-			rootDomain, _ = helper.GetRootDomain(tg)
-		}
-
-		// 检查是否已经存在于 rootDomains
-		exists := false
-		for _, rd := range rootDomains {
-			if rd == rootDomain {
-				exists = true
-				break
-			}
-		}
-		if !exists {
-			rootDomains = append(rootDomains, rootDomain)
-		}
-	}
+	rootDomains := BuildRootDomains(targetList)
 	p.RootDomains = rootDomains
 	rawTarget := p.Target
 	p.Target = ""
@@ -414,34 +360,7 @@ func (s *service) UpdateAssetsProject(ctx *gin.Context, id string) error {
 		return fmt.Errorf("failed to parse target list: %w", err)
 	}
 
-	rootDomains := []string{}
-	for _, tg := range targetList {
-		var rootDomain string
-		if strings.Contains(tg, "CMP:") || strings.Contains(tg, "ICP:") ||
-			strings.Contains(tg, "APP:") || strings.Contains(tg, "APP-ID:") {
-
-			if strings.Contains(tg, "ICP:") {
-				rootDomain = getBeforeLastDash(strings.ReplaceAll(tg, "ICP:", ""))
-				rootDomain = "ICP:" + rootDomain
-			} else {
-				rootDomain = tg
-			}
-		} else {
-			rootDomain, _ = helper.GetRootDomain(tg)
-		}
-
-		// 检查是否已经存在于 rootDomains
-		exists := false
-		for _, rd := range rootDomains {
-			if rd == rootDomain {
-				exists = true
-				break
-			}
-		}
-		if !exists {
-			rootDomains = append(rootDomains, rootDomain)
-		}
-	}
+	rootDomains := BuildRootDomains(targetList)
 
 	// 更新资产项目关联
 	err = s.projectRepo.UpdateAssetsProject(ctx.Request.Context(), rootDomains, id, true)
