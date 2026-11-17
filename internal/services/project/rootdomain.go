@@ -2,6 +2,7 @@ package project
 
 import (
 	"strings"
+	"unicode"
 
 	"github.com/Autumn-27/ScopeSentry/internal/utils/helper"
 )
@@ -60,6 +61,19 @@ func looksLikeHostOrIP(s string) bool {
 	return false
 }
 
+// hasCJKOrSpace 判断是否含中日韩字符或空白：这类几乎一定是公司名而不是主机
+func hasCJKOrSpace(s string) bool {
+	if strings.ContainsAny(s, " \t（）()【】[]，,") {
+		return true
+	}
+	for _, r := range s {
+		if unicode.Is(unicode.Han, r) || unicode.Is(unicode.Hangul, r) || unicode.Is(unicode.Hiragana, r) || unicode.Is(unicode.Katakana, r) {
+			return true
+		}
+	}
+	return false
+}
+
 // BuildRootDomains 把目标列表归并成项目 rootDomain 列表。
 //
 // 修 #228：目标里混进来的空行、以及没有前缀的公司名/备案号以前会原样落库
@@ -97,12 +111,17 @@ func BuildRootDomains(targetList []string) []string {
 			add(strings.ReplaceAll(tg, " ", ""))
 		default:
 			root, err := helper.GetRootDomain(tg)
-			if err != nil || root == "" || !looksLikeHostOrIP(root) {
-				// 解析不出域名：按公司名处理，补 CMP: 前缀（#228）
-				add(prefixCMP + tg)
+			if err == nil && root != "" && looksLikeHostOrIP(root) {
+				add(root)
 				continue
 			}
-			add(root)
+			// 解析不出根域名：含中文/空白的按公司名补 CMP:（#228）；
+			// 单 label 的 ASCII（intranet、localhost）与通配符保留原样，避免把主机名弄坏
+			if hasCJKOrSpace(tg) {
+				add(prefixCMP + tg)
+			} else {
+				add(tg)
+			}
 		}
 	}
 	return out
