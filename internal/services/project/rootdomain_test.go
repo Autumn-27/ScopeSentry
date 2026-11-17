@@ -51,3 +51,19 @@ func TestBuildRootDomainsDoesNotMistakeICPHost(t *testing.T) {
 		t.Fatalf("host containing icp must stay a domain, got %v", got)
 	}
 }
+func TestBuildRootDomainsKeepsSingleLabelHost(t *testing.T) {
+	got := BuildRootDomains([]string{"intranet", "localhost"})
+	want := []string{"intranet", "localhost"}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("single-label hosts must stay as-is, got %v", got)
+	}
+}
+
+func TestBuildRootDomainsWildcardMapsToRootDomain(t *testing.T) {
+	// 项目关联是按资产上的 rootDomain 精确匹配的，通配符要归到根域名才匹配得上
+	got := BuildRootDomains([]string{"*.example.com"})
+	want := []string{"example.com"}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("wildcard should map to its root domain, got %v", got)
+	}
+}
