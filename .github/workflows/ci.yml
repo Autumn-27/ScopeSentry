@@ -197,7 +197,7 @@ jobs:
         env:
           GOPROXY: https://goproxy.cn,direct
           GOTOOLCHAIN: local
-        run: go test -count=1 ./internal/services/project/
+        run: go test -count=1 ./internal/services/task/common/
 
       # 带 integration tag 一起跑：把需要真实库的端到端用例（指纹判重等）也纳入
       - name: go test ./... (with integration tag)
