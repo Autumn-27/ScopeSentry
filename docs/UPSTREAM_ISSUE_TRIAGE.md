@@ -43,6 +43,9 @@
 | #225 | 导出"csv"实际是 xlsx 且必 400 | `frontend/src/views/Asset/export/exportData.vue` 默认值与文案改 xlsx；后端消息同步为 "xlsx or json" | — |
 | #216 | 资产搜索直接输裸域名：返回全量或报 insufficient operands | `internal/utils/helper/search.go` 裸词展开成跨身份字段（host/title/ip/url/service/tags 等）的模糊 $or，并转义词内正则元字符；body/rawheaders/metadata 不参与，避免全集合大文本扫描。新增 `search_test.go` 7 项用例 | — |
 | #340 | 一键更新后每个指纹重复两份 | `internal/services/fingerprint/dedupe.go`：upsert 前先按 fingerprint_id 判重，未命中再按 name 找旧文档并回填 ID；`Add` 同名改为更新而非再插一条；`FingerprintRules` 补 fingerprint_id + name 索引。4 项纯逻辑单测 + 1 项集成测试（真实 Mongo 验证只剩 1 行） | — |
+| #228 | 同步到项目时换行 / ICP 公司名未加前缀 | 抽出 `BuildRootDomains`（services/project/rootdomain.go）：空行跳过、公司名补 `CMP:`、备案号统一 `ICP:` 前缀并去掉 `-N` 版本后缀、保序去重；`AddProject` / `UpdateProject` / `UpdateAssetsProject` 三处重复逻辑统一调用它。6 项单测 | — |
+| #232 | 资产过大导致拼接 rootdomain 正则过长 | repositories/project/project_queries.go：域名改用 `$in` 精确匹配，只有备案号才进正则，且按 50 个一片分片（`icpMatchClauses`），不再拼一条超长正则；没有 ICP 的项目完全不产生正则。5 项查询构造单测 | — |
+| #242 | 同步任务到项目后 rootdomain/app/mp 关联被清空 | 同一文件：清理分支从 `project: {$exists: true}` 改为 `project: <本项目 ID>`，只清本项目；集成测试验证更新 A 项目时 B 项目的关联保持不变 | — |
 | #262 | 被动扫描期间进度提前 100% | 未修：后端拿不到节点侧 PassiveScan 信号，硬加规则会让任务永久卡 99%；需节点先写 `TaskInfo:progress:<taskID>:<target>` 的 PassiveScan_start/_end | 需 ScopeSentry-Scan 配合 |
 
 ## 可修-后端bug
