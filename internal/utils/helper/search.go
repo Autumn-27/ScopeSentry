@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/Autumn-27/ScopeSentry/internal/logger"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 
@@ -413,10 +414,75 @@ func SearchToMongoDB(expressionRaw string, keyword map[string]string) ([]map[str
 					},
 				})
 			}
+		} else {
+			// 裸词（例如直接输入一个域名/标题）：在可检索的文本字段上做模糊 OR。
+			// 之前这里直接丢弃，导致 "example.com" 返回全量数据，
+			// 而 "example.com && ip=1.1.1.1" 会报 "insufficient operands for &&"。
+			if or := expandBareTerm(expr, keyword); or != nil {
+				stack = append(stack, or)
+			}
 		}
 	}
 
+	// 没有运算符的连接（如 "a=1 b=2"）会让栈里留下多个元素，
+	// 之前只取 query[0] 静默丢掉后面的条件，这里显式报错。
+	if len(stack) > 1 {
+		return nil, errors.New("invalid expression: missing operator (&& or ||) between conditions")
+	}
+
 	return stack, nil
+}
+
+// bareTermFields 裸词展开时参与匹配的字段（按 mongo 字段名）：
+// 只收「身份类」字段，排除 body/rawheaders/metadata/request/response 这类大文本，
+// 否则一个裸词会触发全集合大字段正则扫描。
+var bareTermFields = map[string]bool{
+	"host":         true,
+	"rootDomain":   true,
+	"ip":           true,
+	"url":          true,
+	"title":        true,
+	"vulname":      true,
+	"service":      true,
+	"technologies": true,
+	"tags":         true,
+	"type":         true,
+	"taskName":     true,
+}
+
+// expandBareTerm 把没有操作符的裸词展开成跨文本字段的模糊 OR。
+// 例：asset 索引下 "example.com" → {"$or":[{"host":{...}},{"title":{...}}, ...]}
+// 词内的正则元字符会被转义，避免用户输入 ".*" 之类意外匹配全部数据。
+func expandBareTerm(term string, keyword map[string]string) map[string]interface{} {
+	term = strings.TrimSpace(strings.Trim(term, `"`))
+	if term == "" {
+		return nil
+	}
+	quoted := regexp.QuoteMeta(term)
+
+	// 同一 mongo 字段可能被多个 key 指向（如 domain/host），去重但保持稳定顺序
+	seen := make(map[string]bool, len(keyword))
+	clauses := make([]map[string]interface{}, 0, len(keyword))
+	for _, mongoKey := range keyword {
+		if !bareTermFields[mongoKey] || seen[mongoKey] {
+			continue
+		}
+		seen[mongoKey] = true
+		clauses = append(clauses, map[string]interface{}{
+			mongoKey: map[string]interface{}{
+				"$regex":   quoted,
+				"$options": "i",
+			},
+		})
+	}
+	if len(clauses) == 0 {
+		return nil
+	}
+	// map 遍历顺序随机，按 mongoKey 排序保证输出稳定（便于测试与排查）
+	sort.Slice(clauses, func(i, j int) bool {
+		return fmt.Sprint(clauses[i]) < fmt.Sprint(clauses[j])
+	})
+	return map[string]interface{}{"$or": clauses}
 }
 
 // GetSearchQuery 构建完整的搜索查询

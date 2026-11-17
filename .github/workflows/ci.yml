@@ -199,11 +199,12 @@ jobs:
           GOTOOLCHAIN: local
         run: go test -count=1 ./internal/services/project/
 
-      - name: go test ./...
+      # 带 integration tag 一起跑：把需要真实库的端到端用例（指纹判重等）也纳入
+      - name: go test ./... (with integration tag)
         env:
           GOPROXY: https://goproxy.cn,direct
           GOTOOLCHAIN: local
-        run: go test -count=1 ./...
+        run: go test -tags integration -count=1 ./...
 
       - name: Cleanup dependencies
         if: always()

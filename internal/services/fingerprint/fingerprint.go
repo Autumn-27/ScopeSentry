@@ -9,6 +9,7 @@ import (
 	commonRepo "github.com/Autumn-27/ScopeSentry/internal/repositories/common"
 	repo "github.com/Autumn-27/ScopeSentry/internal/repositories/fingerprint"
 	"github.com/Autumn-27/ScopeSentry/internal/services/node"
+	"github.com/Autumn-27/ScopeSentry/internal/utils/random"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/yaml.v3"
@@ -80,6 +81,17 @@ func (s *service) Add(ctx context.Context, data models.FingerprintRule) (string,
 	// }
 	// data.Express = express
 	data.Amount = 0
+	if data.FingerprintId == "" {
+		data.FingerprintId = "SAA_" + random.GenerateRandomString(12)
+	}
+	// 同名已存在 → 直接更新那条，避免导入同一份 YAML 又生成一条重复指纹
+	if existing := s.lookupHexID(ctx, bson.M{"name": data.Name}); shouldReuseFingerprintID(existing) {
+		if err := s.repo.Update(ctx, existing, bson.M{"$set": fingerprintSetDoc(data)}); err != nil {
+			return "", err
+		}
+		_ = s.nodeService.RefreshConfig(ctx, models.Message{Name: "all", Type: "finger"})
+		return existing, nil
+	}
 	id, err := s.repo.Insert(ctx, &data)
 	if err != nil {
 		return "", err
@@ -171,9 +183,23 @@ func (s *service) BatchAdd(ctx context.Context, items []BatchAddItem) ([]BatchAd
 			Amount:         0,
 		}
 
-		// 使用 upsert：根据 fingerprint_id 更新或插入
-		filter := bson.M{"fingerprint_id": item.ID}
-		if err := s.commonRepo.Upsert(ctx, "FingerprintRules", filter, data); err != nil {
+		// 先判重：同 fingerprint_id 命中则更新；否则看有没有同名旧文档（历史数据
+		// 里 Add 生成的随机 ID 与上游 ID 不同），命中就更新旧文档并回填 ID，
+		// 避免"一键更新后每个指纹重复两份"。
+		byID := s.lookupHexID(ctx, bson.M{"fingerprint_id": item.ID})
+		byName := ""
+		if byID == "" {
+			byName = s.lookupHexID(ctx, bson.M{"name": data.Name})
+		}
+		match := decideFingerprintMatch(byID, byName)
+
+		var err error
+		if match.MatchBy == "_id" {
+			err = s.repo.Update(ctx, match.ExistingHexID, bson.M{"$set": fingerprintSetDoc(data)})
+		} else {
+			err = s.commonRepo.Upsert(ctx, "FingerprintRules", bson.M{"fingerprint_id": item.ID}, data)
+		}
+		if err != nil {
 			result.Error = fmt.Sprintf("更新或插入失败: %v", err)
 			results = append(results, result)
 			failedCount++

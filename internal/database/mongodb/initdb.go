@@ -339,6 +339,21 @@ func createIndexes(db *mongo.Database) error {
 		return fmt.Errorf("failed to create PageMonitoringBody index: %v", err)
 	}
 
+	// 指纹规则索引：一键更新要按 fingerprint_id 判重，同名判重要按 name 查
+	fingerprintRules := db.Collection("FingerprintRules")
+	if _, err := fingerprintRules.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys:    bson.D{{"fingerprint_id", 1}},
+		Options: options.Index().SetSparse(true),
+	}); err != nil {
+		return fmt.Errorf("failed to create FingerprintRules fingerprint_id index: %v", err)
+	}
+	// name 不做唯一索引：历史库可能已有重复，唯一索引会让启动直接失败
+	if _, err := fingerprintRules.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys: bson.D{{"name", 1}},
+	}); err != nil {
+		return fmt.Errorf("failed to create FingerprintRules name index: %v", err)
+	}
+
 	// 创建资产索引
 	asset := db.Collection("asset")
 	indexes := []mongo.IndexModel{
