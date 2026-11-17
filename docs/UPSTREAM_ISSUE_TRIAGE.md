@@ -46,6 +46,8 @@
 | #228 | 同步到项目时换行 / ICP 公司名未加前缀 | 抽出 `BuildRootDomains`（services/project/rootdomain.go）：空行跳过、公司名补 `CMP:`、备案号统一 `ICP:` 前缀并去掉 `-N` 版本后缀、保序去重；`AddProject` / `UpdateProject` / `UpdateAssetsProject` 三处重复逻辑统一调用它。6 项单测 | — |
 | #232 | 资产过大导致拼接 rootdomain 正则过长 | repositories/project/project_queries.go：域名改用 `$in` 精确匹配，只有备案号才进正则，且按 50 个一片分片（`icpMatchClauses`），不再拼一条超长正则；没有 ICP 的项目完全不产生正则。5 项查询构造单测 | — |
 | #242 | 同步任务到项目后 rootdomain/app/mp 关联被清空 | 同一文件：清理分支从 `project: {$exists: true}` 改为 `project: <本项目 ID>`，只清本项目；集成测试验证更新 A 项目时 B 项目的关联保持不变 | — |
+| #254 | 分布式节点总是离线 | `services/node/liveness.go`：把「节点自报本地时间 vs 服务器时间」换成 ClassifyLiveness——同时按服务器时区与 UTC 解释取最接近者，容忍节点时钟快于服务器（不再因负差值判死），解析失败时保留节点而不是抹掉；超时窗口可用 `NODE_TIMEOUT_SECONDS` 调整（默认 300s）。7 项单测 + 2 项 Redis 集成测试。节点侧仍写 state=1，无需改动 | 彻底方案（Redis TTL 心跳）需节点配合，见 #285 |
+| #169 | 漏洞增加 LastScanTime 字段 | **不在本仓库**：漏洞由扫描节点直接写入 MongoDB（服务端 `repositories/assets/vulnerability` 只有读方法，全仓除 1.8 迁移脚本外无 vulnerability 的 Insert/BulkWrite），字段维护必须在 ScopeSentry-Scan 侧做；本仓库可先按现有 `time` 字段排序 | 转 ScopeSentry-Scan |
 | #262 | 被动扫描期间进度提前 100% | 未修：后端拿不到节点侧 PassiveScan 信号，硬加规则会让任务永久卡 99%；需节点先写 `TaskInfo:progress:<taskID>:<target>` 的 PassiveScan_start/_end | 需 ScopeSentry-Scan 配合 |
 
 ## 可修-后端bug

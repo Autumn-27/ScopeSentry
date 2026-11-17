@@ -21,10 +21,6 @@ import (
 	"go.uber.org/zap"
 )
 
-const (
-	NodeTimeout = 300 // 节点超时时间（秒）
-)
-
 type Service interface {
 	GetNodeData(ctx context.Context, online bool) ([]models.NodeData, error)
 	RefreshConfig(ctx context.Context, msg models.Message) error
@@ -44,54 +40,52 @@ func NewService() Service {
 	}
 }
 
-// GetNodeData 获取所有节点数据
+// GetNodeData 获取所有节点数据。
+//
+// 存活判定见 ClassifyLiveness：容忍节点与服务器之间的时区/时钟差异，
+// 解析失败时保留节点而不是把它从列表里抹掉（#254）。
 func (s *service) GetNodeData(ctx context.Context, online bool) ([]models.NodeData, error) {
-	// 获取所有以 node: 开头的键
 	nodes, err := s.nodeRepo.GetAllNodes(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get node keys: %w", err)
 	}
 
-	var result []models.NodeData
-	for _, nodeData := range nodes {
-		layout := "2006-01-02 15:04:05"
-		// 检查节点状态
-		if nodeData.State == "1" {
-			loc, err := time.LoadLocation(config.GlobalConfig.System.Timezone)
-			if err != nil {
-				logger.Error("Failed to load timezone", zap.String("timezone", config.GlobalConfig.System.Timezone), zap.Error(err))
-				continue
-			}
-			updateTime, err := time.ParseInLocation(layout, nodeData.UpdateTime, loc)
-			if err != nil {
-				logger.Error("Failed to parse update time",
-					zap.String("time", nodeData.UpdateTime),
-					zap.Error(err))
-				continue
-			}
-			currentTime := time.Now().In(loc)
-			timeDiff := currentTime.Sub(updateTime).Seconds()
-			logger.Info("Node time difference",
-				zap.Float64("time_diff", timeDiff),
-				zap.String("current_time", currentTime.Format(layout)),
-				zap.String("update_time", nodeData.UpdateTime))
+	loc, err := time.LoadLocation(config.GlobalConfig.System.Timezone)
+	if err != nil {
+		logger.Warn("Failed to load timezone, fall back to UTC",
+			zap.String("timezone", config.GlobalConfig.System.Timezone), zap.Error(err))
+		loc = time.UTC
+	}
+	now := time.Now().In(loc)
+	timeout := NodeTimeout()
 
-			if timeDiff > NodeTimeout {
-				// 异步更新节点状态
-				go s.updateNodeState(context.Background(), nodeData.Name)
-				nodeData.State = "3"
-			}
+	result := make([]models.NodeData, 0, len(nodes))
+	for _, nodeData := range nodes {
+		lv := ClassifyLiveness(nodeData.State, nodeData.UpdateTime, now, loc, timeout)
+		switch {
+		case lv.ParseFailed:
+			logger.Warn("Node heartbeat timestamp unparsable, keeping node",
+				zap.String("node", nodeData.Name), zap.String("time", nodeData.UpdateTime))
+		case lv.ClockSkew:
+			logger.Debug("Node clock is ahead of server",
+				zap.String("node", nodeData.Name), zap.Duration("skew", -lv.TimeDiff))
+		case lv.UsedUTC:
+			logger.Debug("Node heartbeat matched UTC interpretation",
+				zap.String("node", nodeData.Name))
 		}
-		if online {
-			if nodeData.State == "1" {
-				result = append(result, nodeData)
-			}
-		} else {
-			result = append(result, nodeData)
+
+		if nodeData.State == "1" && !lv.Alive {
+			// 异步更新节点状态，避免阻塞列表
+			go s.updateNodeState(context.Background(), nodeData.Name)
+			nodeData.State = "3"
 		}
+
+		if online && nodeData.State != "1" {
+			continue
+		}
+		result = append(result, nodeData)
 	}
 
-	// 按名称排序
 	sort.Slice(result, func(i, j int) bool {
 		return result[i].Name < result[j].Name
 	})
