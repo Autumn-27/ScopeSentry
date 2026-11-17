@@ -63,7 +63,7 @@ func (s *service) GetPocList(ctx *gin.Context, req *models.PocListRequest) (*mod
 	}
 
 	opts := options.Find().
-		SetSort(bson.D{{"time", -1}}).
+		SetSort(bson.D{{Key: "time", Value: -1}}).
 		SetSkip(int64((req.PageIndex - 1) * req.PageSize)).
 		SetLimit(int64(req.PageSize))
 

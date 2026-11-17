@@ -84,16 +84,12 @@ jobs:
           path: coverage.out
           if-no-files-found: error
 
-      - name: go vet (本次维护的包)
+      # 全仓 vet：历史告警已清零，从此作为阻塞闸（新增未命名 bson.E 字面量等会被拦下）
+      - name: go vet ./...
         env:
           GOPROXY: https://goproxy.cn,direct
           GOTOOLCHAIN: local
-        run: |
-          go vet \
-            ./internal/api/handlers/task/ \
-            ./internal/api/routes/task/ \
-            ./internal/services/task/... \
-            ./internal/repositories/plugin/
+        run: go vet ./...
 
   frontend:
     name: Frontend build / locale / theme checks

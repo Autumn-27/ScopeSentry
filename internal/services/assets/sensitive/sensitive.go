@@ -57,7 +57,7 @@ func (s *service) GetSensitiveInfo(ctx context.Context, query models.SearchReque
 		SetProjection(projection).
 		SetSkip(int64((query.PageIndex - 1) * query.PageSize)).
 		SetLimit(int64(query.PageSize)).
-		SetSort(bson.D{{"time", -1}})
+		SetSort(bson.D{{Key: "time", Value: -1}})
 
 	result, err := s.repo.FindWithPagination(ctx, filter, opts)
 	if err != nil {
@@ -88,10 +88,10 @@ func buildAggregatePipeline(query bson.M, pageIndex, pageSize int) mongo.Pipelin
 
 	pipeline := mongo.Pipeline{
 		// 1. 搜索条件匹配（尽可能提前筛选数据）
-		{{"$match", query}},
+		bson.D{{Key: "$match", Value: query}},
 
 		// 2. 精确投影：只取后续需要参与 group 的字段，减少内存压力
-		{{"$project", bson.M{
+		bson.D{{Key: "$project", Value: bson.M{
 			"url":    1,
 			"time":   1,
 			"sid":    1,
@@ -102,17 +102,17 @@ func buildAggregatePipeline(query bson.M, pageIndex, pageSize int) mongo.Pipelin
 			"status": 1,
 		}}},
 
-		// 3. 按时间（或其他）排序
-		{{"$sort", bson.D{{"time", -1}}}}, // 避免 "$_id" 作为默认排序字段
+		// 3. 按时间排序（避免 "$_id" 作为默认排序字段）
+		bson.D{{Key: "$sort", Value: bson.D{{Key: "time", Value: -1}}}},
 
 		// 4. 分组：聚合每个 URL 对应的所有记录
-		{{"$group", bson.D{
-			{"_id", "$url"},
-			{"time", bson.D{{"$first", "$time"}}}, // 最新时间
-			{"url", bson.D{{"$first", "$url"}}},
-			{"body_id", bson.D{{"$last", bson.D{{"$toString", "$md5"}}}}},
-			{"children", bson.D{{"$push", bson.M{
-				"id":     bson.D{{"$toString", "$_id"}},
+		bson.D{{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: "$url"},
+			{Key: "time", Value: bson.D{{Key: "$first", Value: "$time"}}},
+			{Key: "url", Value: bson.D{{Key: "$first", Value: "$url"}}},
+			{Key: "body_id", Value: bson.D{{Key: "$last", Value: bson.D{{Key: "$toString", Value: "$md5"}}}}},
+			{Key: "children", Value: bson.D{{Key: "$push", Value: bson.M{
+				"id":     bson.D{{Key: "$toString", Value: "$_id"}},
 				"name":   "$sid",
 				"color":  "$color",
 				"match":  "$match",
@@ -123,14 +123,14 @@ func buildAggregatePipeline(query bson.M, pageIndex, pageSize int) mongo.Pipelin
 		}}},
 
 		// 5. 再次排序（按每组的时间降序）
-		{{"$sort", bson.D{{"time", -1}}}},
+		bson.D{{Key: "$sort", Value: bson.D{{Key: "time", Value: -1}}}},
 
-		// 6. 分页（注意 skip 太大性能会下降，考虑基于 last_id 方式做游标分页）
-		{{"$skip", skip}},
-		{{"$limit", pageSize}},
+		// 6. 分页（skip 太大时性能会下降，后续可考虑基于 last_id 的游标分页）
+		bson.D{{Key: "$skip", Value: skip}},
+		bson.D{{Key: "$limit", Value: pageSize}},
 
 		// 7. 最终输出字段
-		{{"$project", bson.M{
+		bson.D{{Key: "$project", Value: bson.M{
 			"id":       "$_id",
 			"url":      1,
 			"time":     1,

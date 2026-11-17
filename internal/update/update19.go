@@ -22,8 +22,8 @@ func Update19() {
 	// 资产索引
 	asset := mongodb.DB.Collection("asset")
 	indexes := []mongo.IndexModel{
-		{Keys: bson.D{{"host", 1}}},
-		{Keys: bson.D{{"rootDomain", 1}, {"time", -1}}}, // 优化按 rootDomain 查询并按 time 排序的性能
+		{Keys: bson.D{{Key: "host", Value: 1}}},
+		{Keys: bson.D{{Key: "rootDomain", Value: 1}, {Key: "time", Value: -1}}}, // 优化按 rootDomain 查询并按 time 排序的性能
 	}
 	_, err := asset.Indexes().CreateMany(context.Background(), indexes)
 	if err != nil {

@@ -51,7 +51,7 @@ func (s *service) GetMPData(ctx *gin.Context, query models.SearchRequest) (*mode
 	opts := options.Find().
 		SetSkip(int64((query.PageIndex - 1) * query.PageSize)).
 		SetLimit(int64(query.PageSize)).
-		SetSort(bson.D{{"time", -1}})
+		SetSort(bson.D{{Key: "time", Value: -1}})
 
 	// 查询数据
 	results, err := s.repo.Find(ctx, filter, opts)

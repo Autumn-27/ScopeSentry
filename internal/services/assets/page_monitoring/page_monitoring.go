@@ -39,7 +39,7 @@ func NewService() Service {
 func (s *service) GetHistory(ctx context.Context, id string) ([]*models.PageMonitoring, error) {
 	filter := bson.M{"_id": id}
 	opts := options.Find().
-		SetSort(bson.D{{"created_at", -1}})
+		SetSort(bson.D{{Key: "created_at", Value: -1}})
 	return s.pageRepo.FindHistory(ctx, filter, opts)
 }
 
@@ -68,7 +68,7 @@ func (s *service) GetResult(ctx *gin.Context, req models.SearchRequest) (*models
 
 	// 设置查询选项
 	opts := options.Find().
-		SetSort(bson.D{{"time", -1}}).
+		SetSort(bson.D{{Key: "time", Value: -1}}).
 		SetSkip(int64((req.PageIndex - 1) * req.PageSize)).
 		SetLimit(int64(req.PageSize))
 
