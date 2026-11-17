@@ -16,8 +16,8 @@ HERMETIC_PKGS := \
 	./internal/api/handlers/sensitiveRule/ \
 	./internal/api/middleware/compress/
 
-.PHONY: help build binary run test-hermetic vet fmt fmt-check mod-check \
-	frontend-install frontend-build frontend-check ci clean
+.PHONY: help build binary run test-hermetic test-integration vet fmt fmt-check mod-check \
+	frontend-install frontend-build frontend-test frontend-check ci clean
 
 help: ## 列出所有目标
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
@@ -59,8 +59,12 @@ frontend-install: ## 安装前端依赖
 frontend-build: ## 前端生产构建（dist-pro）
 	cd frontend && $(PNPM) build:pro
 
-frontend-check: ## 前端轻量自检：语言包一致性 + 主题三态
+frontend-test: ## 前端单元测试（vitest）
+	cd frontend && $(PNPM) test
+
+frontend-check: ## 前端轻量自检：语言包一致性 + 主题三态 + 单测
 	cd frontend && node scripts/check-locales.mjs && npx esno ./scripts/check-theme.ts
+	cd frontend && $(PNPM) test
 
 ci: fmt-check mod-check test-hermetic frontend-check ## 本地复现 CI 的核心门禁
 

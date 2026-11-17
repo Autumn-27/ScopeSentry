@@ -126,6 +126,9 @@ jobs:
       - name: Build (mode=pro)
         run: pnpm build:pro
 
+      - name: Unit tests (vitest)
+        run: pnpm test
+
       - name: ESLint
         run: npx eslint --ext .js,.ts,.vue ./src --max-warnings 0
 

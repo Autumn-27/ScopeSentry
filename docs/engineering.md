@@ -11,7 +11,8 @@ make vet             # 维护包的 go vet
 make fmt             # gofmt -w .
 make fmt-check       # CI 同款：有未格式化文件就失败
 make mod-check       # go mod tidy 后检查 go.mod/go.sum 是否漂移
-make frontend-check  # 语言包一致性 + 主题三态自检
+make frontend-test   # 前端单元测试（vitest）
+make frontend-check  # 语言包一致性 + 主题三态自检 + 单测
 make ci              # fmt-check + mod-check + test-hermetic + frontend-check
 ```
 
@@ -61,7 +62,7 @@ npx esno ./scripts/check-theme.ts
 | --- | --- | --- |
 | hermetic | 纯逻辑/中间件，不连库 | `make test-hermetic` |
 | integration | 需要 Mongo/Redis（包 init 就会连库） | 本地起容器后 `go test ./...` |
-| frontend | 语言包/主题自检 | `make frontend-check` |
+| frontend | 语言包/主题自检 + 单元测试（vitest + jsdom） | `make frontend-check` |
 
 新增测试优先放叶子包（不 import `internal/bootstrap`），否则包级 init 会直接连库、CI 无法运行。
 
