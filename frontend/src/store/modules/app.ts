@@ -345,7 +345,8 @@ export const useAppStore = defineStore('app', {
     playThemeTransition() {
       if (typeof window === 'undefined' || typeof document === 'undefined') return
       const root = document.documentElement
-      if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+      // 老 WebView / 非浏览器环境可能没有 matchMedia，取不到就按“不减弱动效”处理
+      if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return
       root.classList.add('theme-transition')
       if (themeTransitionTimer) window.clearTimeout(themeTransitionTimer)
       themeTransitionTimer = window.setTimeout(() => {
