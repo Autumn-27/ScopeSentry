@@ -124,17 +124,17 @@ func (s *service) GetExportFields(ctx context.Context, index string) ([]string, 
 func (s *service) GetExportRecords(ctx context.Context) ([]models.ExportTask, error) {
 	// 在 service 层构建查询选项
 	opts := options.Find().
-		SetSort(bson.D{{"create_time", -1}}).
+		SetSort(bson.D{{Key: "create_time", Value: -1}}).
 		SetProjection(bson.D{
-			{"_id", 0},
-			{"id", bson.D{{"$toString", "$_id"}}},
-			{"file_name", 1},
-			{"end_time", 1},
-			{"create_time", 1},
-			{"data_type", 1},
-			{"state", 1},
-			{"file_size", 1},
-			{"file_type", 1},
+			{Key: "_id", Value: 0},
+			{Key: "id", Value: bson.D{{Key: "$toString", Value: "$_id"}}},
+			{Key: "file_name", Value: 1},
+			{Key: "end_time", Value: 1},
+			{Key: "create_time", Value: 1},
+			{Key: "data_type", Value: 1},
+			{Key: "state", Value: 1},
+			{Key: "file_size", Value: 1},
+			{Key: "file_type", Value: 1},
 		})
 
 	// 调用 repository 层执行查询

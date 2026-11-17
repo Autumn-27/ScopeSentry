@@ -38,9 +38,8 @@ test-hermetic: ## 跑不依赖 Mongo/Redis 的单元测试
 test-integration: ## 全量测试（需要可用的 Mongo/Redis，读 MONGODB_*/REDIS_* 环境变量）
 	$(GO) test -tags integration -count=1 ./...
 
-vet: ## 对本次维护的包做 go vet
-	$(GO) vet ./internal/api/handlers/task/ ./internal/api/routes/task/ \
-		./internal/services/task/... ./internal/repositories/plugin/
+vet: ## 全仓 go vet（CI 同款阻塞闸）
+	$(GO) vet ./...
 
 fmt: ## 格式化所有 Go 代码
 	gofmt -w .

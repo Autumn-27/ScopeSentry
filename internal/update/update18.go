@@ -119,7 +119,7 @@ func Update18() {
 	// 资产bodyhash索引
 	asset := mongodb.DB.Collection("asset")
 	indexes := []mongo.IndexModel{
-		{Keys: bson.D{{"bodyhash", 1}}},
+		{Keys: bson.D{{Key: "bodyhash", Value: 1}}},
 	}
 	_, err := asset.Indexes().CreateMany(context.Background(), indexes)
 	if err != nil {
@@ -128,15 +128,15 @@ func Update18() {
 	// 敏感信息索引
 	SensitiveBody := mongodb.DB.Collection("SensitiveBody")
 	_, err = SensitiveBody.Indexes().CreateOne(context.Background(), mongo.IndexModel{
-		Keys: bson.D{{"md5", 1}},
+		Keys: bson.D{{Key: "md5", Value: 1}},
 	})
 	if err != nil {
-		fmt.Errorf("failed to create SensitiveBody index: %v", err)
+		log.Printf("failed to create SensitiveBody index: %v", err)
 	}
 	// 创建icon集合索引
 	icon := mongodb.DB.Collection("icon")
 	indexes = []mongo.IndexModel{
-		{Keys: bson.D{{"fav3", 1}}, Options: options.Index().SetUnique(true)},
+		{Keys: bson.D{{Key: "fav3", Value: 1}}, Options: options.Index().SetUnique(true)},
 	}
 	_, err = icon.Indexes().CreateMany(context.Background(), indexes)
 	if err != nil {
@@ -146,7 +146,7 @@ func Update18() {
 	// 创建http res body集合索引
 	httpBody := mongodb.DB.Collection("HttpBody")
 	indexes = []mongo.IndexModel{
-		{Keys: bson.D{{"hash", 1}}, Options: options.Index().SetUnique(true)},
+		{Keys: bson.D{{Key: "hash", Value: 1}}, Options: options.Index().SetUnique(true)},
 	}
 	_, err = httpBody.Indexes().CreateMany(context.Background(), indexes)
 	if err != nil {
@@ -156,7 +156,7 @@ func Update18() {
 	// 创建http截图索引
 	httpScreenshot := mongodb.DB.Collection("screenshot")
 	indexes = []mongo.IndexModel{
-		{Keys: bson.D{{"hash", 1}}, Options: options.Index().SetUnique(true)},
+		{Keys: bson.D{{Key: "hash", Value: 1}}, Options: options.Index().SetUnique(true)},
 	}
 	_, err = httpScreenshot.Indexes().CreateMany(context.Background(), indexes)
 	if err != nil {
@@ -168,7 +168,7 @@ func Update18() {
 	// 创建vulDetail索引
 	vulnerabilityDetail := mongodb.DB.Collection("vulnerabilityDetail")
 	indexes = []mongo.IndexModel{
-		{Keys: bson.D{{"hash", 1}}},
+		{Keys: bson.D{{Key: "hash", Value: 1}}},
 	}
 	_, err = vulnerabilityDetail.Indexes().CreateMany(context.Background(), indexes)
 	if err != nil {
@@ -181,7 +181,7 @@ func Update18() {
 	// 创建ip资产临时集合索引
 	ipAssetTmp := mongodb.DB.Collection("IPAssetTmp")
 	indexes = []mongo.IndexModel{
-		{Keys: bson.D{{"ip", 1}, {"port", 1}, {"domain", 1}}, Options: options.Index().SetUnique(true)},
+		{Keys: bson.D{{Key: "ip", Value: 1}, {Key: "port", Value: 1}, {Key: "domain", Value: 1}}, Options: options.Index().SetUnique(true)},
 	}
 	_, err = ipAssetTmp.Indexes().CreateMany(context.Background(), indexes)
 	if err != nil {
@@ -191,16 +191,16 @@ func Update18() {
 	// 创建ip资产集合索引
 	ipAsset := mongodb.DB.Collection("IPAsset")
 	indexes = []mongo.IndexModel{
-		{Keys: bson.D{{"time", -1}}},
-		{Keys: bson.D{{"ports.server.domain", 1}}},
-		{Keys: bson.D{{"ports.port", 1}}},
-		{Keys: bson.D{{"ip", 1}}, Options: options.Index().SetUnique(true)},
-		{Keys: bson.D{{"ports.server.service", 1}}},
-		{Keys: bson.D{{"ports.server.webServer", 1}}},
-		{Keys: bson.D{{"rootDomain", 1}}},
-		{Keys: bson.D{{"ports.server.technologies", 1}}},
-		{Keys: bson.D{{"project", 1}}},
-		{Keys: bson.D{{"taskName", 1}}},
+		{Keys: bson.D{{Key: "time", Value: -1}}},
+		{Keys: bson.D{{Key: "ports.server.domain", Value: 1}}},
+		{Keys: bson.D{{Key: "ports.port", Value: 1}}},
+		{Keys: bson.D{{Key: "ip", Value: 1}}, Options: options.Index().SetUnique(true)},
+		{Keys: bson.D{{Key: "ports.server.service", Value: 1}}},
+		{Keys: bson.D{{Key: "ports.server.webServer", Value: 1}}},
+		{Keys: bson.D{{Key: "rootDomain", Value: 1}}},
+		{Keys: bson.D{{Key: "ports.server.technologies", Value: 1}}},
+		{Keys: bson.D{{Key: "project", Value: 1}}},
+		{Keys: bson.D{{Key: "taskName", Value: 1}}},
 	}
 	_, err = ipAsset.Indexes().CreateMany(context.Background(), indexes)
 	if err != nil {
@@ -210,9 +210,9 @@ func Update18() {
 	// 创建task相关索引
 	task := mongodb.DB.Collection("task")
 	indexes = []mongo.IndexModel{
-		{Keys: bson.D{{"creatTime", -1}}},
-		{Keys: bson.D{{"name", 1}}},
-		{Keys: bson.D{{"progress", 1}}},
+		{Keys: bson.D{{Key: "creatTime", Value: -1}}},
+		{Keys: bson.D{{Key: "name", Value: 1}}},
+		{Keys: bson.D{{Key: "progress", Value: 1}}},
 	}
 	_, err = task.Indexes().CreateMany(context.Background(), indexes)
 	if err != nil {

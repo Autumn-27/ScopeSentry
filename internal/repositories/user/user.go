@@ -66,7 +66,7 @@ func (r *repository) FindByUsername(ctx context.Context, username string) (*mode
 func (r *repository) FindAll(ctx context.Context) ([]*models.User, error) {
 	// 设置分页选项
 	opts := options.Find().
-		SetSort(bson.D{{"createdAt", -1}})
+		SetSort(bson.D{{Key: "createdAt", Value: -1}})
 
 	// 查询用户列表
 	cursor, err := r.collection.Find(ctx, bson.M{}, opts)

@@ -7,7 +7,7 @@ make help            # 列出目标
 make build           # go build ./...
 make binary          # 产出 dist/ScopeSentry
 make test-hermetic   # 不需要 Mongo/Redis 的单元测试
-make vet             # 维护包的 go vet
+make vet             # 全仓 go vet（CI 同款阻塞闸）
 make fmt             # gofmt -w .
 make fmt-check       # CI 同款：有未格式化文件就失败
 make mod-check       # go mod tidy 后检查 go.mod/go.sum 是否漂移
@@ -35,7 +35,7 @@ npx esno ./scripts/check-theme.ts
   - **go mod tidy 漂移**（阻塞）
   - `go build ./...`（阻塞）
   - hermetic 单测（阻塞）
-  - 维护包 `go vet`（阻塞）
+  - 全仓 `go vet ./...`（阻塞；历史 144 条告警已清零）
   - 前端 `build:pro` + 语言包 + 主题自检（阻塞）
   - `vue-tsc`（非阻塞，历史类型错误较多）
   - **Integration job**（阻塞）：临时起 Mongo + Redis（随机端口、run_id 命名、跑完清理），

@@ -60,7 +60,7 @@ func (r *Repository) List(ctx context.Context, page, size int64) ([]*models.Role
 	opts := options.Find().
 		SetSkip(skip).
 		SetLimit(size).
-		SetSort(bson.D{{"created_at", -1}})
+		SetSort(bson.D{{Key: "created_at", Value: -1}})
 
 	// 查询总记录数
 	total, err := r.collection.CountDocuments(ctx, bson.M{})
