@@ -89,11 +89,12 @@ func CreateDatabase() error {
 		configCollection := db.Collection("config")
 
 		// 插入系统配置
-		_, err = configCollection.InsertOne(context.Background(), bson.M{
-			"name":  "timezone",
-			"value": "Asia/Shanghai",
-			"type":  "system",
-		})
+		// 用 upsert：多个测试二进制/进程并发首启时不会插出两条 timezone
+		_, err = configCollection.UpdateOne(context.Background(),
+			bson.M{"name": "timezone"},
+			bson.M{"$setOnInsert": bson.M{"name": "timezone", "value": "Asia/Shanghai", "type": "system"}},
+			options.Update().SetUpsert(true),
+		)
 		if err != nil {
 			return fmt.Errorf("failed to insert timezone config: %v", err)
 		}
@@ -289,7 +290,18 @@ func CreateDatabase() error {
 		var result bson.M
 		err := configCollection.FindOne(context.Background(), bson.M{"name": "timezone"}).Decode(&result)
 		if err != nil {
-			return fmt.Errorf("failed to get timezone config: %v", err)
+			if err == mongo.ErrNoDocuments {
+				// 库存在但缺配置（历史库或并发首启的中间态）：补默认值，不要直接退出
+				if _, insErr := configCollection.UpdateOne(context.Background(),
+					bson.M{"name": "timezone"},
+					bson.M{"$setOnInsert": bson.M{"name": "timezone", "value": "Asia/Shanghai", "type": "system"}},
+					options.Update().SetUpsert(true),
+				); insErr != nil {
+					return fmt.Errorf("failed to seed default timezone config: %v", insErr)
+				}
+			} else {
+				return fmt.Errorf("failed to get timezone config: %v", err)
+			}
 		}
 
 		// 检查定时任务
@@ -337,6 +349,21 @@ func createIndexes(db *mongo.Database) error {
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create PageMonitoringBody index: %v", err)
+	}
+
+	// 指纹规则索引：一键更新要按 fingerprint_id 判重，同名判重要按 name 查
+	fingerprintRules := db.Collection("FingerprintRules")
+	if _, err := fingerprintRules.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys:    bson.D{{"fingerprint_id", 1}},
+		Options: options.Index().SetSparse(true),
+	}); err != nil {
+		return fmt.Errorf("failed to create FingerprintRules fingerprint_id index: %v", err)
+	}
+	// name 不做唯一索引：历史库可能已有重复，唯一索引会让启动直接失败
+	if _, err := fingerprintRules.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys: bson.D{{"name", 1}},
+	}); err != nil {
+		return fmt.Errorf("failed to create FingerprintRules name index: %v", err)
 	}
 
 	// 创建资产索引

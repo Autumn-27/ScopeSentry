@@ -41,6 +41,8 @@
 | #288 | 定时任务未开始显示运行中 | 新增 `constants/task_status.go`（0=待开始）、`services/task/taskstate`；入库写 0，出现进度才转 1，100 转 3；前端 `Task.vue` 补 0 的标签 | 计划任务列表的历史数据仍是旧状态值，需重跑一次任务刷新 |
 | #317 | 同步到项目 request failed | 新增 `POST /api/task/sync`（WithAuth）+ `services/task/tasksync`：合并目标去重、建项目/更新项目后重算资产；空参数与非法 ObjectID 返回明确 400 | — |
 | #225 | 导出"csv"实际是 xlsx 且必 400 | `frontend/src/views/Asset/export/exportData.vue` 默认值与文案改 xlsx；后端消息同步为 "xlsx or json" | — |
+| #216 | 资产搜索直接输裸域名：返回全量或报 insufficient operands | `internal/utils/helper/search.go` 裸词展开成跨身份字段（host/title/ip/url/service/tags 等）的模糊 $or，并转义词内正则元字符；body/rawheaders/metadata 不参与，避免全集合大文本扫描。新增 `search_test.go` 7 项用例 | — |
+| #340 | 一键更新后每个指纹重复两份 | `internal/services/fingerprint/dedupe.go`：upsert 前先按 fingerprint_id 判重，未命中再按 name 找旧文档并回填 ID；`Add` 同名改为更新而非再插一条；`FingerprintRules` 补 fingerprint_id + name 索引。4 项纯逻辑单测 + 1 项集成测试（真实 Mongo 验证只剩 1 行） | — |
 | #262 | 被动扫描期间进度提前 100% | 未修：后端拿不到节点侧 PassiveScan 信号，硬加规则会让任务永久卡 99%；需节点先写 `TaskInfo:progress:<taskID>:<target>` 的 PassiveScan_start/_end | 需 ScopeSentry-Scan 配合 |
 
 ## 可修-后端bug

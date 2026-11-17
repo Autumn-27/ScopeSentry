@@ -11,7 +11,6 @@ import (
 	"github.com/Autumn-27/ScopeSentry/internal/api/response"
 	"github.com/Autumn-27/ScopeSentry/internal/models"
 	service "github.com/Autumn-27/ScopeSentry/internal/services/fingerprint"
-	"github.com/Autumn-27/ScopeSentry/internal/utils/random"
 	"github.com/gin-gonic/gin"
 	"gopkg.in/yaml.v3"
 )
@@ -177,14 +176,11 @@ func Add(c *gin.Context) {
 		return
 	}
 
-	// 生成 ID 并添加到 Fingerprint 结构体 (sas_ + 8位随机大小写字母和数字)
-	FingerId := "SAA_" + random.GenerateRandomString(12)
-
-	// 从解析后的结构体中提取字段
+	// 从解析后的结构体中提取字段；fingerprint_id 由 service 决定
+	// （同名已存在时复用旧 ID，避免重复指纹）
 	data := models.FingerprintRule{
 		Name:           fp.Fingerprint.Name,
 		Rule:           req.Content, // 存储包含 id 的完整 YAML content
-		FingerprintId:  FingerId,    // 存储 YAML 中的 id 字段
 		Category:       fp.Fingerprint.Category,
 		ParentCategory: fp.Fingerprint.ParentCategory,
 		State:          req.State,
