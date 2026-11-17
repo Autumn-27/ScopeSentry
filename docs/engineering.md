@@ -61,7 +61,8 @@ npx esno ./scripts/check-theme.ts
 | 层 | 范围 | 运行方式 |
 | --- | --- | --- |
 | hermetic | 纯逻辑/中间件，不连库 | `make test-hermetic` |
-| integration | 需要 Mongo/Redis（包 init 就会连库） | 本地起容器后 `go test ./...` |
+| integration | 需要 Mongo/Redis（包 init 就会连库） | 本地起容器后 `make test-integration` |
+| api smoke | 真实路由 + 中间件 + Mongo/Redis：/healthz、未认证 401、登录拿 token、带 token 访问受保护接口 | 同上（`internal/api/routes/smoke_integration_test.go`） |
 | frontend | 语言包/主题自检 + 单元测试（vitest + jsdom） | `make frontend-check` |
 
 新增测试优先放叶子包（不 import `internal/bootstrap`），否则包级 init 会直接连库、CI 无法运行。
